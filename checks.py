@@ -1999,6 +1999,7 @@ class checks:
 		except socket.error, e:
 			self.mainLogger.debug('Unable to get hostname: ' + str(e))
 		
+		self.mainLogger.debug('doChecks: payload: %s' % checksData)
 		self.mainLogger.debug('doChecks: payloads built, convert to json')
 		
 		# Post back the data
