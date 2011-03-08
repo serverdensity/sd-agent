@@ -8,17 +8,6 @@
 	Licensed under Simplified BSD License (see LICENSE)
 '''
 
-import logging
-
-# General config
-agentConfig = {}
-agentConfig['logging'] = logging.INFO
-agentConfig['checkFreq'] = 60
-
-agentConfig['version'] = '1.10.2'
-
-rawConfig = {}
-
 # Check we're not using an old version of Python. Do this before anything else
 # We need 2.4 above because some modules (like subprocess) were only introduced in 2.4.
 import sys
@@ -27,6 +16,7 @@ if int(sys.version_info[1]) <= 3:
 	sys.exit(1)
 
 # Core modules
+import logging
 import ConfigParser
 import os
 import re
@@ -40,6 +30,29 @@ import subprocess
 # Custom modules
 from checks import checks
 from daemon import Daemon
+
+
+# Default agent configurations
+DEF_CHECK_FREQ = 60
+DEF_LOG_LEVEL = logging.INFO
+
+# Maps log levels from the configuration file to Python log levels
+LOG_LEVEL_MAP = {
+	"debug"    : logging.DEBUG,
+	"info"     : logging.INFO,
+	"error"    : logging.ERROR,
+	"warn"     : logging.WARN,
+	"warning"  : logging.WARNING,
+	"critical" : logging.CRITICAL,
+	"fatal"    : logging.FATAL,
+}
+
+
+# General config
+agentConfig = {}
+agentConfig['version'] = '1.10.2'
+
+rawConfig = {}
 
 # Config handling
 try:
@@ -70,7 +83,22 @@ try:
 	else:
 		agentConfig['tmpDirectory'] = '/tmp/' # default which may be overriden in the config later
 	agentConfig['pidfileDirectory'] = agentConfig['tmpDirectory']
+
+	# Get the check frequency from the configuration file, fall back to default
+	# if it's not present or not an integer value
+	try:
+		agentConfig['checkFreq'] = int(config.get('Main', 'check_freq'))
+	except (ConfigParser.NoSectionError, ConfigParser.NoOptionError, ValueError):
+		agentConfig['checkFreq'] = DEF_CHECK_FREQ
 	
+	# Get the log level from the configuration file, fall back to default if
+	# it's not present or it's invalid
+	try:
+		configLogLevel = config.get('Main', 'log_level').lower()
+		agentConfig['logging'] = LOG_LEVEL_MAP[configLogLevel]
+	except (ConfigParser.NoSectionError, ConfigParser.NoOptionError, KeyError):
+		agentConfig['logging'] = DEF_LOG_LEVEL
+
 	# Plugin config
 	if config.has_option('Main', 'plugin_directory'):
 		agentConfig['pluginDirectory'] = config.get('Main', 'plugin_directory')
