@@ -12,8 +12,8 @@ import logging
 
 # General config
 agentConfig = {}
-agentConfig['logging'] = logging.INFO
-agentConfig['checkFreq'] = 60
+agentConfig['logging'] = logging.DEBUG
+agentConfig['checkFreq'] = 10
 
 agentConfig['version'] = '1.10.2'
 
@@ -74,6 +74,10 @@ try:
 	# Plugin config
 	if config.has_option('Main', 'plugin_directory'):
 		agentConfig['pluginDirectory'] = config.get('Main', 'plugin_directory')
+        if agentConfig['pluginDirectory'].startswith('.'): 
+            # Evaluate in the context of the script's location 
+            agentConfig['pluginDirectory'] = os.path.realpath(os.path.join(os.path.dirname(__file__), agentConfig['pluginDirectory'])) 
+
 	
 	# Optional config
 	# Also do not need to be present in the config file (case 28326).
@@ -156,8 +160,8 @@ if agentConfig['sdUrl'] == 'http://example.serverdensity.com' or agentConfig['ag
 	sys.exit(1)
 	
 # Check to make sure sd_url is in correct
-if re.match('http(s)?(\:\/\/)[a-zA-Z0-9_\-]+\.(serverdensity.com)', agentConfig['sdUrl']) == None:
-	print 'Your sd_url is incorrect. It needs to be in the form http://example.serverdensity.com (or using https)'
+if re.match('http(s)?(\:\/\/)[a-zA-Z0-9_\-\.]+(:\d+)?', agentConfig['sdUrl']) == None:
+	print 'Your sd_url is incorrect. It needs to be in the form http://example.serverdensity.com (or using https, or specifying :port)'
 	print 'Agent will now quit'
 	sys.exit(1)
 	
