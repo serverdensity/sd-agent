@@ -490,7 +490,7 @@ class checks:
 		self.mainLogger.debug('getLoadAvrgs: start')
 		
 		# If Linux like procfs system is present and mounted we use loadavg, else we use uptime
-		if sys.platform == 'linux2' or sys.platform.find('freebsd') == -1:
+		if sys.platform == 'linux2':
 			
 			self.mainLogger.debug('getLoadAvrgs: linux2')
 			
