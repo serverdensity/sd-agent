@@ -890,6 +890,7 @@ class checks:
 		try:
 			import pymongo
 			from pymongo import Connection
+			from pymongo.errors import AutoReconnect
 			
 		except ImportError:
 			self.mainLogger.error('Unable to import pymongo library')
@@ -924,7 +925,7 @@ class checks:
 			
 			self.mainLogger.debug('-- mongoURI: %s', mongoURI)
 			
-			conn = Connection(mongoURI, slave_okay=True)
+			conn = Connection(mongoURI, slave_okay=True, network_timeout=5)
 			
 			self.mainLogger.debug('Connected to MongoDB')
 				
@@ -1138,21 +1139,25 @@ class checks:
 			if 'MongoDBDBStats' in self.agentConfig and self.agentConfig['MongoDBDBStats'] == 'yes':
 				self.mainLogger.debug('getMongoDBStatus: db.stats() too')
 				
-				status['dbStats'] = {}
-				
-				for database in conn.database_names():
-					
-					if database != 'config' and database != 'local' and database != 'admin' and database != 'test':
-						
-						self.mainLogger.debug('getMongoDBStatus: executing db.stats() for ' + str(database))
-						
-						status['dbStats'][database] = conn[database].command('dbstats')
-						status['dbStats'][database]['namespaces'] = conn[database]['system']['namespaces'].count()
-						
-						# Ensure all strings to prevent JSON parse errors. We typecast on the server
-						for key in status['dbStats'][database].keys():
-						
-							status['dbStats'][database][key] = str(status['dbStats'][database][key])
+				try:
+					status['dbStats'] = {}
+
+					for database in conn.database_names():
+
+						if database != 'config' and database != 'local' and database != 'admin' and database != 'test':
+
+							self.mainLogger.debug('getMongoDBStatus: executing db.stats() for ' + str(database))
+
+							status['dbStats'][database] = conn[database].command('dbstats')
+							status['dbStats'][database]['namespaces'] = conn[database]['system']['namespaces'].count()
+
+							# Ensure all strings to prevent JSON parse errors. We typecast on the server
+							for key in status['dbStats'][database].keys():
+
+								status['dbStats'][database][key] = str(status['dbStats'][database][key])
+				except AutoReconnect, ex:
+					# the command will block, and the connection will time out, if the database is locked
+					self.mainLogger.warning('Error getting MongoDB dbstats: %s', ex)
 						
 				
 		except Exception, ex:
