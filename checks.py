@@ -2044,8 +2044,6 @@ class checks:
 			# Do the request, log any errors
 			response = urllib2.urlopen(request)
 			
-			signal.alarm(0)
-			
 			self.mainLogger.info('Postback response: %s', response.read())
 				
 		except urllib2.HTTPError, e:
@@ -2064,6 +2062,9 @@ class checks:
 			import traceback
 			self.mainLogger.error('doPostBack: Exception = ' + traceback.format_exc())
 			return False
+
+		finally:
+			signal.alarm(0)
 			
 		self.mainLogger.debug('doPostBack: completed')
 	
