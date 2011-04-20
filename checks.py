@@ -357,12 +357,13 @@ class checks:
 				except OSError, e:
 					self.mainLogger.debug('Process already terminated')
 					
-			signal.alarm(0)
-			
 		except Exception, e:
 			import traceback
 			self.mainLogger.error('getDiskUsage: df -k exception = ' + traceback.format_exc())
 			return False
+
+		finally:
+			signal.alarm(0)
 		
 		self.mainLogger.debug('getDiskUsage: Popen success, start parsing')
 			
