@@ -670,6 +670,10 @@ class checks:
 				
 			self.mainLogger.debug('getLoadAvrgs: Popen success')
 		
+		else:
+			self.mainLogger.debug('getLoadAvrgs: other platform, returning')
+			return False
+		
 		self.mainLogger.debug('getLoadAvrgs: parsing')
 				
 		# Split out the 3 load average values
@@ -1031,6 +1035,7 @@ class checks:
 			return {'physUsed' : physParts[3], 'physFree' : physParts[4], 'swapUsed' : swapParts[1], 'swapFree' : swapParts[2], 'cached' : 'NULL'}	
 			
 		else:
+			self.mainLogger.debug('getMemoryUsage: other platform, returning')
 			return False
 			
 	def getMongoDBStatus(self):
