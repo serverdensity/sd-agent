@@ -2444,8 +2444,8 @@ class checks:
 			macV = platform.mac_ver()
 		
 		if not self.topIndex: # We cache the line index from which to read from top
-			# Output from top is slightly modified on OS X 10.6 (case #28239)
-			if macV and macV[0].startswith('10.6.'):
+			# Output from top is slightly modified on OS X 10.6+ (case #28239)
+			if macV and [int(v) for v in macV[0].split('.')] >= [10, 6, 0]:
 				self.topIndex = 6
 			else:
 				self.topIndex = 5
