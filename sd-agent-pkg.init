@@ -42,7 +42,7 @@ fi
 # Action to take
 case "$1" in
   start)
-        if [ ! -f $PIDPATH ]; then
+        if [ ! -d $PIDPATH ]; then
             mkdir -p $PIDPATH
             chown sd-agent:sd-agent $PIDPATH
         fi
