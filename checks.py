@@ -2350,7 +2350,7 @@ class checks:
 		ioStats = self.getIOStats();
 		cpuStats = self.getCPUStats();
 		
-		if len(processes) > 4194304:
+		if processes is not False and len(processes) > 4194304:
 			self.mainLogger.warn('doChecks: process list larger than 4MB limit, so it has been stripped')
 			
 			processes = []
