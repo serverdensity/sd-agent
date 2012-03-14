@@ -500,11 +500,8 @@ class checks:
 				try:
 					volume[2] = int(volume[2]) / 1024 / 1024 # Used
 					volume[3] = int(volume[3]) / 1024 / 1024 # Available
-				except IndexError:
-					self.mainLogger.error('getDiskUsage: parsing, loop IndexError - Used or Available not present')
-
-				except KeyError:
-					self.mainLogger.error('getDiskUsage: parsing, loop KeyError - Used or Available not present')
+				except Exception, e:
+					self.mainLogger.error('getDiskUsage: parsing, loop %s - Used or Available not present' % (repr(e),))
 
 				usageData.append(volume)
 
