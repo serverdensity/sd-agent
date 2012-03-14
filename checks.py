@@ -2006,7 +2006,7 @@ class checks:
 			self.mainLogger.debug('getProcesses: Popen success, parsing, loop...')
 			line = line.replace("'", '') # These will break JSON. ZD38282
 			line = line.replace('"', '')
-			line = line.replace('\', '\\')
+			line = line.replace('\\', '\\\\')
 			line = line.split(None, 10)
 			processes.append(line)
 
@@ -2018,8 +2018,8 @@ class checks:
 		self.mainLogger.debug('getRabbitMQStatus: start')
 
 		if 'rabbitMQStatusUrl' not in self.agentConfig or \
-		   'rabbitMQUser' not in self.agentConfig or \
-		   'rabbitMQPass' not in self.agentConfig or \
+                    'rabbitMQUser' not in self.agentConfig or \
+                    'rabbitMQPass' not in self.agentConfig or \
 			self.agentConfig['rabbitMQStatusUrl'] == 'http://www.example.com:55672/json':
 
 			self.mainLogger.debug('getRabbitMQStatus: config not set')
