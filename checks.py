@@ -2476,9 +2476,12 @@ class checks:
 		# Post back the data
 		if int(pythonVersion[1]) >= 6:
 			self.mainLogger.debug('doChecks: json convert')
-
-			payload = json.dumps(checksData)
-
+	
+			try:
+				payload = json.dumps(checksData, encoding='latin1').encode('utf-8')
+			except:
+				self.mainLogger.debug('doChecks: failed encoding payload to json')
+		
 		else:
 			self.mainLogger.debug('doChecks: minjson convert')
 
