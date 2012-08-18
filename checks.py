@@ -367,7 +367,7 @@ class checks:
 			headerRegexp = re.compile(r'.*?([%][a-zA-Z0-9]+)[\s+]?')
 			itemRegexp = re.compile(r'.*?\s+(\d+)[\s+]?')
 			valueRegexp = re.compile(r'\d+\.\d+')
-
+			proc = None
 			try:
 				proc = subprocess.Popen(['mpstat', '-P', 'ALL', '1', '1'], stdout=subprocess.PIPE, close_fds=True)
 				stats = proc.communicate()[0]
@@ -401,10 +401,15 @@ class checks:
 						headerName = headerNames[headerIndex]
 						cpuStats[device][headerName] = values[headerIndex]
 
+			except OSError, ex:
+				# we dont have it installed return nothing
+				return False
+
 			except Exception, ex:
 				if int(pythonVersion[1]) >= 6:
 					try:
-						proc.kill()
+						if proc:
+							proc.kill()
 					except UnboundLocalError, e:
 						self.mainLogger.debug('Process already terminated')
 					except Exception, e:
@@ -527,8 +532,8 @@ class checks:
 			try:
 				try:
 					proc = subprocess.Popen(['iostat', '-d', '1', '2', '-x', '-k'], stdout=subprocess.PIPE, close_fds=True)
-					stats = proc.communicate()[0]
 
+					stats = proc.communicate()[0]
 					if int(pythonVersion[1]) >= 6:
 						try:
 							proc.kill()
@@ -565,6 +570,10 @@ class checks:
 						for headerIndex in range(0, len(headerNames)):
 							headerName = headerNames[headerIndex]
 							ioStats[device][headerName] = values[headerIndex]
+
+				except OSError, ex:
+					# we don't have iostats installed just return false
+					return False
 
 				except Exception, ex:
 					import traceback
