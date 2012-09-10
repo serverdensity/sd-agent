@@ -28,6 +28,7 @@ if int(sys.version_info[1]) <= 3:
 
 # Core modules
 import ConfigParser
+import glob
 import os
 import re
 import sched
