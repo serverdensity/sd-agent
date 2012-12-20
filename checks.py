@@ -1747,8 +1747,8 @@ class checks:
 
 			return interfaces
 
-		elif sys.platform.find('freebsd') != -1:
-			self.mainLogger.debug('getNetworkTraffic: freebsd')
+		elif sys.platform.find('freebsd') != -1 or sys.platform.find('darwin') != -1:
+			self.mainLogger.debug('getNetworkTraffic: freebsd/OSX')
 
 			try:
 				try:
