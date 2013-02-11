@@ -434,7 +434,7 @@ class checks:
 				self.mainLogger.debug('getDiskUsage: attempting Popen')
 
 				proc = subprocess.Popen(['df', '-k'], stdout=subprocess.PIPE, close_fds=True) # -k option uses 1024 byte blocks so we can calculate into MB
-				
+
 				df = proc.communicate()[0]
 
 				if int(pythonVersion[1]) >= 6:
@@ -1747,8 +1747,8 @@ class checks:
 
 			return interfaces
 
-		elif sys.platform.find('freebsd') != -1:
-			self.mainLogger.debug('getNetworkTraffic: freebsd')
+		elif sys.platform.find('freebsd') != -1 or sys.platform.find('darwin') != -1:
+			self.mainLogger.debug('getNetworkTraffic: freebsd/OSX')
 
 			try:
 				try:
@@ -2016,6 +2016,18 @@ class checks:
 
 	def getRabbitMQStatus(self):
 		self.mainLogger.debug('getRabbitMQStatus: start')
+		self.mainLogger.debug('getRabbitMQStatus: attempting authentication setup')
+
+		try:
+			import base64
+			credentials = base64.encodestring('%s:%s' % (self.agentConfig['rabbitMQUser'], self.agentConfig['rabbitMQPass'])).replace('\n', '')
+		except Exception, e:
+			self.mainLogger.error('Unable to generate base64 encoding for with username and password - Error = %s', e)
+			return False
+
+		# make sure we only append for the rabbit checks
+		rabbitMQHeaders = headers
+		rabbitMQHeaders["Authorization"] = "Basic %s" % (credentials,)
 
 		if 'rabbitMQStatusUrl' not in self.agentConfig or \
                     'rabbitMQUser' not in self.agentConfig or \
@@ -2028,16 +2040,8 @@ class checks:
 		self.mainLogger.debug('getRabbitMQStatus: config set')
 
 		try:
-			self.mainLogger.debug('getRabbitMQStatus: attempting authentication setup')
-
-			manager = urllib2.HTTPPasswordMgrWithDefaultRealm()
-			manager.add_password(None, self.agentConfig['rabbitMQStatusUrl'], self.agentConfig['rabbitMQUser'], self.agentConfig['rabbitMQPass'])
-			handler = urllib2.HTTPBasicAuthHandler(manager)
-			opener = urllib2.build_opener(handler)
-			urllib2.install_opener(opener)
-
 			self.mainLogger.debug('getRabbitMQStatus: attempting urlopen')
-			req = urllib2.Request(self.agentConfig['rabbitMQStatusUrl'], None, headers)
+			req = urllib2.Request(self.agentConfig['rabbitMQStatusUrl'], None, rabbitMQHeaders)
 
 			# Do the request, log any errors
 			request = urllib2.urlopen(req)
@@ -2060,7 +2064,7 @@ class checks:
 			self.mainLogger.error('Unable to get RabbitMQ status - Exception = %s', traceback.format_exc())
 			return False
 
-		try:				
+		try:
 			if int(pythonVersion[1]) >= 6:
 				self.mainLogger.debug('getRabbitMQStatus: json read')
 				status = json.loads(response)
@@ -2072,11 +2076,11 @@ class checks:
 			self.mainLogger.debug(status)
 
 			if 'connections' not in status:
-				# We are probably using the newer RabbitMQ 2.x status plugin, so try to parse that instead.
+				# We are probably using the newer RabbitMQ > 2.x status plugin, so try to parse that instead.
 				status = {}
 				connections = {}
 				queues = {}
-				self.mainLogger.debug('getRabbitMQStatus: using 2.x management plugin data')
+				self.mainLogger.debug('getRabbitMQStatus: using > 2.x management plugin data')
 				import urlparse
 
 				split_url = urlparse.urlsplit(self.agentConfig['rabbitMQStatusUrl'])
@@ -2084,8 +2088,9 @@ class checks:
 				# Connections
 				url = split_url[0] + '://' + split_url[1] + '/api/connections'
 				self.mainLogger.debug('getRabbitMQStatus: attempting urlopen on %s', url)
-				manager.add_password(None, url, self.agentConfig['rabbitMQUser'], self.agentConfig['rabbitMQPass'])
-				req = urllib2.Request(url, None, headers)
+
+				req = urllib2.Request(url, None, rabbitMQHeaders)
+
 				# Do the request, log any errors
 				request = urllib2.urlopen(req)
 				response = request.read()
@@ -2103,8 +2108,7 @@ class checks:
 				# Queues
 				url = split_url[0] + '://' + split_url[1] + '/api/queues'
 				self.mainLogger.debug('getRabbitMQStatus: attempting urlopen on %s', url)
-				manager.add_password(None, url, self.agentConfig['rabbitMQUser'], self.agentConfig['rabbitMQPass'])
-				req = urllib2.Request(url, None, headers)
+				req = urllib2.Request(url, None, rabbitMQHeaders)
 				# Do the request, log any errors
 				request = urllib2.urlopen(req)
 				response = request.read()
@@ -2299,7 +2303,7 @@ class checks:
 					import traceback
 					self.mainLogger.error('doPostBack: Exception = %s', traceback.format_exc())
 					return False
-			
+
 			self.mainLogger.debug('doPostBack: completed')
 
 	def doChecks(self, sc, firstRun, systemStats=False):
@@ -2462,15 +2466,15 @@ class checks:
 		# Post back the data
 		if int(pythonVersion[1]) >= 6:
 			self.mainLogger.debug('doChecks: json convert')
-	
+
 			try:
 				payload = json.dumps(checksData, encoding='latin1').encode('utf-8')
-			
+
 			except Exception, e:
 				import traceback
 				self.mainLogger.error('doChecks: failed encoding payload to json. Exception = %s', traceback.format_exc())
 				return False
-		
+
 		else:
 			self.mainLogger.debug('doChecks: minjson convert')
 
