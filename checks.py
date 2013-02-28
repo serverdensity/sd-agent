@@ -23,6 +23,7 @@ import subprocess
 import sys
 import urllib
 import urllib2
+import socket
 
 try:
     from hashlib import md5
@@ -434,7 +435,7 @@ class checks:
 				self.mainLogger.debug('getDiskUsage: attempting Popen')
 
 				proc = subprocess.Popen(['df', '-k'], stdout=subprocess.PIPE, close_fds=True) # -k option uses 1024 byte blocks so we can calculate into MB
-				
+
 				df = proc.communicate()[0]
 
 				if int(pythonVersion[1]) >= 6:
@@ -658,7 +659,7 @@ class checks:
 				try:
 					self.mainLogger.debug('getLoadAvrgs: attempting Popen')
 
-					proc = subprocess.Popen(['uptime'], stdout=subprocess.PIPE, close_fds=True)
+					proc = subprocess.Popen(['uptime'], stdout=subprocess.PIPE, close_fds=True, stderr=subprocess.PIPE)
 					uptime = proc.communicate()[0]
 
 					if int(pythonVersion[1]) >= 6:
@@ -1056,12 +1057,23 @@ class checks:
 
 			# Deal with top
 			lines = top.split('\n')
-			physParts = re.findall(r'([0-9]\d+)', lines[self.topIndex])
+			physParts = re.findall(r'([0-9]\d+[A-Z])', lines[self.topIndex])
 
+			self.mainLogger.debug('getMemoryUsage: lines to parse: ' + lines[self.topIndex])
 			self.mainLogger.debug('getMemoryUsage: parsed top')
 
 			# Deal with sysctl
 			swapParts = re.findall(r'([0-9]+\.\d+)', sysctl)
+
+			# large values become G, rather than M
+			finalParts = []
+			for part in physParts:
+				if 'G' in part:
+					finalParts.append(str(int(part[:-1]) * 1024))
+				else:
+					finalParts.append(part[:-1])
+			physParts = finalParts
+
 
 			self.mainLogger.debug('getMemoryUsage: parsed sysctl, completed, returning')
 
@@ -1152,15 +1164,22 @@ class checks:
 
 			# Global locks
 			try:
-				self.mainLogger.debug('getMongoDBStatus: globalLock')
+				split_version = status['version'].split('.')
+				split_version = map(lambda x: int(x), split_version)
 
-				status['globalLock'] = {}
-				status['globalLock']['ratio'] = statusOutput['globalLock']['ratio']
+				if (split_version[0] <= 2) and (split_version[1] < 2):
 
-				status['globalLock']['currentQueue'] = {}
-				status['globalLock']['currentQueue']['total'] = statusOutput['globalLock']['currentQueue']['total']
-				status['globalLock']['currentQueue']['readers'] = statusOutput['globalLock']['currentQueue']['readers']
-				status['globalLock']['currentQueue']['writers'] = statusOutput['globalLock']['currentQueue']['writers']
+					self.mainLogger.debug('getMongoDBStatus: globalLock')
+
+					status['globalLock'] = {}
+					status['globalLock']['ratio'] = statusOutput['globalLock']['ratio']
+
+					status['globalLock']['currentQueue'] = {}
+					status['globalLock']['currentQueue']['total'] = statusOutput['globalLock']['currentQueue']['total']
+					status['globalLock']['currentQueue']['readers'] = statusOutput['globalLock']['currentQueue']['readers']
+					status['globalLock']['currentQueue']['writers'] = statusOutput['globalLock']['currentQueue']['writers']
+				else:
+					self.mainLogger.debug('getMongoDBStatus: version >= 2.2, not getting globalLock status')
 
 			except KeyError, ex:
 				self.mainLogger.error('getMongoDBStatus: globalLock KeyError exception = %s', ex)
@@ -1478,6 +1497,12 @@ class checks:
 
 				connections = float(float(result[1]) - float(self.mysqlConnectionsStore)) / 60
 
+				# we can't have negative connections
+				# causes weirdness
+				# UV386
+				if connections < 0:
+					connections = 0
+
 				self.mysqlConnectionsStore = result[1]
 
 			self.mainLogger.debug('getMySQLStatus: connections  = %s', connections)
@@ -1581,6 +1606,10 @@ class checks:
 				self.mainLogger.debug('getMySQLStatus: result = %s', result[1])
 
 				slowQueries = float(float(result[1]) - float(self.mysqlSlowQueriesStore)) / 60
+
+				# this can't be < 0
+				if slowQueries < 0:
+					slowQueries = 0
 
 				self.mysqlSlowQueriesStore = result[1]
 
@@ -2016,6 +2045,18 @@ class checks:
 
 	def getRabbitMQStatus(self):
 		self.mainLogger.debug('getRabbitMQStatus: start')
+		self.mainLogger.debug('getRabbitMQStatus: attempting authentication setup')
+
+		try:
+			import base64
+			credentials = base64.encodestring('%s:%s' % (self.agentConfig['rabbitMQUser'], self.agentConfig['rabbitMQPass'])).replace('\n', '')
+		except Exception, e:
+			self.mainLogger.error('Unable to generate base64 encoding for with username and password - Error = %s', e)
+			return False
+
+		# make sure we only append for the rabbit checks
+		rabbitMQHeaders = headers
+		rabbitMQHeaders["Authorization"] = "Basic %s" % (credentials,)
 
 		if 'rabbitMQStatusUrl' not in self.agentConfig or \
                     'rabbitMQUser' not in self.agentConfig or \
@@ -2028,16 +2069,8 @@ class checks:
 		self.mainLogger.debug('getRabbitMQStatus: config set')
 
 		try:
-			self.mainLogger.debug('getRabbitMQStatus: attempting authentication setup')
-
-			manager = urllib2.HTTPPasswordMgrWithDefaultRealm()
-			manager.add_password(None, self.agentConfig['rabbitMQStatusUrl'], self.agentConfig['rabbitMQUser'], self.agentConfig['rabbitMQPass'])
-			handler = urllib2.HTTPBasicAuthHandler(manager)
-			opener = urllib2.build_opener(handler)
-			urllib2.install_opener(opener)
-
 			self.mainLogger.debug('getRabbitMQStatus: attempting urlopen')
-			req = urllib2.Request(self.agentConfig['rabbitMQStatusUrl'], None, headers)
+			req = urllib2.Request(self.agentConfig['rabbitMQStatusUrl'], None, rabbitMQHeaders)
 
 			# Do the request, log any errors
 			request = urllib2.urlopen(req)
@@ -2060,7 +2093,7 @@ class checks:
 			self.mainLogger.error('Unable to get RabbitMQ status - Exception = %s', traceback.format_exc())
 			return False
 
-		try:				
+		try:
 			if int(pythonVersion[1]) >= 6:
 				self.mainLogger.debug('getRabbitMQStatus: json read')
 				status = json.loads(response)
@@ -2072,11 +2105,11 @@ class checks:
 			self.mainLogger.debug(status)
 
 			if 'connections' not in status:
-				# We are probably using the newer RabbitMQ 2.x status plugin, so try to parse that instead.
+				# We are probably using the newer RabbitMQ > 2.x status plugin, so try to parse that instead.
 				status = {}
 				connections = {}
 				queues = {}
-				self.mainLogger.debug('getRabbitMQStatus: using 2.x management plugin data')
+				self.mainLogger.debug('getRabbitMQStatus: using > 2.x management plugin data')
 				import urlparse
 
 				split_url = urlparse.urlsplit(self.agentConfig['rabbitMQStatusUrl'])
@@ -2084,8 +2117,9 @@ class checks:
 				# Connections
 				url = split_url[0] + '://' + split_url[1] + '/api/connections'
 				self.mainLogger.debug('getRabbitMQStatus: attempting urlopen on %s', url)
-				manager.add_password(None, url, self.agentConfig['rabbitMQUser'], self.agentConfig['rabbitMQPass'])
-				req = urllib2.Request(url, None, headers)
+
+				req = urllib2.Request(url, None, rabbitMQHeaders)
+
 				# Do the request, log any errors
 				request = urllib2.urlopen(req)
 				response = request.read()
@@ -2103,8 +2137,7 @@ class checks:
 				# Queues
 				url = split_url[0] + '://' + split_url[1] + '/api/queues'
 				self.mainLogger.debug('getRabbitMQStatus: attempting urlopen on %s', url)
-				manager.add_password(None, url, self.agentConfig['rabbitMQUser'], self.agentConfig['rabbitMQPass'])
-				req = urllib2.Request(url, None, headers)
+				req = urllib2.Request(url, None, rabbitMQHeaders)
 				# Do the request, log any errors
 				request = urllib2.urlopen(req)
 				response = request.read()
@@ -2260,7 +2293,7 @@ class checks:
 	# Postback
 	#
 
-	def doPostBack(self, postBackData):
+	def doPostBack(self, postBackData, retry=False):
 		self.mainLogger.debug('doPostBack: start')
 
 		try:
@@ -2280,6 +2313,19 @@ class checks:
 
 		except urllib2.URLError, e:
 			self.mainLogger.error('doPostBack: URLError = %s', e)
+
+			# attempt a lookup, in case of DNS fail
+			# https://github.com/serverdensity/sd-agent/issues/47 
+			if not retry:
+
+				timeout = socket.getdefaulttimeout()
+				socket.setdefaulttimeout(5)
+
+				self.mainLogger.info('doPostBack: Retrying postback with DNS lookup iteration')
+				[socket.gethostbyname(self.agentConfig['sdUrl']) for x in xrange(0,2)]
+				socket.setdefaulttimeout(timeout)
+
+				return self.doPostBack(postBackData, retry=True)
 			return False
 
 		except httplib.HTTPException, e: # Added for case #26701
@@ -2294,12 +2340,13 @@ class checks:
 		finally:
 			if int(pythonVersion[1]) >= 6:
 				try:
-					response.close()
+					if 'response' in locals():
+						response.close()
 				except Exception, e:
 					import traceback
 					self.mainLogger.error('doPostBack: Exception = %s', traceback.format_exc())
 					return False
-			
+
 			self.mainLogger.debug('doPostBack: completed')
 
 	def doChecks(self, sc, firstRun, systemStats=False):
@@ -2462,15 +2509,15 @@ class checks:
 		# Post back the data
 		if int(pythonVersion[1]) >= 6:
 			self.mainLogger.debug('doChecks: json convert')
-	
+
 			try:
 				payload = json.dumps(checksData, encoding='latin1').encode('utf-8')
-			
+
 			except Exception, e:
 				import traceback
 				self.mainLogger.error('doChecks: failed encoding payload to json. Exception = %s', traceback.format_exc())
 				return False
-		
+
 		else:
 			self.mainLogger.debug('doChecks: minjson convert')
 
