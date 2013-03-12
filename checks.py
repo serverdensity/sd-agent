@@ -659,7 +659,7 @@ class checks:
 				try:
 					self.mainLogger.debug('getLoadAvrgs: attempting Popen')
 
-					proc = subprocess.Popen(['uptime'], stdout=subprocess.PIPE, close_fds=True)
+					proc = subprocess.Popen(['uptime'], stdout=subprocess.PIPE, close_fds=True, stderr=subprocess.PIPE)
 					uptime = proc.communicate()[0]
 
 					if int(pythonVersion[1]) >= 6:
