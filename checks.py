@@ -1737,7 +1737,11 @@ class checks:
 
 				if result != None:
 					try:
-						secondsBehindMaster = result['Seconds_Behind_Master']
+						# Handle the case when Seconds_Behind_Master is NULL
+						if result['Seconds_Behind_Master'] is None:
+							secondsBehindMaster = -1
+						else:
+							secondsBehindMaster = result['Seconds_Behind_Master']
 
 						self.mainLogger.debug('getMySQLStatus: secondsBehindMaster = %s', secondsBehindMaster)
 
