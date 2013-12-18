@@ -1222,7 +1222,7 @@ class checks:
 			db = conn['local']
 
 			# Server status
-			statusOutput = db.command('serverStatus') # Shorthand for {'serverStatus': 1}
+			statusOutput = db.command('serverStatus', recordStats=0) # Shorthand for {'serverStatus': 1}
 
 			self.mainLogger.debug('getMongoDBStatus: executed serverStatus')
 
