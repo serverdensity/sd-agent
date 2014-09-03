@@ -1244,7 +1244,7 @@ class checks:
 
 			else:
 				self.mainLogger.debug('getMongoDBStatus: MongoDBKeyfile and/or MongoDBCertfile not set')
-				
+
 				conn = Connection(mongoURI, slave_okay=True)
 
 			self.mainLogger.debug('Connected to MongoDB')
@@ -2476,6 +2476,8 @@ class checks:
 				except Exception:
 					import traceback
 					self.mainLogger.error('getPlugins: exception = %s', traceback.format_exc())
+					# output must be a dictionary
+					output[plugin.__class__.__name__] = {}
 
 			self.mainLogger.debug('getPlugins: returning')
 
