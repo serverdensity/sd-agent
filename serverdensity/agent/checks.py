@@ -2403,7 +2403,10 @@ class checks:
                     self.mainLogger.debug('getPlugins: imported %s', pluginName)
 
                     # Find out the class name and then instantiate it
-                    pluginClass = getattr(importedPlugin, pluginName)
+                    pluginClass = getattr(importedPlugin, pluginName, None)
+                    if pluginClass is None:
+                        self.mainLogger.info('getPlugins: Unable to locate class %s in %s, skipping', pluginName, pluginPath)
+                        continue
 
                     try:
                         pluginObj = pluginClass(self.agentConfig, self.mainLogger, self.rawConfig)
