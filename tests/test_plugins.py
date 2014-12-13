@@ -1,6 +1,6 @@
 import unittest
 
-import plugins
+from serverdensity.agent import plugins
 
 
 class PluginsTest(unittest.TestCase):

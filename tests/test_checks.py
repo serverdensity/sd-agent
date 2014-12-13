@@ -1,6 +1,6 @@
 import unittest
 
-import checks
+from serverdensity.agent import checks
 
 
 class ChecksTest(unittest.TestCase):
