@@ -61,8 +61,7 @@ class Command(object):
                 sys.exit(1)
 
             if os.path.isdir(self.configPath):
-                for configFile in glob(os.path.join(self.configPath,
-                                                         "*.cfg")):
+                for configFile in glob(os.path.join(self.configPath, "*.cfg")):
                     config.read(configFile)
             else:
                 config.read(self.configPath)
