@@ -1,0 +1,21 @@
+#!/usr/bin/env python
+"""
+    Server Density
+    www.serverdensity.com
+    ----
+    Server monitoring agent for Linux, FreeBSD and Mac OS X
+
+    Licensed under Simplified BSD License (see LICENSE)
+"""
+import sys
+
+try:
+    import _preamble
+except ImportError:
+    sys.exc_clear()
+
+from serverdensity.agent.command import Command
+
+if __name__ == '__main__':
+    command = Command()
+    sys.exit(command.run())
