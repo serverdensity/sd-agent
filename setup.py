@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 from pip.req import parse_requirements
 
 data_files = [
-   ('/etc/sd-agent', ['config.cfg'])
+    ('/etc/sd-agent', ['config.cfg'])
 ]
 
 if sys.platform != 'darwin':
@@ -31,5 +31,5 @@ setup(
         "Operating System :: POSIX :: Linux",
         "Topic :: System :: Logging",
         "Topic :: System :: Monitoring",
-      ]
+    ]
 )
