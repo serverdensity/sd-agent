@@ -1,9 +1,9 @@
 import unittest
 
-from serverdensity.agent import checks
+from serverdensity.agent import command
 
 
-class ChecksTest(unittest.TestCase):
+class CommandTest(unittest.TestCase):
 
     def setUp(self):
         pass

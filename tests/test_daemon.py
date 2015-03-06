@@ -1,6 +1,6 @@
 import unittest
 
-import daemon
+from serverdensity.agent import daemon
 
 
 class DaemonTest(unittest.TestCase):

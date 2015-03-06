@@ -1,6 +1,6 @@
 import unittest
 
-import logtail
+from serverdensity.agent import logtail
 
 
 class ChecksTest(unittest.TestCase):

@@ -1,9 +1,9 @@
 import unittest
 
-from serverdensity.agent import checks
+from serverdensity.agent import updater
 
 
-class ChecksTest(unittest.TestCase):
+class UpdaterTest(unittest.TestCase):
 
     def setUp(self):
         pass
