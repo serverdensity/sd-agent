@@ -145,13 +145,14 @@ class checks:
 
             # Loop through and extract the numerical values
             for line in lines:
-                values = line.split(': ')
+                if ': ' in line:
+                    values = line.split(': ')
 
-                try:
-                    apacheStatus[str(values[0])] = values[1]
+                    try:
+                        apacheStatus[str(values[0])] = values[1]
 
-                except IndexError:
-                    break
+                    except IndexError:
+                        break
 
             self.mainLogger.debug('getApacheStatus: parsed')
 
