@@ -1,0 +1,93 @@
+%changelog
+* Thu Feb 11 2016 Server Density <hello@boxedice.com> 2.0.3-1
+- Include Kafka Consumer plugin
+- Fix btrfs plugin packaging
+* Tue Dec 29 2015 Server Density <hello@boxedice.com> 2.0.2-1
+- Fixed disk.py checks when psutil is not avaliable on CentOS/RedHat 5.
+- Fixed agent version report.
+* Thu Dec 10 2015 Server Density <hello@boxedice.com> 2.0.1-1
+- Fixed a missing function on the disk plugin
+* Wed Nov 25 2015 Server Density <hello@boxedice.com> 2.0.0-1
+- Final release.
+- Include the extra disk plugin.
+- Fix packaging bug in Apache plugin
+* Thu Nov 19 2015 Ignacio Torres Masdeu <hello@boxedice.com> 2.0.0-rc3
+- New release.
+- Done some cleanups.
+- Clarified the instructions about the sd_account field.
+* Thu Nov 12 2015 Ignacio Torres Masdeu <hello@boxedice.com> 1.90.1-8
+- New plugins
+* Thu Nov 12 2015 Ignacio Torres Masdeu <hello@boxedice.com> 1.90.1-7
+- Fix mongo plugin dependencies
+* Tue Nov 10 2015 Ignacio Torres Masdeu <hello@boxedice.com> 1.90.1-6
+- Fix format strings in EL5 and EL6
+- Fix issue with system supervisor
+- Fix lack of network checks
+* Mon Nov 9 2015 Ignacio Torres Masdeu <hello@boxedice.com> 1.90.1-5
+- Initial package for the new agent.
+* Fri Jun 22 2012 Tom Wardill <hello@boxedice.com> 1.11.4-1
+- Maintenance bug fixes
+* Thu Oct 27 2011 Ryan Duffield <hello@boxedice.com> 1.11.3-1
+- Bug fixes
+* Thu Jul 7 2011 Ryan Duffield <hello@boxedice.com> 1.11.2-1
+- Fix for multiple sd-agent processes running
+- Fix for hanging agent on Python 2.4
+* Thu May 26 2011 Ryan Duffield <hello@boxedice.com> 1.11.1-1
+- Bug fixes for plugin installation helper on older Python versions
+- Various fixes for Solaris
+* Mon May 23 2011 Ryan Duffield <hello@boxedice.com> 1.11.0-1
+- New plugin installation helper
+- New CPU usage metrics collection
+* Mon May 9 2011 Ryan Duffield <hello@boxedice.com> 1.10.4-1
+- MySQL and other bug fixes
+* Tue Apr 5 2011 Ryan Duffield <hello@boxedice.com> 1.10.3-1
+- Bug fixes for network, Apache, MongoDB, and RabbitMQ metrics
+- Other bug fixes, see online release notes
+* Tue Mar 1 2011 Ryan Duffield <hello@boxedice.com> 1.10.2-1
+- Fixed MongoDB connection string parse bug
+* Sun Feb 27 2011 Ryan Duffield <hello@boxedice.com> 1.10.1-1
+- Various bug fixes to Apache and MongoDB metrics
+* Tue Feb 15 2011 Ryan Duffield <hello@boxedice.com> 1.10.0-1
+- New MongoDB monitoring, bug fixes, and other improvements
+* Mon Oct 18 2010 Ryan Duffield <hello@boxedice.com> 1.9.2-1
+- Fixed bug with parsing Apache mod_status Total Accesses
+- Improved logging
+* Fri Oct 15 2010 Ryan Duffield <hello@boxedice.com> 1.9.1-1
+- Fixed issues with MySQL checks
+- Fixed bug where multiple swap devices were not used on FreeBSD
+- Fixed bug where incorrect nginx status output would crash agent
+- Improved Apache req/s metrics
+* Thu Aug 26 2010 Ryan Duffield <hello@boxedice.com> 1.9.0-1
+- FreeBSD support
+- Bug fixes for I/O statistics
+* Tue Aug 17 2010 Ryan Duffield <hello@boxedice.com> 1.8.0-1
+- Fixes and enhancements for MySQL
+- New I/O statistics
+- Various other bug fixes
+* Tue Jun 8 2010 Ryan Duffield <hello@boxedice.com> 1.7.0-3
+- Fixes for MySQL
+* Thu Jun 3 2010 Ryan Duffield <hello@boxedice.com> 1.7.0-2
+- Included actual updated agent files
+* Thu Jun 3 2010 Ryan Duffield <hello@boxedice.com> 1.7.0-1
+- Improvements for MySQL slave status and plugin support
+* Mon May 10 2010 Ryan Duffield <hello@boxedice.com> 1.6.1-1
+- Now runs under its own sd-agent user account
+* Thu Apr 22 2010 Ryan Duffield <hello@boxedice.com> 1.6.0-6
+- MongoDB fixes
+* Mon Apr 19 2010 Ryan Duffield <hello@boxedice.com> 1.6.0-5
+- Fixed incorrect source issue
+* Mon Apr 19 2010 Ryan Duffield <hello@boxedice.com> 1.6.0-4
+- Fixes for MongoDB metrics
+* Fri Apr 16 2010 Ryan Duffield <hello@boxedice.com> 1.6.0-3
+- Fixed Python dependency
+* Tue Mar 30 2010 Ryan Duffield <hello@boxedice.com> 1.6.0-2
+- Fixed bug where configuration file was overwritten by RPM
+* Tue Mar 16 2010 Ryan Duffield <hello@boxedice.com> 1.6.0-1
+- Plugin support
+* Fri Mar 12 2010 Ryan Duffield <hello@boxedice.com> 1.5.0-1
+- RabbitMQ support
+* Tue Jan 26 2010 Ryan Duffield <hello@boxedice.com> 1.4.2-1
+- Several bug fixes and auto-copy feature
+* Thu Dec 3 2009  Ryan Duffield <hello@boxedice.com> 1.4.1-1
+- Initial release
+	

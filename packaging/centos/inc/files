@@ -1,0 +1,57 @@
+%files
+%defattr(-,root,root,-)
+#%config(noreplace) %{_sysconfdir}/%{name}/%{name}.conf
+/etc/init.d/sd-agent
+%config(noreplace) /etc/sd-agent/config.cfg
+%config(noreplace) /etc/sd-agent/conf.d/disk.yaml.default
+%config(noreplace) /etc/sd-agent/conf.d/network.yaml.default
+%config(noreplace) /etc/sd-agent/conf.d/sd.yaml.default
+%config(noreplace) /etc/sd-agent/conf.d/sd_cpu_stats.yaml.default
+%config(noreplace) /etc/sd-agent/supervisor.conf
+
+/usr/share/python/sd-agent/sd-cert.pem
+
+/usr/share/python/sd-agent/agent.py
+/usr/share/python/sd-agent/aggregator.py
+/usr/share/python/sd-agent/config.py
+/usr/share/python/sd-agent/daemon.py
+/usr/share/python/sd-agent/sdagent.py
+/usr/share/python/sd-agent/emitter.py
+/usr/share/python/sd-agent/graphite.py
+/usr/share/python/sd-agent/modules.py
+/usr/share/python/sd-agent/transaction.py
+/usr/share/python/sd-agent/util.py
+
+/usr/share/python/sd-agent/bin
+/usr/share/python/sd-agent/lib/python%{__sd_python_version}/*.py
+/usr/share/python/sd-agent/lib/python%{__sd_python_version}/*.pyc
+/usr/share/python/sd-agent/lib/python%{__sd_python_version}/distutils
+/usr/share/python/sd-agent/lib/python%{__sd_python_version}/encodings
+/usr/share/python/sd-agent/lib/python%{__sd_python_version}/lib-dynload
+/usr/share/python/sd-agent/lib/python%{__sd_python_version}/no-global-site-packages.txt
+/usr/share/python/sd-agent/lib/python%{__sd_python_version}/orig-prefix.txt
+/usr/share/python/sd-agent/lib64
+/usr/share/python/sd-agent/checks.d/network.py
+/usr/share/python/sd-agent/checks.d/disk.py
+/usr/share/python/sd-agent/checks.d/sd.py
+/usr/share/python/sd-agent/checks.d/sd_cpu_stats.py
+/usr/share/python/sd-agent/lib/python%{__sd_python_version}/site-packages/backports
+/usr/share/python/sd-agent/lib/python%{__sd_python_version}/site-packages/boto*
+/usr/share/python/sd-agent/lib/python%{__sd_python_version}/site-packages/easy-install.pth
+/usr/share/python/sd-agent/lib/python%{__sd_python_version}/site-packages/_markerlib
+/usr/share/python/sd-agent/lib/python%{__sd_python_version}/site-packages/meld3*
+/usr/share/python/sd-agent/lib/python%{__sd_python_version}/site-packages/ntplib*
+/usr/share/python/sd-agent/lib/python%{__sd_python_version}/site-packages/psutil
+/usr/share/python/sd-agent/lib/python%{__sd_python_version}/site-packages/_psutil_*.so
+/usr/share/python/sd-agent/lib/python%{__sd_python_version}/site-packages/PyYAML*
+/usr/share/python/sd-agent/lib/python%{__sd_python_version}/site-packages/requests*
+/usr/share/python/sd-agent/lib/python%{__sd_python_version}/site-packages/sd_agent*
+/usr/share/python/sd-agent/lib/python%{__sd_python_version}/site-packages/setuptools*
+/usr/share/python/sd-agent/lib/python%{__sd_python_version}/site-packages/simplejson*
+/usr/share/python/sd-agent/lib/python%{__sd_python_version}/site-packages/six.py*
+/usr/share/python/sd-agent/lib/python%{__sd_python_version}/site-packages/six*-info
+/usr/share/python/sd-agent/lib/python%{__sd_python_version}/site-packages/pkg_resources
+/usr/share/python/sd-agent/lib/python%{__sd_python_version}/site-packages/supervisor*
+/usr/share/python/sd-agent/lib/python%{__sd_python_version}/site-packages/tornado*
+/usr/share/python/sd-agent/lib/python%{__sd_python_version}/site-packages/yaml
+/usr/share/python/sd-agent/lib/python%{__sd_python_version}/site-packages/_yaml.so

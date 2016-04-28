@@ -1,0 +1,2 @@
+checks.d/directory.py usr/share/python/sd-agent/checks.d
+conf.d/directory.yaml.example etc/sd-agent/conf.d
