@@ -1,0 +1,30 @@
+#!/usr/bin/make -f
+
+BUILD_DIR=debian/build
+
+%:
+	dh $@ --no-test
+
+#override_dh_auto_configure:
+
+override_dh_auto_build:
+	virtualenv --no-site-packages $(BUILD_DIR)
+	$(BUILD_DIR)/bin/python $(BUILD_DIR)/bin/pip install -r requirements.txt
+	$(BUILD_DIR)/bin/python $(BUILD_DIR)/bin/pip install -r requirements-opt.txt
+	$(BUILD_DIR)/bin/python setup.py build
+	$(BUILD_DIR)/bin/python setup.py install
+	virtualenv --relocatable $(BUILD_DIR)
+
+override_dh_auto_clean:
+	rm -rf $(BUILD_DIR)
+
+override_dh_auto_test:
+
+override_dh_auto_install:
+	# install default configuration file
+	mkdir -p $(BUILD_DIR)/etc/sd-agent/
+	cp config.cfg.example $(BUILD_DIR)/etc/sd-agent/config.cfg
+	cp plugins.cfg.example $(BUILD_DIR)/etc/sd-agent/plugins.cfg
+	pyclean $(BUILD_DIR)
+
+#override_dh_install-arch:

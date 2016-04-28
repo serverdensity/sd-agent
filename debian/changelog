@@ -1,0 +1,111 @@
+sd-agent (2.0.2-1) precise; urgency=medium
+
+  * Fixed disk.py checks when psutil is not avaliable on CentOS/RedHat 5.
+  * Fixed agent version report.
+
+ -- Server Density <hello@serverdensity.com>  Tue, 29 Dec 2015 17:16:14 +0100
+
+sd-agent (2.0.1-1) precise; urgency=medium
+
+  * Fixed a missing function on the disk plugin.
+
+ -- Server Density <hello@serverdensity.com>  Wed, 10 Dec 2015 12:43:16 +0100
+
+sd-agent (2.0.0-1) precise; urgency=medium
+
+  * Final release.
+  * Include the extra disk plugin.
+
+ -- Server Density <hello@serverdensity.com>  Wed, 25 Nov 2015 19:09:49 +0100
+
+sd-agent (2.0.0~rc3) precise; urgency=medium
+
+  * New release.
+  * Done some cleanups.
+  * Clarified the instructions about the sd_account field.
+
+ -- Carlos Perelló Marín <hello@serverdensity.com>  Thu, 19 Nov 2015 18:30:26 +0100
+
+sd-agent (1.90.1-13) precise; urgency=medium
+
+  *  New release
+
+ -- Jorge Salamero Sanz <hello@serverdensity.com>  Thu, 12 Nov 2015 13:14:23 +0000
+
+sd-agent (1.90.1-12) precise; urgency=medium
+
+  * New relese
+
+ -- Jorge Salamero Sanz <hello@serverdensity.com>  Thu, 12 Nov 2015 10:54:22 +0000
+
+sd-agent (1.90.1-11) precise; urgency=medium
+
+  * New release
+
+ -- Jorge Salamero Sanz <hello@serverdensity.com>  Wed, 11 Nov 2015 14:35:24 +0000
+
+sd-agent (1.90.1-10) precise; urgency=medium
+
+  * New release
+
+ -- Jorge Salamero Sanz <hello@serverdensity.com>  Mon, 09 Nov 2015 11:25:30 +0000
+
+sd-agent (1.90.1-9.1) precise; urgency=medium
+
+  * Rebuild.
+
+ -- Carlos Perelló Marín <hello@serverdensity.com>  Fri, 06 Nov 2015 19:37:44 +0100
+
+sd-agent (1.90.1-9) precise; urgency=medium
+
+  * New way to install the certificate.
+
+ -- Carlos Perelló Marín <hello@serverdensity.com>  Fri, 06 Nov 2015 19:37:44 +0100
+
+sd-agent (1.90.1-8) precise; urgency=medium
+
+  * New relese
+
+ -- Jorge Salamero Sanz <hello@serverdensity.com>  Fri, 06 Nov 2015 18:29:44 +0000
+
+sd-agent (1.90.1-7.1) precise; urgency=medium
+
+  * Fixed configuration permissions.
+
+ -- Carlos Perelló Marín <hello@serverdensity.com>  Thu, 06 Nov 2015 11:47:49 +0100
+
+sd-agent (1.90.1-7) precise; urgency=medium
+
+  * New relese, adds back some dependencies only available on 12.04 builds
+
+ -- Carlos Perelló Marín <hello@serverdensity.com>  Thu, 06 Nov 2015 11:00:00 +0100
+
+sd-agent (1.90.1-6) precise; urgency=medium
+
+  * New relese, fixes init script to run supervisorctl from virtualenv
+
+ -- Jorge Salamero Sanz <hello@serverdensity.com>  Thu, 05 Nov 2015 21:02:34 +0000
+
+sd-agent (1.90.1-5) precise; urgency=medium
+
+  * New release
+
+ -- Jorge Salamero Sanz <hello@serverdensity.com>  Thu, 05 Nov 2015 19:30:57 +0000
+
+sd-agent (1.90.1-3) precise; urgency=low
+
+  * Fixed the config file name
+
+ -- Carlos Perelló Marín <hello@serverdensity.com>  Wed, 05 Nov 2015 13:12:00 +0100
+
+sd-agent (1.90.1-2) precise; urgency=low
+
+  * Applied a set of fixes on the installation scripts.
+
+ -- Carlos Perelló Marín <hello@serverdensity.com>  Wed, 04 Nov 2015 21:03:00 +0100
+
+sd-agent (1.90.1-1) precise; urgency=low
+
+  * Initial package for the new agent.
+
+ -- Carlos Perelló Marín <hello@serverdensity.com>  Tue, 20 Oct 2015 13:30:00 +0200

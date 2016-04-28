@@ -1,0 +1,5 @@
+checks.d/mongo.py usr/share/python/sd-agent/checks.d
+conf.d/mongo.yaml.example etc/sd-agent/conf.d
+
+debian/build/lib/python2.7/site-packages/pymongo  usr/share/python/sd-agent/lib/python2.7/site-packages
+debian/build/lib/python2.7/site-packages/bson usr/share/python/sd-agent/lib/python2.7/site-packages

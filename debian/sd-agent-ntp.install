@@ -1,0 +1,2 @@
+checks.d/ntp.py usr/share/python/sd-agent/checks.d
+conf.d/ntp.yaml.default etc/sd-agent/conf.d

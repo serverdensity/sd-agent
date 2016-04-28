@@ -1,0 +1,52 @@
+%install
+mkdir -p %{buildroot}/etc/sd-agent/conf.d
+cp config.cfg.example  %{buildroot}/etc/sd-agent/config.cfg
+
+cp -a packaging/supervisor.conf %{buildroot}/etc/sd-agent
+
+mkdir -p %{buildroot}/etc/init.d
+cp packaging/centos/sd-agent-pkg.init %{buildroot}/etc/init.d/sd-agent
+
+mkdir -p %{buildroot}/usr/share/python/sd-agent/checks.d
+for check in sd sd_cpu_stats network disk; do
+    cp -a conf.d/${check}.yaml.default %{buildroot}/etc/sd-agent/conf.d
+    cp -a checks.d/${check}.py %{buildroot}/usr/share/python/sd-agent/checks.d
+done
+
+mkdir -p %{buildroot}/usr/share/python/sd-agent/lib/python%{__sd_python_version}/site-packages
+
+cp -a sd-cert.pem %{buildroot}/usr/share/python/sd-agent
+
+for py in agent.py aggregator.py config.py daemon.py sdagent.py emitter.py graphite.py modules.py transaction.py util.py ; do
+    cp -a $py %{buildroot}/usr/share/python/sd-agent
+done
+
+cp -a %{__venv}/bin %{buildroot}/usr/share/python/sd-agent
+
+for i in %{__venv}/lib/python%{__sd_python_version}/{*.py,*.pyc,distutils,encodings,lib-dynload,no-global-site-packages.txt,orig-prefix.txt}; do
+    cp -a $i %{buildroot}/usr/share/python/sd-agent/lib/python%{__sd_python_version}
+done
+
+for i in %{__venv}/lib/python%{__sd_python_version}/site-packages/{backports,boto*,easy-install.pth,_markerlib,meld3*,ntplib*,psutil,_psutil_*.so,PyYAML*,requests*,sd_agent*,setuptools*,simplejson*,six.py,six*-info,pkg_resources,supervisor*,tornado*,yaml,_yaml.so}; do
+    cp -a $i %{buildroot}/usr/share/python/sd-agent/lib/python%{__sd_python_version}/site-packages
+done
+
+pushd %{buildroot}/usr/share/python/sd-agent
+ln -sf lib lib64
+popd
+
+# Plugins
+for plugin in apache mongo mysql nginx rabbitmq btrfs consul couch directory docker kafka_consumer mcache php_fpm postfix postgres redisdb riak riakcs supervisord varnish; do
+    cp -a checks.d/${plugin}.py %{buildroot}/usr/share/python/sd-agent/checks.d
+    cp -a conf.d/${plugin}.yaml.example %{buildroot}/etc/sd-agent/conf.d
+done
+
+for i in %{__venv}/lib/python%{__sd_python_version}/site-packages/{bson,kafka*,kazoo*,pymongo,pymysql,PyMySQL*,memcache.py,pg8000,redis,zope,zope.interface*}; do
+    cp -a $i %{buildroot}/usr/share/python/sd-agent/lib/python%{__sd_python_version}/site-packages
+done
+
+# plugins that use .default instead of .example
+for plugin in ntp; do
+    cp -a checks.d/${plugin}.py %{buildroot}/usr/share/python/sd-agent/checks.d
+    cp -a conf.d/${plugin}.yaml.default %{buildroot}/etc/sd-agent/conf.d
+done

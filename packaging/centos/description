@@ -1,0 +1,3 @@
+The Server Density monitoring agent is a lightweight process that monitors
+system processes and services, and sends information back to your Server
+Density account.

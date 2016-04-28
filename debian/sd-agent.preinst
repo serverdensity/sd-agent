@@ -1,0 +1,19 @@
+#!/bin/sh
+
+set -e
+#ARGS#
+
+if ! getent group | grep -q "^sd-agent:"
+then
+   addgroup --system sd-agent
+fi
+
+if ! getent passwd | grep -q "^sd-agent:"
+then
+   adduser --system --home /var/run/sd-agent --no-create-home \
+   --shell /bin/sh --quiet --disabled-password \
+   --ingroup sd-agent sd-agent
+fi
+
+#DEBHELPER#
+
