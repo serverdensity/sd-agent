@@ -17,6 +17,7 @@ BuildArch: x86_64 i386
 %include %{_topdir}/inc/version
 %include %{_topdir}/inc/release
 Requires: python26, sysstat, libyaml
+BuildRequires: symlinks
 License: Simplified BSD
 Group: System/Monitoring
 Source: %{name}-%{version}.tar.gz
@@ -41,7 +42,7 @@ sed -ie 's/^\(pycurl\|psycopg2\)/# \1/' requirements-opt.txt
 %build
 %{__venv}/bin/python setup.py build
 %{__venv}/bin/python setup.py install
-%{__venv}/bin/python ../virtualenv-13.1.2/virtualenv.py --relocatable %{__venv}
+%include %{_topdir}/inc/fix_virtualenv
 
 %include %{_topdir}/inc/install.el5
 

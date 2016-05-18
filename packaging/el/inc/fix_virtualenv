@@ -1,0 +1,15 @@
+%define         __dest_venv /usr/share/python/sd-agent/
+
+# The following 3 functions are ported from dh-virtualenv:
+
+# fix activate path
+sed -i "s|^VIRTUAL_ENV=.*|VIRTUAL_ENV=%{__dest_venv}|" %{__venv}/bin/activate
+sed -i "s|^setenv VIRTUAL_ENV.*|setenv VIRTUAL_ENV %{__dest_venv}|" %{__venv}/bin/activate.csh
+sed -i "s|^set -gx VIRTUAL_ENV.*|set -gx VIRTUAL_ENV %{__dest_venv}|" %{__venv}/bin/activate.fish
+
+# fix shebangs
+grep -l -r -e '^#!.*bin/\(env \)\?\(python\|pypy\|ipy\|jython\)' %{__venv}/bin | \
+xargs sed -i 's|^#!.*bin/\(env \)\?.*|#!%{__dest_venv}/bin/python|'
+
+# fix local symlinks
+symlinks -sc %{__venv}/local

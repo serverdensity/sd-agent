@@ -1,6 +1,7 @@
 #!/usr/bin/make -f
 
 BUILD_DIR=debian/build
+DEST_VENV=/usr/share/python/sd-agent
 
 %:
 	dh $@ --no-test
@@ -8,12 +9,14 @@ BUILD_DIR=debian/build
 #override_dh_auto_configure:
 
 override_dh_auto_build:
-	virtualenv --no-site-packages $(BUILD_DIR)
+	$(create_venv)
 	$(BUILD_DIR)/bin/python $(BUILD_DIR)/bin/pip install -r requirements.txt
 	$(BUILD_DIR)/bin/python $(BUILD_DIR)/bin/pip install -r requirements-opt.txt
 	$(BUILD_DIR)/bin/python setup.py build
 	$(BUILD_DIR)/bin/python setup.py install
-	virtualenv --relocatable $(BUILD_DIR)
+	$(fix_activate_path)
+	$(fix_shebangs)
+	$(fix_local_symlinks)
 
 override_dh_auto_clean:
 	rm -rf $(BUILD_DIR)
@@ -28,3 +31,28 @@ override_dh_auto_install:
 	pyclean $(BUILD_DIR)
 
 #override_dh_install-arch:
+
+define create_venv
+	curl -LO https://pypi.python.org/packages/source/v/virtualenv/virtualenv-13.1.2.tar.gz
+	tar xzf virtualenv-13.1.2.tar.gz
+	python virtualenv-13.1.2/virtualenv.py $(BUILD_DIR)
+endef
+
+# The following 3 functions are ported from dh-virtualenv:
+define fix_activate_path
+	@echo Fixing activate path
+	sed -i "s|^VIRTUAL_ENV=.*|VIRTUAL_ENV=$(DEST_VENV)|" $(BUILD_DIR)/bin/activate
+	sed -i "s|^setenv VIRTUAL_ENV.*|setenv VIRTUAL_ENV $(DEST_VENV)|" $(BUILD_DIR)/bin/activate.csh
+	sed -i "s|^set -gx VIRTUAL_ENV.*|set -gx VIRTUAL_ENV $(DEST_VENV)|" $(BUILD_DIR)/bin/activate.fish
+endef
+
+define fix_shebangs
+	@echo Fixing shebangs
+	grep -l -r -e '^#!.*bin/\(env \)\?\(python\|pypy\|ipy\|jython\)' $(BUILD_DIR)/bin | \
+	xargs sed -i 's|^#!.*bin/\(env \)\?.*|#!$(DEST_VENV)/bin/python|'
+endef
+
+define fix_local_symlinks
+	@echo Fixing local symlinks
+	symlinks -sc $(BUILD_DIR)/local
+endef
