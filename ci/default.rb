@@ -52,7 +52,7 @@ namespace :ci do
         sh %(echo "PWD IS")
         sh %(pwd)
         sh %(flake8)
-        #sh %(find . -name '*.py' -not\
+        # sh %(find . -name '*.py' -not\
         #       \\( -path '*.cache*' -or -path '*embedded*' -or -path '*venv*' -or -path '*.git*' -or -path \
         #       '*.ropeproject*' \\) | xargs -n 100 -P 8 pylint --rcfile=./.pylintrc)
       end
