@@ -44,6 +44,7 @@ from checks.check_status import ForwarderStatus
 from config import (
     get_config,
     get_logging_config,
+    get_url_endpoint,
     get_version
 )
 import modules
