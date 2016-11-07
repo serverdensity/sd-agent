@@ -46,7 +46,7 @@ class Gearman(AgentCheck):
     def _get_per_task_metrics(self, tasks, task_filter, tags):
         if len(task_filter) > MAX_NUM_TASKS:
             self.warning(
-                "The maximum number of tasks you can specify is {}.".format(MAX_NUM_TASKS))
+                "The maximum number of tasks you can specify is {0}.".format(MAX_NUM_TASKS))
 
         if not len(task_filter) == 0:
             tasks = [t for t in tasks if t['task'] in task_filter]
@@ -62,7 +62,7 @@ class Gearman(AgentCheck):
             workers = stat['workers']
 
             task_tags = tags[:]
-            task_tags.append("task:{}".format(stat['task']))
+            task_tags.append("task:{0}".format(stat['task']))
             self.gauge("gearman.running_by_task", running, tags=task_tags)
             self.gauge("gearman.queued_by_task", queued, tags=task_tags)
             self.gauge("gearman.workers_by_task", workers, tags=task_tags)

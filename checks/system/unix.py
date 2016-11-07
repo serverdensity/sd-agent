@@ -227,7 +227,7 @@ class Load(Check):
         if Platform.is_linux():
             proc_location = agentConfig.get('procfs_path', '/proc').rstrip('/')
             try:
-                proc_loadavg = "{}/loadavg".format(proc_location)
+                proc_loadavg = "{0}/loadavg".format(proc_location)
                 with open(proc_loadavg, 'r') as load_avg:
                     uptime = load_avg.readline().strip()
             except Exception:
@@ -290,7 +290,7 @@ class Memory(Check):
         if Platform.is_linux():
             proc_location = agentConfig.get('procfs_path', '/proc').rstrip('/')
             try:
-                proc_meminfo = "{}/meminfo".format(proc_location)
+                proc_meminfo = "{0}/meminfo".format(proc_location)
                 with open(proc_meminfo, 'r') as mem_info:
                     lines = mem_info.readlines()
             except Exception:

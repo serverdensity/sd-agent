@@ -34,7 +34,7 @@ def remove_control_chars(s):
         sanitized = control_char_re.sub('', s)
     elif isinstance(s, unicode):
         sanitized = ''.join(['' if unicodedata.category(c) in ['Cc','Cf'] else c
-                            for c in u'{}'.format(s)])
+                            for c in u'{0}'.format(s)])
 
     return sanitized
 

@@ -298,10 +298,10 @@ class Kubernetes(AgentCheck):
                         if len(values) != 1:
                             self.log.warning("Error parsing limits value string: %s", value_str)
                             continue
-                        self.publish_gauge(self, '{}.{}.limits'.format(NAMESPACE, limit), values[0], _tags)
+                        self.publish_gauge(self, '{0}.{1}.limits'.format(NAMESPACE, limit), values[0], _tags)
                 except (KeyError, AttributeError) as e:
                     self.log.debug("Unable to retrieve container limits for %s: %s", c_name, e)
-                    self.log.debug("Container object for {}: {}".format(c_name, container))
+                    self.log.debug("Container object for {0}: {1}".format(c_name, container))
 
                 # requests
                 try:
@@ -310,10 +310,10 @@ class Kubernetes(AgentCheck):
                         if len(values) != 1:
                             self.log.warning("Error parsing requests value string: %s", value_str)
                             continue
-                        self.publish_gauge(self, '{}.{}.requests'.format(NAMESPACE, request), values[0], _tags)
+                        self.publish_gauge(self, '{0}.{1}.requests'.format(NAMESPACE, request), values[0], _tags)
                 except (KeyError, AttributeError) as e:
                     self.log.error("Unable to retrieve container requests for %s: %s", c_name, e)
-                    self.log.debug("Container object for {}: {}".format(c_name, container))
+                    self.log.debug("Container object for {0}: {1}".format(c_name, container))
 
         self._update_pods_metrics(instance, pods_list)
 
@@ -357,10 +357,10 @@ class Kubernetes(AgentCheck):
         [3] https://github.com/kubernetes/kubernetes/issues/1362
         """
         node_ip, node_name = self.kubeutil.get_node_info()
-        self.log.debug('Processing events on {} [{}]'.format(node_name, node_ip))
+        self.log.debug('Processing events on {0} [{1}]'.format(node_name, node_ip))
 
         k8s_namespace = instance.get('namespace', 'default')
-        events_endpoint = '{}/namespaces/{}/events'.format(self.kubeutil.kubernetes_api_url, k8s_namespace)
+        events_endpoint = '{0}/namespaces/{1}/events'.format(self.kubeutil.kubernetes_api_url, k8s_namespace)
         self.log.debug('Kubernetes API endpoint to query events: %s' % events_endpoint)
 
         events = self.kubeutil.retrieve_json_auth(events_endpoint, self.kubeutil.get_auth_token())
@@ -368,7 +368,7 @@ class Kubernetes(AgentCheck):
         last_read = self.kubeutil.last_event_collection_ts[k8s_namespace]
         most_recent_read = 0
 
-        self.log.debug('Found {} events, filtering out using timestamp: {}'.format(len(event_items), last_read))
+        self.log.debug('Found {0} events, filtering out using timestamp: {1}'.format(len(event_items), last_read))
 
         for event in event_items:
             # skip if the event is too old
@@ -382,12 +382,12 @@ class Kubernetes(AgentCheck):
             if event_ts > most_recent_read:
                 most_recent_read = event_ts
 
-            title = '{} {} on {}'.format(involved_obj.get('name'), event.get('reason'), node_name)
+            title = '{0} {1} on {2}'.format(involved_obj.get('name'), event.get('reason'), node_name)
             message = event.get('message')
             source = event.get('source')
             if source:
-                message += '\nSource: {} {}\n'.format(source.get('component', ''), source.get('host', ''))
-            msg_body = "%%%\n{}\n```\n{}\n```\n%%%".format(title, message)
+                message += '\nSource: {0} {1}\n'.format(source.get('component', ''), source.get('host', ''))
+            msg_body = "%%%\n{0}\n```\n{1}\n```\n%%%".format(title, message)
             dd_event = {
                 'timestamp': event_ts,
                 'host': node_ip,
@@ -395,10 +395,10 @@ class Kubernetes(AgentCheck):
                 'msg_title': title,
                 'msg_text': msg_body,
                 'source_type_name': EVENT_TYPE,
-                'event_object': 'kubernetes:{}'.format(involved_obj.get('name')),
+                'event_object': 'kubernetes:{0}'.format(involved_obj.get('name')),
             }
             self.event(dd_event)
 
         if most_recent_read > 0:
             self.kubeutil.last_event_collection_ts[k8s_namespace] = most_recent_read
-            self.log.debug('_last_event_collection_ts is now {}'.format(most_recent_read))
+            self.log.debug('_last_event_collection_ts is now {0}'.format(most_recent_read))

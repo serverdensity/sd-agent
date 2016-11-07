@@ -158,7 +158,7 @@ class RabbitMQ(AgentCheck):
             self.service_check('rabbitmq.status', AgentCheck.OK)
 
         except RabbitMQException as e:
-            msg = "Error executing check: {}".format(e)
+            msg = "Error executing check: {0}".format(e)
             self.service_check('rabbitmq.status', AgentCheck.CRITICAL, message=msg)
             self.log.error(msg)
 
@@ -168,9 +168,9 @@ class RabbitMQ(AgentCheck):
             r.raise_for_status()
             return r.json()
         except RequestException as e:
-            raise RabbitMQException('Cannot open RabbitMQ API url: {} {}'.format(url, str(e)))
+            raise RabbitMQException('Cannot open RabbitMQ API url: {0} {1}'.format(url, str(e)))
         except ValueError as e:
-            raise RabbitMQException('Cannot parse JSON response from API url: {} {}'.format(url, str(e)))
+            raise RabbitMQException('Cannot parse JSON response from API url: {0} {1}'.format(url, str(e)))
 
     def get_stats(self, instance, base_url, object_type, max_detailed, filters, auth=None):
         """

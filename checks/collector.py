@@ -353,60 +353,14 @@ class Collector(object):
                 payload.update(cpuStats)
 
         # Run old-style checks
-<<<<<<< HEAD
-        gangliaData = self._ganglia.check(self.agentConfig)
-        #dogstreamData = self._dogstream.check(self.agentConfig)
-        dogstreamData = None
-        #ddforwarderData = self._ddforwarder.check(self.agentConfig)
-        ddforwarderData = None
-
-        if gangliaData is not False and gangliaData is not None:
-            payload['ganglia'] = gangliaData
-
-        if dogstreamData:
-=======
         if self._ganglia is not None:
             payload['ganglia'] = self._ganglia.check(self.agentConfig)
-        if self._dogstream is not None:
-            dogstreamData = self._dogstream.check(self.agentConfig)
->>>>>>> upstream/5.9.x
-            dogstreamEvents = dogstreamData.get('dogstreamEvents', None)
-            if dogstreamEvents:
-                if 'dogstream' in payload['events']:
-                    events['dogstream'].extend(dogstreamEvents)
-                else:
-                    events['dogstream'] = dogstreamEvents
-                del dogstreamData['dogstreamEvents']
-
-            payload.update(dogstreamData)
-
-<<<<<<< HEAD
-        # metrics about the forwarder
-        if ddforwarderData:
-            payload['sd'] = ddforwarderData
-
-=======
->>>>>>> upstream/5.9.x
         # process collector of gohai (compliant with payload of legacy "resources checks")
         if not Platform.is_windows() and self._should_send_additional_data('processes'):
             gohai_processes = self._run_gohai_processes()
             if gohai_processes:
                 try:
                     gohai_processes_json = json.loads(gohai_processes)
-<<<<<<< HEAD
-                    processes_payload = {
-                        'snaps': [gohai_processes_json.get('processes')],
-                        'format_version': 1
-                    }
-                    if self._is_first_run():
-                        processes_payload['format_description'] = PROCESSES_FORMAT_DESCRIPTION
-
-                    payload['resources'] = {
-                        'processes': processes_payload,
-                        'meta': {
-                            'agent_key': self.agentConfig['agent_key'],
-                            'host': payload['internalHostname'],
-=======
                     processes_snaps = gohai_processes_json.get('processes')
                     if processes_snaps:
                         processes_payload = {
@@ -418,7 +372,6 @@ class Collector(object):
                             'meta': {
                                 'host': self.hostname,
                             }
->>>>>>> upstream/5.9.x
                         }
                 except Exception:
                     log.exception("Error running gohai processes collection")
@@ -667,13 +620,8 @@ class Collector(object):
             payload['systemStats'] = self.agentConfig.get('system_stats', {})
             # Also post an event in the newsfeed
             payload['events']['System'] = [{
-<<<<<<< HEAD
                 'agent_key': self.agentConfig['agent_key'],
-                'host': payload['internalHostname'],
-=======
-                'api_key': self.agentConfig['api_key'],
                 'host': self.hostname,
->>>>>>> upstream/5.9.x
                 'timestamp': now,
                 'event_type':'Agent Startup',
                 'msg_text': 'Version %s' % get_version()

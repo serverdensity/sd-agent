@@ -137,14 +137,14 @@ class KubeUtil:
         TODO: currently not in use, was added to support events filtering, consider to remove it.
         """
         pod_items = pods_list.get('items') or []
-        log.debug('Found {} pods to filter'.format(len(pod_items)))
+        log.debug('Found {0} pods to filter'.format(len(pod_items)))
 
         filtered_pods = []
         for pod in pod_items:
             status = pod.get('status', {})
             if status.get('hostIP') == host_ip:
                 filtered_pods.append(pod)
-        log.debug('Pods after filtering: {}'.format(len(filtered_pods)))
+        log.debug('Pods after filtering: {0}'.format(len(filtered_pods)))
 
         pods_list['items'] = filtered_pods
         return pods_list
@@ -157,8 +157,8 @@ class KubeUtil:
         We try to verify ssl certificate if available.
         """
         verify = self.CA_CRT_PATH if os.path.exists(self.CA_CRT_PATH) else False
-        log.debug('ssl validation: {}'.format(verify))
-        headers = {'Authorization': 'Bearer {}'.format(auth_token)}
+        log.debug('ssl validation: {0}'.format(verify))
+        headers = {'Authorization': 'Bearer {0}'.format(auth_token)}
         r = requests.get(url, timeout=timeout, headers=headers, verify=verify)
         r.raise_for_status()
         return r.json()
@@ -204,6 +204,6 @@ class KubeUtil:
             with open(cls.AUTH_TOKEN_PATH) as f:
                 return f.read()
         except IOError as e:
-            log.error('Unable to read token from {}: {}'.format(cls.AUTH_TOKEN_PATH, e))
+            log.error('Unable to read token from {0}: {1}'.format(cls.AUTH_TOKEN_PATH, e))
 
         return None

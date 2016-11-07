@@ -216,7 +216,7 @@ class Network(AgentCheck):
             except SubprocessOutputEmptyError:
                 self.log.exception("Error collecting connection stats.")
 
-        proc_dev_path = "{}/net/dev".format(proc_location)
+        proc_dev_path = "{0}/net/dev".format(proc_location)
         proc = open(proc_dev_path, 'r')
         try:
             lines = proc.readlines()
@@ -244,7 +244,7 @@ class Network(AgentCheck):
                 self._submit_devicemetrics(iface, metrics)
 
         try:
-            proc_snmp_path = "{}/net/snmp".format(proc_location)
+            proc_snmp_path = "{0}/net/snmp".format(proc_location)
             proc = open(proc_snmp_path, 'r')
 
             # IP:      Forwarding   DefaultTTL InReceives     InHdrErrors  ...
@@ -594,4 +594,4 @@ class Network(AgentCheck):
         """
         protocol = self.PSUTIL_TYPE_MAPPING.get(conn.type, '')
         family = self.PSUTIL_FAMILY_MAPPING.get(conn.family, '')
-        return '{}{}'.format(protocol, family)
+        return '{0}{1}'.format(protocol, family)

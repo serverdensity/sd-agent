@@ -142,7 +142,7 @@ def mapto_v6(addr):
     """
     try:
         inet_pton(socket.AF_INET, addr)
-        return '::ffff:{}'.format(addr)
+        return '::ffff:{0}'.format(addr)
     except socket.error:
         try:
             inet_pton(socket.AF_INET6, addr)

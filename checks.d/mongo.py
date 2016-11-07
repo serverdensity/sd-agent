@@ -628,7 +628,7 @@ class MongoDb(AgentCheck):
         clean_server_name = server.replace(password, "*" * 5) if password else server
 
         if ssl_params:
-            username_uri = u"{}@".format(urllib.quote(username))
+            username_uri = u"{0}@".format(urllib.quote(username))
             clean_server_name = clean_server_name.replace(username_uri, "")
 
         # Get the list of metrics to collect

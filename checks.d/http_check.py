@@ -278,7 +278,7 @@ class HTTPCheck(NetworkCheck):
             message = "Incorrect HTTP return code for url %s. Expected %s, got %s." % (
                 addr, expected_code, str(r.status_code))
             if include_content:
-                message += '\nContent: {}'.format(r.content[:CONTENT_LENGTH])
+                message += '\nContent: {0}'.format(r.content[:CONTENT_LENGTH])
 
             self.log.info(message)
 
@@ -303,7 +303,7 @@ class HTTPCheck(NetworkCheck):
                     self.log.debug("Content returned:\n%s" % content)
                     message = 'Content "%s" not found in response.' % content_match
                     if include_content:
-                        message += '\nContent: {}'.format(content[:CONTENT_LENGTH])
+                        message += '\nContent: {0}'.format(content[:CONTENT_LENGTH])
                     service_checks.append((
                         self.SC_STATUS,
                         Status.DOWN,

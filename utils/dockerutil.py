@@ -130,7 +130,7 @@ class DockerUtil:
                     if fields[1] == '00000000':
                         return socket.inet_ntoa(struct.pack('<L', int(fields[2], 16)))
         except IOError, e:
-            log.error('Unable to open {}: %s'.format(procfs_route), e)
+            log.error('Unable to open {0}: %s'.format(procfs_route), e)
 
         return None
 
@@ -250,7 +250,7 @@ class DockerUtil:
             subsystems = dict(zip(map(lambda x: x[1], lines), map(lambda x: x[2] if x[2][0] != '/' else x[2][1:], lines)))
 
         if subsys not in subsystems and subsys == 'cpuacct':
-            for form in "{},cpu", "cpu,{}":
+            for form in "{0},cpu", "cpu,{0}":
                 _subsys = form.format(subsys)
                 if _subsys in subsystems:
                     subsys = _subsys
@@ -274,7 +274,7 @@ class DockerUtil:
                 # `cpuacct,cpu`
                 if 'cpuacct' in mountpoint and ('cpuacct' in subsys or 'cpu' in subsys):
                     flipkey = subsys.split(',')
-                    flipkey = "{},{}".format(flipkey[1], flipkey[0]) if len(flipkey) > 1 else flipkey[0]
+                    flipkey = "{0},{1}".format(flipkey[1], flipkey[0]) if len(flipkey) > 1 else flipkey[0]
                     mountpoint = os.path.join(os.path.split(mountpoint)[0], flipkey)
                     stat_file_path = os.path.join(mountpoint, subsystems[subsys])
                     if os.path.exists(stat_file_path):

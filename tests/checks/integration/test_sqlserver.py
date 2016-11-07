@@ -87,7 +87,7 @@ class SQLServerTest(AgentCheckTest):
             self.assertMetric(metric, count=1)
 
         self.assertServiceCheckOK('sqlserver.can_connect',
-                                  tags=['host:{}'.format(config['instances'][0]['host']), 'db:master'])
+                                  tags=['host:{0}'.format(config['instances'][0]['host']), 'db:master'])
 
         self.coverage_report()
 
