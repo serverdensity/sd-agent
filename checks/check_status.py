@@ -264,6 +264,8 @@ class AgentStatus(object):
     def _get_pickle_path(cls):
         if Platform.is_win32():
             path = os.path.join(_windows_commondata_path(), 'ServerDensity')
+            if not os.path.isdir(path):
+                path = tempfile.gettempdir()
         elif os.path.isdir(PidFile.get_dir()):
             path = PidFile.get_dir()
         else:
@@ -454,7 +456,7 @@ class CollectorStatus(AgentStatus):
         try:
             ntp_offset, ntp_styles = get_ntp_info()
             lines.append('  ' + style('NTP offset', *ntp_styles) + ': ' + style('%s s' % round(ntp_offset, 4), *ntp_styles))
-        except Exception, e:
+        except Exception as e:
             lines.append('  NTP offset: Unknown (%s)' % str(e))
         lines.append('  System UTC time: ' + datetime.datetime.utcnow().__str__())
         lines.append('')

@@ -20,6 +20,7 @@ except ImportError:
 # project
 from config import _is_affirmative
 from checks import AgentCheck
+from util import Platform
 
 GAUGE = "gauge"
 RATE = "rate"
@@ -288,7 +289,12 @@ class MySql(AgentCheck):
         return {"pymysql": pymysql.__version__}
 
     def check(self, instance):
-        host, port, user, password, mysql_sock, defaults_file, tags, options, queries, ssl = \
+
+        if Platform.is_linux() and PSUTIL_AVAILABLE:
+            procfs_path = self.agentConfig.get('procfs_path', '/proc').rstrip('/')
+            psutil.PROCFS_PATH = procfs_path
+
+        host, port, user, password, mysql_sock, defaults_file, tags, options, queries, ssl, connect_timeout = \
             self._get_config(instance)
 
         self._set_qcache_stats()
@@ -297,7 +303,7 @@ class MySql(AgentCheck):
             raise Exception("Mysql host and user are needed.")
 
         with self._connect(host, port, mysql_sock, user,
-                           password, defaults_file, ssl) as db:
+                           password, defaults_file, ssl, connect_timeout) as db:
             try:
                 # Metadata collection
                 self._collect_metadata(db, host)
@@ -324,9 +330,10 @@ class MySql(AgentCheck):
         options = instance.get('options', {})
         queries = instance.get('queries', [])
         ssl = instance.get('ssl', {})
+        connect_timeout = instance.get('connect_timeout', None)
 
         return (self.host, self.port, user, password, self.mysql_sock,
-                self.defaults_file, tags, options, queries, ssl)
+                self.defaults_file, tags, options, queries, ssl, connect_timeout)
 
     def _set_qcache_stats(self):
         host_key = self._get_host_key()
@@ -357,7 +364,7 @@ class MySql(AgentCheck):
         return hostkey
 
     @contextmanager
-    def _connect(self, host, port, mysql_sock, user, password, defaults_file, ssl):
+    def _connect(self, host, port, mysql_sock, user, password, defaults_file, ssl, connect_timeout):
         self.service_check_tags = [
             'server:%s' % (mysql_sock if mysql_sock != '' else host),
             'port:%s' % ('unix_socket' if port == 0 else port)
@@ -368,7 +375,11 @@ class MySql(AgentCheck):
             ssl = dict(ssl) if ssl else None
 
             if defaults_file != '':
-                db = pymysql.connect(read_default_file=defaults_file, ssl=ssl)
+                db = pymysql.connect(
+                    read_default_file=defaults_file,
+                    ssl=ssl,
+                    connect_timeout=connect_timeout
+                )
             elif mysql_sock != '':
                 self.service_check_tags = [
                     'server:{0}'.format(mysql_sock),
@@ -377,7 +388,8 @@ class MySql(AgentCheck):
                 db = pymysql.connect(
                     unix_socket=mysql_sock,
                     user=user,
-                    passwd=password
+                    passwd=password,
+                    connect_timeout=connect_timeout
                 )
             elif port:
                 db = pymysql.connect(
@@ -385,14 +397,16 @@ class MySql(AgentCheck):
                     port=port,
                     user=user,
                     passwd=password,
-                    ssl=ssl
+                    ssl=ssl,
+                    connect_timeout=connect_timeout
                 )
             else:
                 db = pymysql.connect(
                     host=host,
                     user=user,
                     passwd=password,
-                    ssl=ssl
+                    ssl=ssl,
+                    connect_timeout=connect_timeout
                 )
             self.log.debug("Connected to MySQL")
             self.service_check(self.SERVICE_CHECK_NAME, AgentCheck.OK,
@@ -476,13 +490,15 @@ class MySql(AgentCheck):
         results['Key_buffer_size'] = key_buffer_size
 
         try:
-            key_cache_utilization = 1 - ((key_blocks_unused * key_cache_block_size) / key_buffer_size)
+            # can be null if the unit is missing in the user config (4 instead of 4G for eg.)
+            if key_buffer_size != 0:
+                key_cache_utilization = 1 - ((key_blocks_unused * key_cache_block_size) / key_buffer_size)
+                results['Key_cache_utilization'] = key_cache_utilization
 
             results['Key_buffer_bytes_used'] = self._collect_scalar(
                 'Key_blocks_used', results) * key_cache_block_size
             results['Key_buffer_bytes_unflushed'] = self._collect_scalar(
                 'Key_blocks_not_flushed', results) * key_cache_block_size
-            results['Key_cache_utilization'] = key_cache_utilization
         except TypeError as e:
             self.log.error("Not all Key metrics are available, unable to compute: {0}".format(e))
 
@@ -629,7 +645,7 @@ class MySql(AgentCheck):
 
         try:
             mysql_version = self._get_version(db, host)
-        except Exception, e:
+        except Exception as e:
             self.warning("Cannot compute mysql version, assuming it's older.: %s"
                          % str(e))
             return False

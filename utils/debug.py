@@ -9,7 +9,7 @@ import os
 import sys
 
 from config import get_checksd_path, get_confd_path
-from util import get_os
+from utils.platform import get_os
 
 
 def run_check(name, path=None):
@@ -51,7 +51,7 @@ def get_check(name, config_str):
     check_class = None
     classes = inspect.getmembers(check_module, inspect.isclass)
     for name, clsmember in classes:
-        if AgentCheck in clsmember.__bases__:
+        if issubclass(clsmember, AgentCheck) and clsmember != AgentCheck:
             check_class = clsmember
             break
     if check_class is None:

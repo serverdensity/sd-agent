@@ -120,6 +120,7 @@ class Win32EventLogWMI(WinWMICheck):
             and_props=['Message']
         )
 
+        wmi_sampler.reset_filter(new_filters=filters)
         try:
             wmi_sampler.sample()
         except TimeoutException:
@@ -206,9 +207,9 @@ class LogEvent(object):
             msg_text = u"\n".join(msg_text_fields)
         else:
             # Override when verbosity
-            if 'Message' in self.event:
+            if self.event.get('Message'):
                 msg_text = u"{message}\n".format(message=self.event['Message'])
-            elif 'InsertionStrings' in self.event:
+            elif self.event.get('InsertionStrings'):
                 msg_text = u"\n".join([i_str for i_str in self.event['InsertionStrings']
                                       if i_str.strip()])
 

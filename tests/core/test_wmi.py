@@ -179,8 +179,9 @@ class SWbemServices(object):
         if query == ("Select ServiceUptime,TotalBytesSent,TotalBytesReceived,TotalBytesTransferred,CurrentConnections,TotalFilesSent,TotalFilesReceived,"  # noqa
                      "TotalConnectionAttemptsAllInstances,TotalGetRequests,TotalPostRequests,TotalHeadRequests,TotalPutRequests,TotalDeleteRequests,"  # noqa
                      "TotalOptionsRequests,TotalTraceRequests,TotalNotFoundErrors,TotalLockedErrors,TotalAnonymousUsers,TotalNonAnonymousUsers,TotalCGIRequests,"  # noqa
-                     "TotalISAPIExtensionRequests from Win32_PerfFormattedData_W3SVC_WebService WHERE ( Name = 'Failing site' ) OR ( Name = 'Default Web Site' )"):  # noqa
+                     "TotalISAPIExtensionRequests from Win32_PerfFormattedData_W3SVC_WebService WHERE ( Name = 'Failing site' ) OR ( Name = 'Working site' ) OR ( Name = 'Default Web Site' )"):  # noqa
             results += load_fixture("win32_perfformatteddata_w3svc_webservice", ("Name", "Default Web Site"))  # noqa
+            results += load_fixture("win32_perfformatteddata_w3svc_webservice", ("Name", "Working site"))  # noqa
 
         if query == ("Select ServiceUptime,TotalBytesSent,TotalBytesReceived,TotalBytesTransferred,CurrentConnections,TotalFilesSent,TotalFilesReceived,"  # noqa
                      "TotalConnectionAttemptsAllInstances,TotalGetRequests,TotalPostRequests,TotalHeadRequests,TotalPutRequests,TotalDeleteRequests,"  # noqa
@@ -188,8 +189,9 @@ class SWbemServices(object):
                      "TotalISAPIExtensionRequests from Win32_PerfFormattedData_W3SVC_WebService WHERE ( Name = '_Total' )"):  # noqa
             results += load_fixture("win32_perfformatteddata_w3svc_webservice", ("Name", "_Total"))  # noqa
 
-        if query == ("Select * from Win32_PerfFormattedData_W3SVC_WebService WHERE ( Name = 'Failing site' ) OR ( Name = 'Default Web Site' )"):  # noqa
+        if query == ("Select * from Win32_PerfFormattedData_W3SVC_WebService WHERE ( Name = 'Failing site' ) OR ( Name = 'Working site' ) OR ( Name = 'Default Web Site' )"):  # noqa
             results += load_fixture("win32_perfformatteddata_w3svc_webservice_2008", ("Name", "Default Web Site"))  # noqa
+            results += load_fixture("win32_perfformatteddata_w3svc_webservice_2008", ("Name", "Working Site"))  # noqa
 
         if query == ("Select Name,State from Win32_Service WHERE ( Name = 'WSService' ) OR ( Name = 'WinHttpAutoProxySvc' )"):  # noqa
             results += load_fixture("win32_service_up", ("Name", "WinHttpAutoProxySvc"))
@@ -256,20 +258,13 @@ class TestCommonWMI(unittest.TestCase):
         """
         Mock WMI related Python packages, so it can be tested on any environment.
         """
-        global WMISampler
-        global ProviderArchitecture
-
-        self.patcher = patch.dict('sys.modules',{
+        self.patcher = patch.dict('sys.modules', {
             'pywintypes': Mock(),
             'pythoncom': Mock(),
             'win32com': Mock(),
             'win32com.client': Mock(Dispatch=Dispatch),
         })
         self.patcher.start()
-
-        from checks.libs.wmi import sampler
-        WMISampler = partial(sampler.WMISampler, log)
-        ProviderArchitecture = sampler.ProviderArchitecture
 
     def tearDown(self):
         """
@@ -372,6 +367,19 @@ class TestUnitWMISampler(TestCommonWMI):
     """
     Unit tests for WMISampler.
     """
+    def setUp(self):
+        TestCommonWMI.setUp(self)
+
+        global WMISampler
+        global ProviderArchitecture
+
+        # Reload to apply the mocking if the module was already loaded
+        from checks.libs.wmi import sampler
+        reload(sampler)
+
+        WMISampler = partial(sampler.WMISampler, log)
+        ProviderArchitecture = sampler.ProviderArchitecture
+
     def test_wmi_connection(self):
         """
         Establish a WMI connection to the specified host/namespace, with the right credentials.

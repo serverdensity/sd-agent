@@ -23,8 +23,8 @@ import sys
 import traceback
 
 # project
-from util import check_yaml, get_os
-from utils.platform import Platform
+from util import check_yaml
+from utils.platform import Platform, get_os
 from utils.proxy import get_proxy
 from utils.service_discovery.config import extract_agent_config
 from utils.service_discovery.config_stores import CONFIG_FROM_FILE, TRACE_CONFIG
@@ -35,12 +35,12 @@ from utils.subprocess_output import (
 )
 
 # CONSTANTS
-AGENT_VERSION = "2.1.3"
+AGENT_VERSION = "2.2.0"
 SD_CONF = "config.cfg"
 UNIX_CONFIG_PATH = '/etc/sd-agent'
 MAC_CONFIG_PATH = '/usr/local/etc/sd-agent/'
 DEFAULT_CHECK_FREQUENCY = 60   # seconds
-LOGGING_MAX_BYTES = 5 * 1024 * 1024
+LOGGING_MAX_BYTES = 10 * 1024 * 1024
 SDK_INTEGRATIONS_DIR = 'integrations'
 
 log = logging.getLogger(__name__)
@@ -80,8 +80,6 @@ def get_parsed_args():
                       dest='sd_url')
     parser.add_option('-u', '--use-local-forwarder', action='store_true',
                       default=False, dest='use_forwarder')
-    parser.add_option('-n', '--disable-sd', action='store_true', default=False,
-                      dest="disable_sd")
     parser.add_option('-v', '--verbose', action='store_true', default=False,
                       dest='verbose',
                       help='Print out stacktraces for errors in checks')
@@ -94,7 +92,6 @@ def get_parsed_args():
         # Ignore parse errors
         options, args = Values({'autorestart': False,
                                 'sd_url': None,
-                                'disable_sd': False,
                                 'use_forwarder': False,
                                 'verbose': False,
                                 'profile': False}), []
@@ -222,7 +219,7 @@ def get_config_path(cfg_path=None, os_name=None):
         path = os.path.realpath(__file__)
         path = os.path.dirname(path)
         return _config_path(path)
-    except PathNotFound, e:
+    except PathNotFound as e:
         pass
 
     if os_name is None:
@@ -237,7 +234,7 @@ def get_config_path(cfg_path=None, os_name=None):
             return _mac_config_path()
         else:
             return _unix_config_path()
-    except PathNotFound, e:
+    except PathNotFound as e:
         if len(e.args) > 0:
             bad_path = e.args[0]
 
@@ -306,6 +303,17 @@ def get_histogram_percentiles(configstr=None):
     return result
 
 
+def clean_dd_url(url):
+    url = url.strip()
+    if not url.startswith('http'):
+        url = 'https://' + url
+    return url[:-1] if url.endswith('/') else url
+
+
+def remove_empty(string_array):
+    return filter(lambda x: x, string_array)
+
+
 def get_config(parse_args=True, cfg_path=None, options=None):
     if parse_args:
         options, _ = get_parsed_args()
@@ -355,27 +363,53 @@ def get_config(parse_args=True, cfg_path=None, options=None):
 
         #
         # Core config
-        #
+        #ap
+        if not config.has_option('Main', 'api_key'):
+            log.warning(u"No API key was found. Aborting.")
+            sys.exit(2)
 
-        # FIXME unnecessarily complex
+        if not config.has_option('Main', 'dd_url'):
+            log.warning(u"No dd_url was found. Aborting.")
+            sys.exit(2)
+
+        endpoints = {}
+
+        sd_url = None
         if config.has_option('Main', 'sd_account'):
             agentConfig['sd_account'] = config.get('Main', 'sd_account')
-        agentConfig['use_forwarder'] = False
-        if options is not None and options.use_forwarder:
+
+            # Default agent URL
+            sd_url = "https://" + agentConfig['sd_account'] + ".agent.serverdensity.io"
+
+        if options is not None and options.sd_url:
+            sd_url = options.sd_url
+        elif config.has_option('Main', 'sd_url'):
+            sd_url = config.get('Main', 'sd_url')
+
+        if sd_url is not None and sd_url.endswith('/'):
+            sd_url = sd_url[:-1]
+
+        # Which agent key to use
+        agentConfig['agent_key'] = config.get('Main', 'agent_key')
+
+        endpoints[sd_url] = agentConfig['agent_key']
+
+        agentConfig['endpoints'] = endpoints
+
+        # Forwarder or not forwarder
+        agentConfig['use_forwarder'] = options is not None and options.use_forwarder
+        if agentConfig['use_forwarder']:
             listen_port = 17124
             if config.has_option('Main', 'listen_port'):
                 listen_port = int(config.get('Main', 'listen_port'))
-            agentConfig['sd_url'] = "http://" + agentConfig['bind_host'] + ":" + str(listen_port)
-            agentConfig['use_forwarder'] = True
-        elif options is not None and not options.disable_sd and options.sd_url:
+            agentConfig['sd_url'] = "http://{0}:{1}".format(agentConfig['bind_host'], listen_port)
+        elif options is not None and options.sd_url is not None:
             agentConfig['sd_url'] = options.sd_url
-        elif config.has_option('Main', 'sd_url'):
-            agentConfig['sd_url'] = config.get('Main', 'sd_url')
-        else:
-            # Default agent URL
-            agentConfig['sd_url'] = "https://" + agentConfig['sd_account'] + ".agent.serverdensity.io"
-        if agentConfig['sd_url'].endswith('/'):
-            agentConfig['sd_url'] = agentConfig['sd_url'][:-1]
+
+        # Forwarder timeout
+        agentConfig['forwarder_timeout'] = 20
+        if config.has_option('Main', 'forwarder_timeout'):
+            agentConfig['forwarder_timeout'] = int(config.get('Main', 'forwarder_timeout'))
 
         # Extra checks.d path
         # the linux directory is set by default
@@ -405,9 +439,6 @@ def get_config(parse_args=True, cfg_path=None, options=None):
             agentConfig['use_web_info_page'] = config.get('Main', 'use_web_info_page').lower() in ("yes", "true")
         else:
             agentConfig['use_web_info_page'] = True
-
-        # Which agent key to use
-        agentConfig['agent_key'] = config.get('Main', 'agent_key')
 
         # local traffic only? Default to no
         agentConfig['non_local_traffic'] = False
@@ -465,11 +496,6 @@ def get_config(parse_args=True, cfg_path=None, options=None):
             agentConfig['statsd_forward_host'] = config.get('Main', 'statsd_forward_host')
             if config.has_option('Main', 'statsd_forward_port'):
                 agentConfig['statsd_forward_port'] = int(config.get('Main', 'statsd_forward_port'))
-
-        # optionally send dogstatsd data directly to the agent.
-        if config.has_option('Main', 'dogstatsd_use_ddurl'):
-            if _is_affirmative(config.get('Main', 'dogstatsd_use_ddurl')):
-                agentConfig['dogstatsd_target'] = agentConfig['sd_url']
 
         # Optional config
         # FIXME not the prettiest code ever...
@@ -536,15 +562,15 @@ def get_config(parse_args=True, cfg_path=None, options=None):
         if config.has_option("Main", "gce_updated_hostname"):
             agentConfig["gce_updated_hostname"] = _is_affirmative(config.get("Main", "gce_updated_hostname"))
 
-    except ConfigParser.NoSectionError, e:
+    except ConfigParser.NoSectionError as e:
         sys.stderr.write('Config file not found or incorrectly formatted.\n')
         sys.exit(2)
 
-    except ConfigParser.ParsingError, e:
+    except ConfigParser.ParsingError as e:
         sys.stderr.write('Config file not found or incorrectly formatted.\n')
         sys.exit(2)
 
-    except ConfigParser.NoOptionError, e:
+    except ConfigParser.NoOptionError as e:
         sys.stderr.write('There are some items missing from your config file, but nothing fatal [%s]' % e)
 
     # Storing proxy settings in the agentConfig
@@ -557,7 +583,7 @@ def get_config(parse_args=True, cfg_path=None, options=None):
     return agentConfig
 
 
-def get_system_stats():
+def get_system_stats(proc_path=None):
     systemStats = {
         'machine': platform.machine(),
         'platform': sys.platform,
@@ -569,7 +595,10 @@ def get_system_stats():
 
     try:
         if Platform.is_linux(platf):
-            output, _, _ = get_subprocess_output(['grep', 'model name', '/proc/cpuinfo'], log)
+            if not proc_path:
+                proc_path = "/proc"
+            proc_cpuinfo = os.path.join(proc_path,'cpuinfo')
+            output, _, _ = get_subprocess_output(['grep', 'model name', proc_cpuinfo], log)
             systemStats['cpuCores'] = len(output.splitlines())
 
         if Platform.is_darwin(platf) or Platform.is_freebsd(platf):
@@ -639,7 +668,7 @@ def get_confd_path(osname=None):
     try:
         cur_path = os.path.dirname(os.path.realpath(__file__))
         return _confd_path(cur_path)
-    except PathNotFound, e:
+    except PathNotFound as e:
         pass
 
     if not osname:
@@ -652,7 +681,7 @@ def get_confd_path(osname=None):
             return _mac_confd_path()
         else:
             return _unix_confd_path()
-    except PathNotFound, e:
+    except PathNotFound as e:
         if len(e.args) > 0:
             bad_path = e.args[0]
 
@@ -713,6 +742,7 @@ def get_win32service_file(osname, filename):
 
 def get_ssl_certificate(osname, filename):
     # The SSL certificate is needed by tornado in case of connection through a proxy
+    # Also used by flare's requests on Windows
     if osname == 'windows':
         if hasattr(sys, 'frozen'):
             # we're frozen - from py2exe
@@ -740,7 +770,7 @@ def _get_check_class(check_name, check_path):
     check_class = None
     try:
         check_module = imp.load_source('checksd_%s' % check_name, check_path)
-    except Exception, e:
+    except Exception as e:
         traceback_message = traceback.format_exc()
         # There is a configuration file for that check but the module can't be imported
         log.exception('Unable to import check module %s.py from checks.d' % check_name)
@@ -780,7 +810,7 @@ def _file_configs_paths(osname, agentConfig):
         confd_path = get_confd_path(osname)
         all_file_configs = glob.glob(os.path.join(confd_path, '*.yaml'))
         all_default_configs = glob.glob(os.path.join(confd_path, '*.yaml.default'))
-    except PathNotFound, e:
+    except PathNotFound as e:
         log.error("No conf.d folder found at '%s' or in the directory where the Agent is currently deployed.\n" % e.args[0])
         sys.exit(3)
 
@@ -829,7 +859,7 @@ def get_checks_places(osname, agentConfig):
     """
     try:
         checksd_path = get_checksd_path(osname)
-    except PathNotFound, e:
+    except PathNotFound as e:
         log.error(e.args[0])
         sys.exit(3)
 
@@ -855,7 +885,7 @@ def _load_file_config(config_path, check_name, agentConfig):
 
     try:
         check_config = check_yaml(config_path)
-    except Exception, e:
+    except Exception as e:
         log.exception("Unable to parse yaml config in %s" % config_path)
         traceback_message = traceback.format_exc()
         return False, None, {check_name: {'error': str(e), 'traceback': traceback_message}}
@@ -882,13 +912,13 @@ def _initialize_check(check_config, check_name, check_class, agentConfig):
         try:
             check = check_class(check_name, init_config=init_config,
                                 agentConfig=agentConfig, instances=instances)
-        except TypeError, e:
+        except TypeError as e:
             # Backwards compatibility for checks which don't support the
             # instances argument in the constructor.
             check = check_class(check_name, init_config=init_config,
                                 agentConfig=agentConfig)
             check.instances = instances
-    except Exception, e:
+    except Exception as e:
         log.exception('Unable to initialize check %s' % check_name)
         traceback_message = traceback.format_exc()
         return {}, {check_name: {'error': e, 'traceback': traceback_message}}
@@ -1005,6 +1035,36 @@ def load_check_directory(agentConfig, hostname):
     return {'initialized_checks': initialized_checks.values(),
             'init_failed_checks': init_failed_checks,
             }
+
+
+def load_check(agentConfig, hostname, checkname):
+    """Same logic as load_check_directory except it loads one specific check"""
+    agentConfig['checksd_hostname'] = hostname
+    osname = get_os()
+    checks_places = get_checks_places(osname, agentConfig)
+    for config_path in _file_configs_paths(osname, agentConfig):
+        check_name = _conf_path_to_check_name(config_path)
+        if check_name == checkname:
+            conf_is_valid, check_config, invalid_check = _load_file_config(config_path, check_name, agentConfig)
+
+            if invalid_check and not conf_is_valid:
+                return invalid_check
+
+            # try to load the check and return the result
+            load_success, load_failure = load_check_from_places(check_config, check_name, checks_places, agentConfig)
+            return load_success.values()[0] or load_failure
+
+    # the check was not found, try with service discovery
+    for check_name, service_disco_check_config in _service_disco_configs(agentConfig).iteritems():
+        if check_name == checkname:
+            sd_init_config, sd_instances = service_disco_check_config
+            check_config = {'init_config': sd_init_config, 'instances': sd_instances}
+
+            # try to load the check and return the result
+            load_success, load_failure = load_check_from_places(check_config, check_name, checks_places, agentConfig)
+            return load_success.values()[0] or load_failure
+
+    return None
 
 #
 # logging
@@ -1147,7 +1207,7 @@ def initialize_logging(logger_name):
                 handler.setFormatter(logging.Formatter(get_syslog_format(logger_name), get_log_date_format()))
                 root_log = logging.getLogger()
                 root_log.addHandler(handler)
-            except Exception, e:
+            except Exception as e:
                 sys.stderr.write("Error setting up syslog: '%s'\n" % str(e))
                 traceback.print_exc()
 
@@ -1160,11 +1220,11 @@ def initialize_logging(logger_name):
                 nt_event_handler.setLevel(logging.ERROR)
                 app_log = logging.getLogger(logger_name)
                 app_log.addHandler(nt_event_handler)
-            except Exception, e:
+            except Exception as e:
                 sys.stderr.write("Error setting up Event viewer logging: '%s'\n" % str(e))
                 traceback.print_exc()
 
-    except Exception, e:
+    except Exception as e:
         sys.stderr.write("Couldn't initialize logging: %s\n" % str(e))
         traceback.print_exc()
 

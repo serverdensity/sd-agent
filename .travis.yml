@@ -23,6 +23,7 @@ cache:
   directories:
     - $HOME/virtualenv/python$TRAVIS_PYTHON_VERSION.9
     - vendor/cache
+    - $HOME/embedded
 
 
 env:
