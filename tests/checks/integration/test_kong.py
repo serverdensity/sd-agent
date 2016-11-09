@@ -69,7 +69,7 @@ class TestKong(AgentCheckTest):
 
             self.assertMetric('kong.table.count', len(self.DATABASES), tags=expected_tags, count=1)
             for name in self.DATABASES:
-                tags = expected_tags + ['table:{}'.format(name)]
+                tags = expected_tags + ['table:{0}'.format(name)]
                 self.assertMetric('kong.table.items', tags=tags, count=1)
 
         # Assert service checks

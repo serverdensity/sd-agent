@@ -192,6 +192,11 @@ class WMISampler(object):
             self._formatted_filters = self._format_filter(filters, self._and_props)
         return self._formatted_filters
 
+    def reset_filter(self, new_filters):
+        self.filters = new_filters
+        # get rid of the formatted filters so they'll be recalculated
+        self._formatted_filters = None
+
     def sample(self):
         """
         Compute new samples.
@@ -200,7 +205,6 @@ class WMISampler(object):
 
         try:
             if self.is_raw_perf_class and not self._previous_sample:
-                self.logger.debug(u"Querying for initial sample for raw performance counter.")
                 self._current_sample = self._query()
 
             self._previous_sample = self._current_sample
@@ -214,7 +218,6 @@ class WMISampler(object):
             raise
         else:
             self._sampling = False
-            self.logger.debug(u"Sample: {0}".format(self._current_sample))
 
     def __len__(self):
         """
@@ -335,16 +338,17 @@ class WMISampler(object):
         # shouldn't be used in other threads (can lead to memory/handle leaks if done
         # without a deep knowledge of COM's threading model). Because of this and given
         # that we run each query in its own thread, we don't cache connections
-        context = None
+        additional_args = []
         pythoncom.CoInitialize()
 
         if self.provider != ProviderArchitecture.DEFAULT:
             context = Dispatch("WbemScripting.SWbemNamedValueSet")
             context.Add("__ProviderArchitecture", self.provider)
+            additional_args = [None, "", 128, context]
 
         locator = Dispatch("WbemScripting.SWbemLocator")
         connection = locator.ConnectServer(
-            self.host, self.namespace, self.username, self.password, None, "", 128, context
+            self.host, self.namespace, self.username, self.password, *additional_args
         )
 
         return connection

@@ -8,7 +8,7 @@ sd_account:
 # on your account.
 agent_key:
 
-# If you need a proxy to connect to the Internet, provide the settings here
+# If you need a proxy to connect to the Internet, provide the settings here (default: disabled)
 # proxy_host: my-proxy.com
 # proxy_port: 3128
 # proxy_user: user
@@ -17,8 +17,41 @@ agent_key:
 # See http://stackoverflow.com/questions/8156073/curl-violate-rfc-2616-10-3-2-and-switch-from-post-to-get
 # proxy_forbid_method_switch: no
 
-# Force the hostname to whatever you want.
-#hostname: mymachine.mydomain
+# Force the hostname to whatever you want. (default: auto-detected)
+# hostname: mymachine.mydomain
+
+# Set timeout in seconds for outgoing requests to ServerDensity. (default: 20)
+# When a request timeout, it will be retried after some time.
+# It will only be deleted if the forwarder queue becomes too big. (30 MB by default)
+# forwarder_timeout: 20
+
+# Set timeout in seconds for integrations that use HTTP to fetch metrics, since
+# unbounded timeouts can potentially block the collector indefinitely and cause
+# problems!
+# default_integration_http_timeout: 9
+
+# Forwarder listening port
+# listen_port: 17124
+
+# Allow non-local traffic to this Agent
+# This is required when using this Agent as a proxy for other Agents
+# that might not have an internet connection
+# For more information, please see
+# https://support.serverdensity.com/hc/en-us/articles/217371278
+# https://github.com/DataDog/dd-agent/wiki/Network-Traffic-and-Proxy-Configuration
+# non_local_traffic: no
+
+# Select the Tornado HTTP Client to be used in the Forwarder,
+# between curl client and simple http client (default: simple http client)
+# use_curl_http_client: no
+
+# The loopback address the Forwarder will bind.
+# Optional, it is mainly used when running the agent on Openshift
+# bind_host: localhost
+
+# If you want to remove the 'ww' flag from ps catching the arguments of processes
+# for instance for security reasons
+# exclude_process_args: no
 
 #
 # Plugins
@@ -27,6 +60,15 @@ agent_key:
 # See https://support.serverdensity.com/hc/en-us/articles/213074438-Information-about-Custom-Plugins
 #
 plugin_directory:
+
+# ========================================================================== #
+# Other                                                                      #
+# ========================================================================== #
+#
+# In some environments we may have the procfs file system mounted in a
+# miscellaneous location. The procfs_path configuration paramenter allows
+# us to override the standard default location '/proc'
+# procfs_path: /proc
 
 # ========================================================================== #
 # Logging

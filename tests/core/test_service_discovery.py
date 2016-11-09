@@ -40,7 +40,7 @@ def _get_container_inspect(c_id):
         return None
 
 
-def _get_conf_tpls(image_name, trace_config=False):
+def _get_conf_tpls(image_name, trace_config=False, kube_annotations=None):
     """Return a mocked configuration template from self.mock_templates."""
     return copy.deepcopy(TestServiceDiscovery.mock_templates.get(image_name)[0])
 
@@ -55,12 +55,15 @@ def _get_check_tpls(image_name, **kwargs):
             return None
 
 
-def client_read(path):
+def client_read(path, **kwargs):
     """Return a mocked string that would normally be read from a config store (etcd, consul...)."""
     parts = path.split('/')
     config_parts = ['check_names', 'init_configs', 'instances']
     image, config_part = parts[-2], parts[-1]
-    return TestServiceDiscovery.mock_tpls.get(image)[0][config_parts.index(config_part)]
+    if 'all' in kwargs:
+        return {}
+    else:
+        return TestServiceDiscovery.mock_tpls.get(image)[0][config_parts.index(config_part)]
 
 
 def issue_read(identifier):
@@ -206,7 +209,7 @@ class TestServiceDiscovery(unittest.TestCase):
                 'Networks': {
                     'bridge': {'IPAddress': '172.17.0.2'},
                     'foo': {'IPAddress': '192.168.0.2'}}}},
-             'host', '127.0.0.1'),
+             'host', '172.17.0.2'),
 
             ({'NetworkSettings': {'Networks': {}}}, 'host', None),
             ({'NetworkSettings': {'Networks': {}}}, 'host_bridge', None),
@@ -346,7 +349,7 @@ class TestServiceDiscovery(unittest.TestCase):
                     'Networks': {'bridge': {'IPAddress': '172.17.0.2'}}}
                   },
                  {'host': '%%host%%', 'port': 1337}, ['host'], ['foo', 'bar:baz']),
-                ({'host': '%%host%%', 'port': 1337, 'tags': ['foo', 'bar:baz']}, {'host': '127.0.0.1'}),
+                ({'host': '%%host%%', 'port': 1337, 'tags': ['foo', 'bar:baz']}, {'host': '172.17.0.2'}),
             ),
             (
                 ({'NetworkSettings': {
@@ -520,6 +523,28 @@ class TestServiceDiscovery(unittest.TestCase):
         for image in invalid_config:
             tpl = self.mock_tpls.get(image)[1]
             self.assertEquals(tpl, config_store.get_check_tpls(image))
+
+    @mock.patch.object(AbstractConfigStore, 'client_read', side_effect=client_read)
+    def test_get_check_tpls_kube(self, mock_client_read):
+        """Test get_check_tpls"""
+        valid_config = ['image_0', 'image_1', 'image_2']
+        invalid_config = ['bad_image_0']
+        config_store = get_config_store(self.auto_conf_agentConfig)
+        for image in valid_config + invalid_config:
+            tpl = self.mock_tpls.get(image)[1]
+            if tpl:
+                self.assertNotEquals(
+                    tpl,
+                    config_store.get_check_tpls('k8s-' + image, auto_conf=True))
+            self.assertEquals(
+                tpl,
+                config_store.get_check_tpls(
+                    'k8s-' + image, auto_conf=True,
+                    kube_annotations=dict(zip(
+                        ['com.datadoghq.sd/check_names',
+                         'com.datadoghq.sd/init_configs',
+                         'com.datadoghq.sd/instances'],
+                        self.mock_tpls[image][0]))))
 
     def test_get_config_id(self):
         """Test get_config_id"""

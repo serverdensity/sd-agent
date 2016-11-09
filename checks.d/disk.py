@@ -12,11 +12,15 @@ try:
 except ImportError:
     psutil = None
 
-# project
+# datadog
 from checks import AgentCheck
 from config import _is_affirmative
 from util import Platform
 from utils.subprocess_output import get_subprocess_output
+from utils.timeout import (
+    timeout,
+    TimeoutException,
+)
 
 
 class Disk(AgentCheck):
@@ -39,6 +43,9 @@ class Disk(AgentCheck):
         # Windows and Mac will always have psutil
         # (we have packaged for both of them)
         if self._psutil():
+            if Platform.is_linux():
+                procfs_path = self.agentConfig.get('procfs_path', '/proc').rstrip('/')
+                psutil.PROCFS_PATH = procfs_path
             self.collect_metrics_psutil()
         else:
             # FIXME: implement all_partitions (df -a)
@@ -95,12 +102,18 @@ class Disk(AgentCheck):
             # we check all exclude conditions
             if self._exclude_disk_psutil(part):
                 continue
+
             # Get disk metrics here to be able to exclude on total usage
             try:
-                disk_usage = psutil.disk_usage(part.mountpoint)
-            except Exception, e:
-                self.log.debug("Unable to get disk metrics for %s: %s",
-                               part.mountpoint, e)
+                disk_usage = timeout(5)(psutil.disk_usage)(part.mountpoint)
+            except TimeoutException:
+                self.log.warn(
+                    u"Timeout while retrieving the disk usage of `%s` mountpoint. Skipping...",
+                    part.mountpoint
+                )
+                continue
+            except Exception as e:
+                self.log.warn("Unable to get disk metrics for %s: %s", part.mountpoint, e)
                 continue
             # Exclude disks with total disk size 0
             if disk_usage.total == 0:
@@ -181,7 +194,19 @@ class Disk(AgentCheck):
 
     def _collect_inodes_metrics(self, mountpoint):
         metrics = {}
-        inodes = os.statvfs(mountpoint)
+        # we need to timeout this, too.
+        try:
+            inodes = timeout(5)(os.statvfs)(mountpoint)
+        except TimeoutException:
+            self.log.warn(
+                u"Timeout while retrieving the disk usage of `%s` mountpoint. Skipping...",
+                mountpoint
+            )
+            return metrics
+        except Exception as e:
+            self.log.warn("Unable to get disk metrics for %s: %s", mountpoint, e)
+            return metrics
+
         if inodes.f_files != 0:
             total = inodes.f_files
             free = inodes.f_ffree
@@ -267,7 +292,7 @@ class Disk(AgentCheck):
         for parts in devices:
             if len(parts) == 1:
                 previous = parts[0]
-            elif previous and self._is_number(parts[0]):
+            elif previous is not None:
                 # collate with previous line
                 parts.insert(0, previous)
                 previous = None

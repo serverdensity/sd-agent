@@ -54,30 +54,12 @@ namespace :ci do
       sh %(rm -rf #{rabbitmq_rootdir}/var/lib/rabbitmq/mnesia)
     end
 
-    task cache: ['ci:common:cache']
-
     task cleanup: ['ci:common:cleanup'] do
       sh %(#{rabbitmq_rootdir}/sbin/rabbitmqctl stop)
     end
 
     task :execute do
-      exception = nil
-      begin
-        %w(before_install install before_script
-           script before_cache cache).each do |t|
-          Rake::Task["#{flavor.scope.path}:#{t}"].invoke
-        end
-      rescue => e
-        exception = e
-        puts "Failed task: #{e.class} #{e.message}".red
-      end
-      if ENV['SKIP_CLEANUP']
-        puts 'Skipping cleanup, disposable environments are great'.yellow
-      else
-        puts 'Cleaning up'
-        Rake::Task["#{flavor.scope.path}:cleanup"].invoke
-      end
-      raise exception if exception
+      Rake::Task['ci:common:execute'].invoke(flavor)
     end
   end
 end

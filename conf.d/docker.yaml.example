@@ -13,3 +13,19 @@ init_config:
 instances:
     # URL of the Docker daemon socket to reach the Docker API. HTTP also works.
   - url: "unix://var/run/docker.sock"
+
+    # Collect disk usage per container with docker.disk.size metric.
+    # Warning: This feature is broken in some version of Docker (such as 1.2).
+    # Test it before running it in production.
+    #
+    # collect_container_size: false
+
+    # Collect uncommon metrics from cgroups.
+    # Collect all the available cgroups metrics. All the relevant metrics are collected by default.
+    #
+    # collect_all_metrics: false
+
+    # Collect images stats
+    # Number of available active images and intermediate images as gauges. Default: true.
+    #
+    collect_images_stats: false
