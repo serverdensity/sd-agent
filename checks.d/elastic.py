@@ -384,9 +384,9 @@ class ESCheck(AgentCheck):
 
             # For "external" clusters, we want to collect from all nodes.
             if cluster_stats:
-                stats_url = "/_nodes/stats?all=true"
+                stats_url = "/_nodes/stats/_all"
             else:
-                stats_url = "/_nodes/_local/stats?all=true"
+                stats_url = "/_nodes/_local/stats/_all"
 
             additional_metrics = self.JVM_METRICS_POST_0_90_10
         else:
