@@ -1,4 +1,6 @@
 [![Build Status](https://travis-ci.org/serverdensity/sd-agent.svg?branch=master)](https://travis-ci.org/serverdensity/sd-agent)
+[![Code Quality: Python](https://img.shields.io/lgtm/grade/python/g/serverdensity/sd-agent.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/serverdensity/sd-agent/context:python)
+[![Total Alerts](https://img.shields.io/lgtm/alerts/g/serverdensity/sd-agent.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/serverdensity/sd-agent/alerts)
 
 This is the source code for the Server Density agent (v2). If you're looking to install the agent, we also provide [pre-packaged binaries](https://support.serverdensity.com/hc/en-us/articles/360001083126) for most operating systems.
 
