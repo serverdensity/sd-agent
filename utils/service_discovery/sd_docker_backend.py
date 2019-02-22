@@ -163,7 +163,7 @@ class SDDockerBackend(AbstractSDBackend):
             return
 
         labels = inspect.get('Config', {}).get('Labels', {})
-        identifier = labels.get(DATADOG_ID) or \
+        identifier = labels.get(SD_ID) or \
             self.dockerutil.image_name_extractor(inspect)
 
         platform_kwargs = {}

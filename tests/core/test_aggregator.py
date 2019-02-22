@@ -298,8 +298,8 @@ class TestMetricsAggregator(unittest.TestCase):
         metrics = stats.flush()
         nt.assert_equal(len(metrics), 1)
         m = metrics[0]
-        nt.assert_equal(m['metric'], 'my.gauge')
-        nt.assert_equal(m['points'][0][1], 1)
+        nt.assert_equal(m[0], 'my.gauge')
+        nt.assert_equal(m[2], 1)
 
     @attr(requires='core_integration')
     def test_rate(self):

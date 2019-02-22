@@ -256,7 +256,7 @@ def http_emitter(message, log, agentConfig, endpoint):
     url = agentConfig['sd_url']
 
     # Post metrics payload
-    post_payload(url, message, agentConfig, log)
+    post_payload(url, message, serialize_and_compress_metrics_payload, agentConfig, log)
 
 
 def get_post_headers(agentConfig, payload):

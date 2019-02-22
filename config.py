@@ -849,11 +849,11 @@ def _get_check_module(check_name, check_path, from_site=False):
     traceback_message = None
     if from_site:
         try:
-            check_module = import_module("datadog_checks.{}".format(check_name))
+            check_module = import_module("serverdensity_checks.{}".format(check_name))
         except Exception as e:
             error = e
             # Log at debug level since this code path is expected if the check is not installed as a wheel
-            log.debug('Unable to import check module %s from site-packages: %s', check_name, e)
+            #log.debug('Unable to import check module %s from site-packages: %s', check_name, e)
     else:
         try:
             check_module = imp.load_source('checksd_%s' % check_name, check_path)

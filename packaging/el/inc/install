@@ -25,7 +25,7 @@ for i in %{__venv}/lib/python%{__sd_python_version}/{*.py,distutils,encodings,li
 done
 
 mkdir -p %{buildroot}/usr/share/python/sd-agent/lib/python%{__sd_python_version}/site-packages
-for i in %{__venv}/lib/python%{__sd_python_version}/site-packages/{backports,boto*,*consul*,dns*,docker*,easy-install*,*etcd*,google,ipaddress.py*,kazoo,kazoo-*-info,meld3*,ntplib*,pip*,protobuf*,psutil*,pycurl*,PyYAML*,requests*,setuptools*,simplejson*,six.py,six*-info,supervisor*,tornado*,uptime*,urllib3*,websocket*,yaml,chardet*,certifi*,idna*}; do
+for i in %{__venv}/lib/python%{__sd_python_version}/site-packages/{backports,boto*,*consul*,dns*,docker*,easy-install*,*etcd*,google,ipaddress.py*,kazoo,kazoo-*-info,meld3*,ntplib*,pip*,protobuf*,psutil*,pycurl*,PyYAML*,requests*,setuptools*,simplejson*,six.py,six*-info,supervisor*,tornado*,uptime*,urllib3*,websocket*,yaml,chardet*,certifi*,idna*,prometheus_client*}; do
     cp -a $i %{buildroot}/usr/share/python/sd-agent/lib/python%{__sd_python_version}/site-packages
 done
 

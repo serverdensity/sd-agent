@@ -228,7 +228,7 @@ class JMXFetch(ProcessRunner):
             if statsd_host == "0.0.0.0":
                 # If statsd is bound to all interfaces, just use localhost for clients
                 statsd_host = "localhost"
-            statsd_port = self.agentConfig.get('sdstatsd_port', "8125")
+            statsd_port = self.agent_config.get('sdstatsd_port', "8125")
             reporter = "statsd:%s:%s" % (statsd_host, statsd_port)
 
         log.info("Starting jmxfetch:")

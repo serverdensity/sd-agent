@@ -529,13 +529,10 @@ class Collector(object):
             # processing is done, but this will give us a good idea of what is sent
             # to the backend.
             data = payload.payload # deep copy and merge of meta and metric data
-            data['apiKey'] = '*************************' + data.get('apiKey', '')[-5:]
+            data['agent_key'] = '*************************' + data.get('agent_key', '')[-5:]
             # removing unused keys for the metadata payload
-            del data['metrics']
-            del data['events']
-            del data['service_checks']
             if data.get('processes'):
-                data['processes']['apiKey'] = '*************************' + data['processes'].get('apiKey', '')[-5:]
+                data['processes']['agent_key'] = '*************************' + data['processes'].get('agent_key', '')[-5:]
             log.debug("Metadata payload: %s", json.dumps(data))
 
         # Persist the status of the collection run.

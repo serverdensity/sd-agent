@@ -126,11 +126,6 @@ case "$1" in
             exit 3
         fi
 
-        if [ "$DATADOG_ENABLED" = "no" ]; then
-            echo "Disabled via /etc/default/$NAME. Exiting."
-            exit 0
-        fi
-
         check_status essential > /dev/null
         if [ $? -eq 0 ]; then
             echo "$DESC is already running"

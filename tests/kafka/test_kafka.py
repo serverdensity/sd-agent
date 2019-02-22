@@ -31,14 +31,14 @@ LOG_INFO = {
     'disable_file_logging': True,
     'collector_log_file': '/tmp/collector.log',
     'forwarder_log_file': '/tmp/forwarder.log',
-    'dogstatsd_log_file': '/tmp/dogstatsd.log',
-    'jmxfetch_log_file': '/tmp/datadog/jmxfetch.log',
-    'go-metro_log_file': '/tmp/datadog/go-metro.log',
+    'sdstatsd_log_file': '/tmp/sdstatsd.log',
+    'jmxfetch_log_file': '/tmp/sd-agent/jmxfetch.log',
+    'go-metro_log_file': '/tmp/sd-agent/go-metro.log',
 }
 
 with mock.patch('config.get_logging_config', return_value=LOG_INFO):
     from jmxfetch import JMXFetch
-    from dogstatsd import Server
+    from sdstatsd import Server
 
 class DummyReporter(threading.Thread):
     def __init__(self, metrics_aggregator):
@@ -74,7 +74,7 @@ class TestKafka(unittest.TestCase):
 
         confd_path = os.path.join(os.path.dirname(__file__), 'resources/')
 
-        self.jmx_daemon = JMXFetch(confd_path, {'dogstatsd_port': STATSD_PORT})
+        self.jmx_daemon = JMXFetch(confd_path, {'sdstatsd_port': STATSD_PORT})
         self.t2 = threading.Thread(target=self.jmx_daemon.run)
         self.t2.start()
 

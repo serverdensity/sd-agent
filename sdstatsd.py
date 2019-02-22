@@ -227,7 +227,7 @@ class Reporter(threading.Thread):
     server.
     """
 
-    def __init__(self, interval, metrics_aggregator, api_host, api_key=None,
+    def __init__(self, interval, metrics_aggregator, sd_url, agent_key=None,
                  use_watchdog=False, event_chunk_size=None, hostname=None):
         threading.Thread.__init__(self)
         self.interval = int(interval)
@@ -549,7 +549,7 @@ class Sdstatsd6(ProcessRunner):
                 message = sdsd6_status.render(alt_title)
                 exit_code = 0
             else:
-                message = SdtatsdStatus._sdstatsd6_unavailable_message(alt_title)
+                message = SdstatsdStatus._sdstatsd6_unavailable_message(alt_title)
                 exit_code = -1
 
         sys.stdout.write(message)
@@ -669,7 +669,7 @@ def init6(agent_config=None, config_path=None, args=None):
         sys.exit(0)
 
     env = copy.deepcopy(os.environ)
-    if agent_config.get('api_key'):
+    if agent_config.get('agent_key'):
         env['SD_AGENT_KEY'] = str(agent_config['agent_key'])
     if agent_config.get('sdstatsd_port'):
         env['SD_SDSTATSD_PORT'] = str(agent_config['sdstatsd_port'])
@@ -690,7 +690,7 @@ def init6(agent_config=None, config_path=None, args=None):
     legacy_sdstatsd_log = get_logging_config().get('sdstatsd_log_file')
     if legacy_sdstatsd_log:
         env['SD_LOG_FILE'] = os.path.join(
-            os.path.dirname(legacy_sdstatsd_log), '{}.log'.format(Sdstatsd6.DSD6_BIN_NAME))
+            os.path.dirname(legacy_sdstatsd_log), '{}.log'.format(Sdstatsd6.SDSD6_BIN_NAME))
 
     return Sdstatsd6._get_sdsd6_path(), env
 

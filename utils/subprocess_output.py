@@ -20,10 +20,10 @@ def get_subprocess_output(command, log, raise_on_empty_output=True, env=None):
     Run the given subprocess command and return its output. Raise an Exception
     if an error occurs.
     """
-    return subprocess_output(command, raise_on_empty_output)
+    return subprocess_output(command, raise_on_empty_output, env)
 
 
-def subprocess_output(command, raise_on_empty_output):
+def subprocess_output(command, raise_on_empty_output, env):
     """
     Run the given subprocess command and return its output. This is a private method
     and should not be called directly, use `get_subprocess_output` instead.
