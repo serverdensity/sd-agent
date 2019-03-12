@@ -46,7 +46,7 @@ def jmx_command(args, agent_config, redirect_std_streams=False):
         confd_directory = get_confd_path()
 
         jmx_process = JMXFetch(confd_directory, agent_config)
-        jmx_process.configure()
+        jmx_process.configure(jmx_command)
         should_run = jmx_process.should_run()
 
         if should_run:
@@ -146,6 +146,6 @@ class JMXFiles(object):
         check_names = []
         jmx_status_path = os.path.join(cls._get_dir(), cls._STATUS_FILE)
         if os.path.exists(jmx_status_path):
-            jmx_checks = yaml.load(file(jmx_status_path)).get('checks', {})
+            jmx_checks = yaml.safe_load(file(jmx_status_path)).get('checks', {})
             check_names = [name for name in jmx_checks.get('initialized_checks', {}).iterkeys()]
         return check_names

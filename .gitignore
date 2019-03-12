@@ -38,6 +38,7 @@ dump.rdb
 .python-version
 .ropeproject
 .bundle
+.rbenv*
 .idea
 tags
 

@@ -35,14 +35,15 @@ import checks.system.unix as u
 import checks.system.win32 as w32
 import modules
 from util import get_uuid
-from utils.cloud_metadata import GCE, EC2, CloudFoundry
-from utils.logger import log_exceptions
+from utils.cloud_metadata import GCE, EC2, CloudFoundry, Azure
+from utils.logger import log_exceptions, RedactedLogRecord
 from utils.jmx import JMXFiles
 from utils.platform import Platform, get_os
 from utils.subprocess_output import get_subprocess_output
 from utils.timer import Timer
 from utils.orchestrator import MetadataCollector
 
+logging.LogRecord = RedactedLogRecord
 log = logging.getLogger(__name__)
 
 
@@ -480,7 +481,7 @@ class Collector(object):
             if not self.continue_running:
                 return
             check_status = CheckStatus(check_name, None, None, None, None,
-                                       check_version=info.get('version'),
+                                       check_version=info.get('version', 'unknown'),
                                        init_failed_error=info['error'],
                                        init_failed_traceback=info['traceback'])
             check_statuses.append(check_status)
@@ -522,6 +523,17 @@ class Collector(object):
         emitter_statuses = payload.emit(log, self.agentConfig, self.emitters,
                                         self.continue_running)
         self.emit_duration = timer.step()
+
+        if self._is_first_run():
+            # This is not the exact payload sent to the backend as minor post
+            # processing is done, but this will give us a good idea of what is sent
+            # to the backend.
+            data = payload.payload # deep copy and merge of meta and metric data
+            data['agent_key'] = '*************************' + data.get('agent_key', '')[-5:]
+            # removing unused keys for the metadata payload
+            if data.get('processes'):
+                data['processes']['agent_key'] = '*************************' + data['processes'].get('agent_key', '')[-5:]
+            log.debug("Metadata payload: %s", json.dumps(data))
 
         # Persist the status of the collection run.
         try:
@@ -654,6 +666,12 @@ class Collector(object):
             payload['systemStats'] = get_system_stats(
                 proc_path=self.agentConfig.get('procfs_path', '/proc').rstrip('/')
             )
+
+            if self.agentConfig['collect_orchestrator_tags']:
+                host_container_metadata = MetadataCollector().get_host_metadata()
+                if host_container_metadata:
+                    payload['container-meta'] = host_container_metadata
+
             payload['meta'] = self._get_hostname_metadata()
 
             self.hostname_metadata_cache = payload['meta']
@@ -772,6 +790,11 @@ class Collector(object):
         if host_aliases:
             metadata['host_aliases'] += host_aliases
 
+        # Try to get Azure VM ID
+        host_aliases = Azure.get_host_aliases(self.agentConfig)
+        if host_aliases:
+            metadata['host_aliases'] += host_aliases
+
         try:
             metadata["host_aliases"] += CloudFoundry.get_host_aliases(self.agentConfig)
         except Exception:
@@ -799,7 +822,7 @@ class Collector(object):
 
     def _run_gohai(self, options):
         # Gohai is disabled on Mac for now
-        if Platform.is_mac():
+        if Platform.is_mac() or not self.agentConfig.get('enable_gohai'):
             return None
         output = None
         try:

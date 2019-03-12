@@ -5,16 +5,13 @@ This is the source code for the Server Density agent (v2). If you're looking to 
 # Release notes
 See [agent release notes](https://support.serverdensity.com/hc/en-us/articles/360001065423).
 
-
 # Agent configuration
-
 If you are using packages on Linux, the main configuration file can be found
 in `/etc/sd-agent/config.cfg`. Per-check configuration files are in
 `/etc/sd-agent/conf.d`. We provide an example in the same directory
 that you can use as a template.
 
 # [Agent plugins](https://support.serverdensity.com/hc/en-us/sections/360000208506)
-
 ## Installing plugins
 See [information about agent plugins](https://support.serverdensity.com/hc/en-us/articles/360001066043-Information-about-Agent-Plugins).
 
@@ -25,14 +22,13 @@ See [information about custom plugins](https://support.serverdensity.com/hc/en-u
 Our legacy [v1 agent source code](https://github.com/serverdensity/sd-agent/tree/v1) is still available but will soon be sunset.
 
 ## Legacy plugins
-
 We have maintained compatibility with the v1 agent's plugins. All
 "old style" plugins are fully usable with the v2 agent.
 
 See [information about custom plugins](https://support.serverdensity.com/hc/en-us/articles/360001083186-Information-about-Custom-Plugins-v1) for installation / configuration.
 
-# Contributors
+## Contributors
 
 ```bash
-git log --all | gawk '/Author/ {print}' | sort | uniq
+git log --all | grep 'Author' | sort -u
 ```

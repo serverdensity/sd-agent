@@ -1,5 +1,4 @@
 #!/usr/bin/env rake
-# encoding: utf-8
 
 # 3p
 require 'rake/clean'
@@ -12,6 +11,10 @@ require './ci/default'
 require './ci/system'
 require './ci/windows'
 require './ci/docker_daemon'
+require './ci/tomcat'
+require './ci/solr'
+require './ci/kafka'
+require './ci/cassandra'
 
 CLOBBER.include '**/*.pyc'
 
@@ -25,8 +28,8 @@ unless ENV['CI']
   ENV['VOLATILE_DIR'] = '/tmp/sd-agent-testing'
   ENV['CONCURRENCY'] = ENV['CONCURRENCY'] || '2'
   ENV['NOSE_FILTER'] = 'not windows'
-  ENV['JMXFETCH_URL'] = 'https://dd-jmxfetch.s3.amazonaws.com'
 end
+ENV['JMXFETCH_URL'] = 'https://dd-jmxfetch.s3.amazonaws.com'
 
 desc 'Setup a development environment for the Agent'
 task 'setup_env' do
@@ -47,9 +50,11 @@ end
 desc 'Grab libs'
 task 'setup_libs' do
   in_venv = system "python -c \"import sys ; exit(not hasattr(sys, 'real_prefix'))\""
-  raise 'Not in dev venv/CI environment - bailing out.' if !in_venv && !ENV['CI']
+  raise 'Not in dev venv/CI environment/Integrations - bailing out.' if !in_venv && !ENV['CI'] && !ENV['SDK_HOME']
 
-  jmx_version = `python -c "import config ; print config.JMX_VERSION"`
+  Rake::Task['setup_env'].invoke
+
+  jmx_version = `venv/bin/python -c "import config ; print config.JMX_VERSION"`
   jmx_version = jmx_version.delete("\n")
   puts "jmx-fetch version: #{jmx_version}"
   jmx_artifact = "jmxfetch-#{jmx_version}-jar-with-dependencies.jar"

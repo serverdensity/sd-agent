@@ -39,7 +39,7 @@ class TestECSUtil(unittest.TestCase):
         mock_init.return_value = None
         mock_gw.return_value = "10.0.2.2"
 
-        mock_inspect.return_value = {'NetworkSettings': {'IPAddress': '10.0.0.42',
+        mock_inspect.return_value = {'NetworkSettings': {'Networks': {'bridge': {'IPAddress': '10.0.0.42'}},
                                                          'Ports': {'1234/tcp': '1234/tcp'}}}
 
         probe_calls = [mock.call('http://10.0.0.42:1234/', timeout=1),
@@ -55,7 +55,7 @@ class TestECSUtil(unittest.TestCase):
     @mock.patch('requests.get')
     @mock.patch('utils.dockerutil.DockerUtil.inspect_container')
     @mock.patch('docker.Client.__init__')
-    def test_host_tags(self, mock_init, mock_inspect, mock_get):
+    def test_host_metadata(self, mock_init, mock_inspect, mock_get):
         mock_inspect.return_value = {}
         mock_get.return_value = MockResponse({"Cluster": "default-xvello",
                                               "Version": "Amazon ECS Agent - v1.14.1 (467c3d7)"}, 200)
@@ -65,6 +65,6 @@ class TestECSUtil(unittest.TestCase):
         util.agent_url = 'http://dummy'
 
         mock_get.reset_mock()
-        tags = util.get_host_tags()
-        self.assertEqual(['ecs_version:1.14.1'], tags)
+        meta = util.get_host_metadata()
+        self.assertEqual({'ecs_version': '1.14.1'}, meta)
         mock_get.assert_called_once_with('http://dummy/v1/metadata', timeout=1)

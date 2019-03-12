@@ -1,5 +1,7 @@
 # stdlib
+import unittest
 from unittest import TestCase
+import os
 import socket
 import threading
 import Queue
@@ -11,8 +13,29 @@ from nose.plugins.skip import SkipTest
 
 # project
 from sdstatsd import mapto_v6, get_socket_address
-from sdstatsd import Server, init
+from sdstatsd import (
+    Server,
+    init5,
+    init6
+)
 from utils.net import IPV6_V6ONLY, IPPROTO_IPV6
+
+def _get_ipv6_socket(addr, port):
+    sock = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
+    sock.setsockopt(IPPROTO_IPV6, IPV6_V6ONLY, 0)
+    sock.setsockopt(IPPROTO_IPV6, socket.SO_REUSEADDR, 1)
+    sock.bind((addr, port))
+    return sock
+
+
+def _ipv6_available(addr, port):
+    try:
+        sock = _get_ipv6_socket(addr, port)
+    except Exception:
+        return False
+
+    sock.close()
+    return True
 
 
 class TestFunctions(TestCase):
@@ -31,19 +54,46 @@ class TestFunctions(TestCase):
             self.assertEqual(get_socket_address('example.com', 80), ('::1', 80, 0, 0))
         self.assertIsNone(get_socket_address('foo', 80))
 
-    @mock.patch('sdstatsd.get_config')
     @mock.patch('sdstatsd.Server')
-    def test_init(self, s, gc):
-        gc.return_value = defaultdict(str)
-        gc.return_value['non_local_traffic'] = True
-        gc.return_value['use_sdstatsd'] = True
+    def test_init5(self, s):
+        cfg = defaultdict(str)
+        cfg['non_local_traffic'] = True
+        cfg['use_sdstatsd'] = True
+        cfg['aagent_key'] = "0123456789abcdefghijklmnopqrstuv"
 
-        init()
+        init5(cfg)
 
         # if non_local_traffic was passed, use IPv4 wildcard
         s.assert_called_once()
         args, _ = s.call_args
         self.assertEqual(args[1], '0.0.0.0')
+
+    @mock.patch('sdstatsd.get_config_path')
+    def test_init6(self, gcp):
+        cfg = defaultdict(str)
+        cfg['agent_key'] = "0123456789abcdefghijklmnopqrstuv"
+        cfg['use_sdstatsd'] = True
+        cfg['sdstatsd6_enable'] = True
+        cfg['sdstatsd6_stats_port'] = 5050
+        gcp.return_value = os.path.abspath("config.cfg")
+
+        _, env = init6(cfg)
+        self.assertNotEqual(env, os.environ)
+        self.assertEqual(env.get('SD_AGENT_KEY'), cfg['agent_key'])
+        self.assertEqual(env.get('SD_SDSTATSD_STATS_PORT'), str(cfg['sdstatsd6_stats_port']))
+
+    @mock.patch('sdstatsd.Server')
+    def test_init_with_so_rcvbuf(self, s):
+        cfg = defaultdict(str)
+        cfg['use_sdstatsd'] = True
+        cfg['statsd_so_rcvbuf'] = '1024'
+        cfg['agent_key'] = "0123456789abcdefghijklmnopqrstuv"
+
+        init5(cfg)
+
+        s.assert_called_once()
+        _, kwargs = s.call_args
+        self.assertEqual(kwargs['so_rcvbuf'], '1024')
 
 
 class TestServer(TestCase):
@@ -56,24 +106,28 @@ class TestServer(TestCase):
     @mock.patch('sdstatsd.select')
     def test_start(self, select):
         select.select.side_effect = [KeyboardInterrupt, SystemExit]
-        # TODO: v6 not supported on Travis
-        # s1 = Server(mock.MagicMock(), '::1', '1234')
-        # s1.start()
-        # self.assertEqual(s1.socket.family, socket.AF_INET6)
+        ipv6_test = False
+        if _ipv6_available('::1', '1234'):
+            ipv6_test = True
+            s1 = Server(mock.MagicMock(), '::1', '1234')
+            s1.start()
+            self.assertEqual(s1.socket.family, socket.AF_INET6)
 
-        s2 = Server(mock.MagicMock(), '127.0.0.1', '2345')
+            original_so_rcvbuf = s1.socket.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF)
+
+        s2 = Server(mock.MagicMock(), '127.0.0.1', '2345', so_rcvbuf=1023)
         s2.start()
         self.assertEqual(s2.socket.family, socket.AF_INET6)
+
+        if ipv6_test:
+            self.assertNotEquals(original_so_rcvbuf, s2.socket.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF))
 
         s2 = Server(mock.MagicMock(), 'foo', '80')
         s2.start()
         self.assertFalse(s2.running)
 
     def _get_socket(self, addr, port):
-        sock = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
-        sock.setsockopt(IPPROTO_IPV6, IPV6_V6ONLY, 0)
-        sock.bind((addr, port))
-        return sock
+        return _get_ipv6_socket(addr, port)
 
     def test_connection_v4(self):
         # start the server with a v4 mapped address
@@ -95,13 +149,14 @@ class TestServer(TestCase):
         msg = results.get(True, 1)
         self.assertEqual(msg[0], 'msg4')
 
-        # TODO: v6 not supported on Travis
-        return
-        # send packets with a v6 client
-        client_sock = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
-        client_sock.sendto('msg6', ('::1', 12345))
-        self.assertRaises(Queue.Empty, results.get, True, 1)
+        if _ipv6_available('::1', 12345):
+            # send packets with a v6 client
+            client_sock = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
+            client_sock.sendto('msg6', ('::1', 12345))
+            self.assertRaises(Queue.Empty, results.get, True, 1)
 
+    @unittest.skipIf(not _ipv6_available('::1', 12345),
+                     "ipv6 required for this test")
     def test_connection_v6(self):
         raise SkipTest("Travis doesn't support ipv6")
         # start the server with a v6 address

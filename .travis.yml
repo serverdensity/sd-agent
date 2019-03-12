@@ -31,7 +31,7 @@ env:
     - PIP_CACHE=$HOME/.cache/pip
     - VOLATILE_DIR=/tmp
     - DD_CASHER_DIR=/tmp/casher
-    - AGENT_VERSION=2.2.4
+    - AGENT_VERSION=2.3.0
     - CACHE_DIR=$HOME/.cache
     - CACHE_FILE_el6=$CACHE_DIR/el6.tar.gz
     - CACHE_FILE_el6_i386=$CACHE_DIR/el6_i386.tar.gz
@@ -55,10 +55,9 @@ matrix:
 # Override travis defaults with empty jobs
 before_install:
 - rvm install 2.1.5
-# before_install: echo "OVERRIDING TRAVIS STEPS"
+
 install: echo "OVERRIDING TRAVIS STEPS"
 before_script: echo "OVERRIDING TRAVIS STEPS"
-
 script:
   - ./.travis/build_installer.sh
 

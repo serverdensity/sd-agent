@@ -45,7 +45,7 @@ class ECSUtil(BaseUtil):
 
         # Try to detect the ecs-agent container's IP (net=bridge)
         ecs_config = self.docker_util.inspect_container('ecs-agent')
-        ip = ecs_config.get('NetworkSettings', {}).get('IPAddress')
+        ip = ecs_config.get('NetworkSettings', {}).get('Networks', {}).get('bridge', {}).get('IPAddress')
         if ip:
             ports = ecs_config.get('NetworkSettings', {}).get('Ports')
             port = ports.keys()[0].split('/')[0] if ports else str(ECS_AGENT_DEFAULT_PORT)
@@ -115,16 +115,16 @@ class ECSUtil(BaseUtil):
         BaseUtil.reset_cache(self)
         self.ecs_tags = {}
 
-    def get_host_tags(self):
-        tags = []
+    def get_host_metadata(self):
+        meta = {}
         if self.agent_url:
             try:
                 resp = requests.get(self.agent_url + ECS_AGENT_METADATA_PATH, timeout=1).json()
                 if "Version" in resp:
                     match = AGENT_VERSION_EXP.search(resp.get("Version"))
                     if match is not None and len(match.groups()) == 1:
-                        tags.append('ecs_version:%s' % match.group(1))
+                        meta['ecs_version'] = match.group(1)
             except Exception as e:
                 self.log.debug("Error getting ECS version: %s" % str(e))
 
-        return tags
+        return meta

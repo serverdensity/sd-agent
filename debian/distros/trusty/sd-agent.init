@@ -36,6 +36,10 @@ if [ ! -x $AGENTPATH ]; then
     exit 0
 fi
 
+if [ -r "/etc/default/${NAME}" ]; then
+    . "/etc/default/${NAME}"
+fi
+
 check_status() {
 
     QUERY="all"

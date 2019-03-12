@@ -46,7 +46,7 @@ from config import (
 )
 from daemon import AgentSupervisor, Daemon
 from emitter import http_emitter
-from jmxfetch import get_jmx_checks
+from jmxfetch import get_jmx_checks, JMXFetch
 
 # utils
 from utils.cloud_metadata import EC2
@@ -100,6 +100,7 @@ class Agent(Daemon):
         self.sd_backend = None
         self.supervisor_proxy = None
         self.sd_pipe = None
+        self.last_jmx_piped = None
 
     def _handle_sigterm(self, signum, frame):
         """Handles SIGTERM and SIGINT, which gracefully stops the agent."""
@@ -215,6 +216,11 @@ class Agent(Daemon):
         logging.getLogger().setLevel(logging.ERROR)
         return CollectorStatus.print_latest_status(verbose=verbose)
 
+    def sd_pipe_jmx_configs(self, hostname):
+        jmx_sd_configs = generate_jmx_configs(self._agentConfig, hostname)
+        if jmx_sd_configs:
+            self._submit_jmx_service_discovery(jmx_sd_configs)
+
     def run(self, config=None):
         """Main loop of the collector"""
 
@@ -242,7 +248,11 @@ class Agent(Daemon):
 
         # Intialize the collector.
         if not config:
-            config = get_config(parse_args=True)
+            try:
+                config = get_config(parse_args=True)
+            except:
+                log.warning("Failed to load configuration")
+                sys.exit(2)
 
         self._agentConfig = self._set_agent_config_hostname(config)
         hostname = get_hostname(self._agentConfig)
@@ -255,7 +265,7 @@ class Agent(Daemon):
         if self._agentConfig.get('service_discovery'):
             self.sd_backend = get_sd_backend(self._agentConfig)
 
-        if _is_affirmative(self._agentConfig.get('sd_jmx_enable', False)):
+        if self.sd_backend and _is_affirmative(self._agentConfig.get('sd_jmx_enable', False)):
             pipe_path = get_jmx_pipe_path()
             if Platform.is_windows():
                 pipe_name = pipe_path.format(pipename=SD_PIPE_NAME)
@@ -277,9 +287,7 @@ class Agent(Daemon):
 
         # Load JMX configs if available
         if self._jmx_service_discovery_enabled:
-            jmx_sd_configs = generate_jmx_configs(self._agentConfig, hostname)
-            if jmx_sd_configs:
-                self._submit_jmx_service_discovery(jmx_sd_configs)
+            self.sd_pipe_jmx_configs(hostname)
 
         # Initialize the Collector
         self.collector = Collector(self._agentConfig, emitters, systemStats, hostname)
@@ -322,6 +330,16 @@ class Agent(Daemon):
                     self.reload_configs(checks_to_reload=self.reload_configs_flag)
                 else:
                     self.reload_configs()
+
+            # JMXFetch restarts should prompt re-piping *all* JMX configs
+            if self._jmx_service_discovery_enabled and \
+                    (not self.reload_configs_flag or isinstance(self.reload_configs_flag, set)):
+                try:
+                    jmx_launch = JMXFetch._get_jmx_launchtime()
+                    if self.last_jmx_piped and self.last_jmx_piped < jmx_launch:
+                        self.sd_pipe_jmx_configs(hostname)
+                except Exception as e:
+                    log.debug("could not stat JMX lunch file: %s", e)
 
             # Do the work. Pass `configs_reloaded` to let the collector know if it needs to
             # look for the AgentMetrics check and pop it out.
@@ -428,8 +446,13 @@ class Agent(Daemon):
             return
 
         if self.supervisor_proxy is not None:
-            jmx_state = self.supervisor_proxy.supervisor.getProcessInfo(JMX_SUPERVISOR_ENTRY)
-            log.debug("Current JMX check state: %s", jmx_state['statename'])
+            try:
+                jmx_state = self.supervisor_proxy.supervisor.getProcessInfo(JMX_SUPERVISOR_ENTRY)
+                log.debug("Current JMX check state: %s", jmx_state['statename'])
+            except Exception as e:
+                log.exception("Cannot submit JMX autodiscovery configurations. Unable to get JMXFetch process state from supervisor: %s", e)
+                return
+
             # restart jmx if stopped
             if jmx_state['statename'] in ['STOPPED', 'EXITED', 'FATAL'] and self._agentConfig.get('sd_jmx_enable'):
                 self.supervisor_proxy.supervisor.startProcess(JMX_SUPERVISOR_ENTRY)
@@ -451,6 +474,7 @@ class Agent(Daemon):
                 # JMX will unblock when it reads on the other end.
                 os.write(self.sd_pipe, buffer)
                 os.write(self.sd_pipe, SD_CONFIG_TERM)
+                self.last_jmx_piped = time.time()
         except Exception as e:
             log.exception("unable to submit YAML via pipe: %s", e)
         else:
@@ -574,12 +598,13 @@ def main():
                         time.sleep(1)
                         cs = Collector.run_single_check(check, verbose=True)
                         print CollectorStatus.render_check_status(cs)
-
+                    else:
+                        print "Check has run only once, if some metrics are missing you can run the command again with the 'check_rate' argument appended at the end to see any other metrics if available."
                     check.stop()
 
     elif 'configcheck' == command or 'configtest' == command:
-        configcheck()
         sd_configcheck(agentConfig)
+        return configcheck()
 
     elif 'jmx' == command:
         jmx_command(args[1:], agentConfig)

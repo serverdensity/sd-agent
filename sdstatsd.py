@@ -17,12 +17,14 @@ set_no_proxy_settings()
 
 # stdlib
 from hashlib import md5
+import copy
 import os
 import logging
 import optparse
 import select
 import signal
 import socket
+import string
 import sys
 import threading
 from time import sleep, time
@@ -40,20 +42,32 @@ import simplejson as json
 from aggregator import get_formatter, MetricsBucketAggregator
 from checks.check_status import SdstatsdStatus
 from checks.metric_types import MetricTypes
-from config import get_config, get_version
-from daemon import AgentSupervisor, Daemon
+from config import (
+    get_config,
+    get_config_path,
+    get_logging_config,
+    get_version,
+    _is_affirmative
+)
+from daemon import (
+    AgentSupervisor,
+    Daemon,
+    ProcessRunner
+)
 from util import chunks, get_uuid, plural
 from utils.hostname import get_hostname
+from utils.http import get_expvar_stats
 from utils.net import inet_pton
 from utils.net import IPV6_V6ONLY, IPPROTO_IPV6
 from utils.pidfile import PidFile
 from utils.watchdog import Watchdog
+from utils.logger import RedactedLogRecord
 
 # urllib3 logs a bunch of stuff at the info level
 requests_log = logging.getLogger("requests.packages.urllib3")
 requests_log.setLevel(logging.WARN)
 requests_log.propagate = True
-
+logging.LogRecord = RedactedLogRecord
 log = logging.getLogger('sdstatsd')
 
 PID_NAME = "sdstatsd"
@@ -214,14 +228,14 @@ class Reporter(threading.Thread):
     """
 
     def __init__(self, interval, metrics_aggregator, sd_url, agent_key=None,
-                 use_watchdog=False, event_chunk_size=None):
+                 use_watchdog=False, event_chunk_size=None, hostname=None):
         threading.Thread.__init__(self)
         self.interval = int(interval)
         self.finished = threading.Event()
         self.metrics_aggregator = metrics_aggregator
         self.flush_count = 0
         self.log_count = 0
-        self.hostname = get_hostname()
+        self.hostname = hostname or get_hostname()
 
         self.watchdog = None
         if use_watchdog:
@@ -345,9 +359,9 @@ class Reporter(threading.Thread):
 
             status = r.status_code
             duration = round((time() - start_time) * 1000.0, 4)
-            log.debug("%s POST %s (%sms)" % (status, url, duration))
-        except Exception:
-            log.exception("Unable to post payload.")
+            log.debug("%s POST %s (%sms)" % (status, string.split(url, "api_key=")[0], duration))
+        except Exception as e:
+            log.error("Unable to post payload: %s" % e.message)
             try:
                 log.error("Received status code: {0}".format(r.status_code))
             except Exception:
@@ -369,13 +383,14 @@ class Server(object):
     """
     A statsd udp server.
     """
-    def __init__(self, metrics_aggregator, host, port, forward_to_host=None, forward_to_port=None):
+    def __init__(self, metrics_aggregator, host, port, forward_to_host=None, forward_to_port=None, so_rcvbuf=None):
         self.sockaddr = None
         self.socket = None
         self.metrics_aggregator = metrics_aggregator
         self.host = host
         self.port = port
         self.buffer_size = 1024 * 8
+        self.so_rcvbuf = so_rcvbuf
 
         self.running = False
 
@@ -405,6 +420,10 @@ class Server(object):
             # Configure the socket so that it accepts connections from both
             # IPv4 and IPv6 networks in a portable manner.
             self.socket.setsockopt(IPPROTO_IPV6, IPV6_V6ONLY, 0)
+            # Set SO_RCVBUF on the socket if a specific value has been
+            # configured.
+            if self.so_rcvbuf is not None:
+                self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, int(self.so_rcvbuf))
         except Exception:
             log.info('unable to create IPv6 socket, falling back to IPv4.')
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -500,17 +519,87 @@ class Sdstatsd(Daemon):
                 sys.exit(AgentSupervisor.RESTART_EXIT_STATUS)
 
     @classmethod
-    def info(self):
+    def info(self, cfg=None):
         logging.getLogger().setLevel(logging.ERROR)
         return SdstatsdStatus.print_latest_status()
 
 
-def init(config_path=None, use_watchdog=False, use_forwarder=False, args=None):
+class Sdstatsd6(ProcessRunner):
+    """ This class is the sdstatsd6 runner. """
+    SDSD6_BIN_NAME = 'sdstatsd6'
+
+    def __init__(self, agent_config):
+        self.agent_config = agent_config
+        super(Sdstatsd6, self).__init__()
+
+    @classmethod
+    def enabled(cls, agent_config):
+        return _is_affirmative(agent_config.get('sdstatsd6_enable', False)) and cls._get_sdsd6_path() is not None
+
+    @classmethod
+    def info(self, cfg=None):
+        logging.getLogger().setLevel(logging.ERROR)
+        if cfg and not _is_affirmative(cfg.get('sdstatsd6_enable', False)):
+            message = SdstatsdStatus._sdstatsd6_unavailable_message()
+            exit_code = -1
+        else:
+            alt_title = "{} (v BETA)".format(self.SDSD6_BIN_NAME)
+            sdsd6_status = Sdstatsd6._get_sdsd6_stats(cfg)
+            if sdsd6_status:
+                message = sdsd6_status.render(alt_title)
+                exit_code = 0
+            else:
+                message = SdstatsdStatus._sdstatsd6_unavailable_message(alt_title)
+                exit_code = -1
+
+        sys.stdout.write(message)
+        return exit_code
+
+    @classmethod
+    def _get_sdsd6_stats(self, cfg={}):
+        port = cfg.get('sdstatsd6_stats_port', 5000)
+        try:
+            sdsd6_agg_stats = get_expvar_stats('aggregator', port=port)
+            sdsd6_stats = get_expvar_stats('sdstatsd', port=port)
+        except Exception as e:
+            log.info("Unable to collect sdstatsd6 statistics: %s", e)
+            return None
+
+        if sdsd6_stats is not None and sdsd6_agg_stats is not None:
+            packet_count = sdsd6_stats.get("ServiceCheckPackets", 0) + \
+                sdsd6_stats.get("EventPackets", 0) + \
+                sdsd6_stats.get("MetricPackets", 0)
+            flush_counts = sdsd6_agg_stats.get("FlushCount", {})
+
+            sdsd6_status = SdstatsdStatus(
+                flush_count=sdsd6_agg_stats.get('NumberOfFlush', 0),
+                packet_count=packet_count,
+                packets_per_second="N/A",  # unavailable
+                metric_count=flush_counts.get("Series", {}).get("LastFlush", 0),
+                event_count=flush_counts.get("Events", {}).get("LastFlush", 0),
+                service_check_count=flush_counts.get("ServiceChecks", {}).get("LastFlush", 0))
+
+            return sdsd6_status
+
+        return None
+
+    @classmethod
+    def _get_sdsd6_path(cls):
+        sdsd6_path = os.path.realpath(os.path.join(
+            os.path.abspath(__file__), "..", "..", "bin",
+            cls.SDSD6_BIN_NAME)
+        )
+
+        if not os.path.isfile(sdsd6_path):
+            return None
+
+        return sdsd6_path
+
+
+def init5(agent_config=None, use_watchdog=False, use_forwarder=False, args=None):
     """Configure the server and the reporting thread.
     """
-    c = get_config(parse_args=False, cfg_path=config_path)
-
-    if (not c['use_sdstatsd'] and
+    if (not agent_config['use_sdstatsd'] and
             (args and args[0] in ['start', 'restart'] or not args)):
         log.info("Sdstatsd is disabled. Exiting")
         # We're exiting purposefully, so exit with zero (supervisor's expected
@@ -519,22 +608,23 @@ def init(config_path=None, use_watchdog=False, use_forwarder=False, args=None):
         sleep(4)
         sys.exit(0)
 
-    port = c['sdstatsd_port']
+    port = agent_config['sdstatsd_port']
     interval = SDSTATSD_FLUSH_INTERVAL
-    agent_key = c['agent_key']
+    api_key = agent_config['agent_key']
     aggregator_interval = SDSTATSD_AGGREGATOR_BUCKET_SIZE
-    non_local_traffic = c['non_local_traffic']
-    forward_to_host = c.get('statsd_forward_host')
-    forward_to_port = c.get('statsd_forward_port')
-    event_chunk_size = c.get('event_chunk_size')
-    recent_point_threshold = c.get('recent_point_threshold', None)
-    server_host = c['bind_host']
+    non_local_traffic = agent_config['non_local_traffic']
+    forward_to_host = agent_config.get('statsd_forward_host')
+    forward_to_port = agent_config.get('statsd_forward_port')
+    event_chunk_size = agent_config.get('event_chunk_size')
+    recent_point_threshold = agent_config.get('recent_point_threshold', None)
+    so_rcvbuf = agent_config.get('statsd_so_rcvbuf', None)
+    server_host = agent_config['bind_host']
 
-    target = c['sd_url']
+    target = agent_config['sd_url']
     if use_forwarder:
-        target = c['sdstatsd_target']
+        target = agent_config['sdstatsd_target']
 
-    hostname = get_hostname(c)
+    hostname = get_hostname(agent_config)
     log.debug("Using hostname \"%s\"", hostname)
 
     # Create the aggregator (which is the point of communication between the
@@ -545,14 +635,14 @@ def init(config_path=None, use_watchdog=False, use_forwarder=False, args=None):
         hostname,
         aggregator_interval,
         recent_point_threshold=recent_point_threshold,
-        formatter=get_formatter(c),
-        histogram_aggregates=c.get('histogram_aggregates'),
-        histogram_percentiles=c.get('histogram_percentiles'),
-        utf8_decoding=c['utf8_decoding']
+        formatter=get_formatter(agent_config),
+        histogram_aggregates=agent_config.get('histogram_aggregates'),
+        histogram_percentiles=agent_config.get('histogram_percentiles'),
+        utf8_decoding=agent_config['utf8_decoding']
     )
 
     # Start the reporting thread.
-    reporter = Reporter(interval, aggregator, target, agent_key, use_watchdog, event_chunk_size)
+    reporter = Reporter(interval, aggregator, target, api_key, use_watchdog, event_chunk_size, hostname)
 
     # NOTICE: when `non_local_traffic` is passed we need to bind to any interface on the box. The forwarder uses
     # Tornado which takes care of sockets creation (more than one socket can be used at once depending on the
@@ -563,10 +653,46 @@ def init(config_path=None, use_watchdog=False, use_forwarder=False, args=None):
     if non_local_traffic:
         server_host = '0.0.0.0'
 
-    server = Server(aggregator, server_host, port, forward_to_host=forward_to_host, forward_to_port=forward_to_port)
+    server = Server(aggregator, server_host, port, forward_to_host=forward_to_host, forward_to_port=forward_to_port, so_rcvbuf=so_rcvbuf)
 
-    return reporter, server, c
+    return reporter, server
 
+
+def init6(agent_config=None, config_path=None, args=None):
+    if (not agent_config['use_sdstatsd'] and
+            (args and args[0] in ['start', 'restart'] or not args)):
+        log.info("Sdstatsd is disabled. Exiting")
+        # We're exiting purposefully, so exit with zero (supervisor's expected
+        # code). HACK: Sleep a little bit so supervisor thinks we've started cleanly
+        # and thus can exit cleanly.
+        sleep(4)
+        sys.exit(0)
+
+    env = copy.deepcopy(os.environ)
+    if agent_config.get('agent_key'):
+        env['SD_AGENT_KEY'] = str(agent_config['agent_key'])
+    if agent_config.get('sdstatsd_port'):
+        env['SD_SDSTATSD_PORT'] = str(agent_config['sdstatsd_port'])
+    if agent_config.get('sd_url'):
+        env['SD_SD_URL'] = str(agent_config['sd_url'])
+    if agent_config.get('non_local_traffic'):
+        env['SD_SDSTATSD_NON_LOCAL_TRAFFIC'] = str(agent_config['non_local_traffic'])
+    if agent_config.get('sdstatsd_socket'):
+        env['SD_SDSTATSD_SOCKET'] = str(agent_config['sdstatsd_socket'])
+    if agent_config.get('sdstatsd6_stats_port'):
+        env['SD_SDSTATSD_STATS_PORT'] = str(agent_config['sdstatsd6_stats_port'])
+    env['SD_LOG_LEVEL'] = agent_config.get('log_level', 'info')
+    env['SD_CONF_PATH'] = os.path.join(
+        os.path.dirname(get_config_path(cfg_path=config_path)), "config.cfg")
+    # metadata is sent by the collector, disable it in sdstatsd6 to avoid sending conflicting metadata
+    env['SD_ENABLE_METADATA_COLLECTION'] = 'false'
+
+    legacy_sdstatsd_log = get_logging_config().get('sdstatsd_log_file')
+    if legacy_sdstatsd_log:
+        env['SD_LOG_FILE'] = os.path.join(
+            os.path.dirname(legacy_sdstatsd_log), '{}.log'.format(Sdstatsd6.SDSD6_BIN_NAME))
+
+    return Sdstatsd6._get_sdsd6_path(), env
 
 def main(config_path=None):
     """ The main entry point for the unix version of sdstatsd. """
@@ -582,17 +708,31 @@ def main(config_path=None):
                       dest="use_forwarder", default=False)
     opts, args = parser.parse_args()
 
+    try:
+        c = get_config(parse_args=False, cfg_path=config_path)
+    except:
+        return 2
+
+    sdsd6_enabled = Sdstatsd6.enabled(c)
     in_developer_mode = False
     if not args or args[0] in COMMANDS_START_SDSTATSD:
-        reporter, server, cnf = init(config_path, use_watchdog=True, use_forwarder=opts.use_forwarder, args=args)
-        daemon = Sdstatsd(PidFile(PID_NAME, PID_DIR).get_path(), server, reporter,
-                          cnf.get('autorestart', False))
-        in_developer_mode = cnf.get('developer_mode')
+        if sdsd6_enabled:
+            sdsd6_path, env = init6(c, config_path, args)
+            sdsd6 = Sdstatsd6(c)
+        else:
+            reporter, server = init5(c, use_watchdog=True, use_forwarder=opts.use_forwarder, args=args)
+            daemon = Sdstatsd(PidFile(PID_NAME, PID_DIR).get_path(), server, reporter,
+                            c.get('autorestart', False))
+            in_developer_mode = c.get('developer_mode')
 
     # If no args were passed in, run the server in the foreground.
     if not args:
-        daemon.start(foreground=True)
-        return 0
+        if sdsd6_enabled:
+            logging.info("Launching Sdstatsd6 - logging to sdstatsd6.log")
+            sdsd6.execute([sdsd6_path, 'start'], env=env)
+        else:
+            daemon.start(foreground=True)
+            return 0
 
     # Otherwise, we're process the deamon command.
     else:
@@ -604,15 +744,26 @@ def main(config_path=None):
             return 1
 
         if command == 'start':
-            daemon.start()
+            if not sdsd6_enabled:
+                daemon.start()
         elif command == 'stop':
-            daemon.stop()
+            if not sdsd6_enabled:
+                daemon.stop()
         elif command == 'restart':
-            daemon.restart()
+            if not sdsd6_enabled:
+                daemon.restart()
         elif command == 'status':
-            daemon.status()
+            if sdsd6_enabled:
+                message = 'Status unavailable for sdstatsd6'
+                log.warning(message)
+                sys.stderr.write(message)
+            else:
+                daemon.status()
         elif command == 'info':
-            return Sdstatsd.info()
+            if sdsd6_enabled:
+                return Sdstatsd6.info(c)
+            else:
+                return Sdstatsd.info(c)
         else:
             sys.stderr.write("Unknown command: %s\n\n" % command)
             parser.print_help()

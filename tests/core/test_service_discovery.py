@@ -14,7 +14,7 @@ from utils.service_discovery.config_stores import get_config_store
 from utils.service_discovery.consul_config_store import ConsulStore
 from utils.service_discovery.etcd_config_store import EtcdStore
 from utils.service_discovery.abstract_config_store import AbstractConfigStore, \
-    _TemplateCache, CONFIG_FROM_KUBE, CONFIG_FROM_TEMPLATE, CONFIG_FROM_AUTOCONF
+    _TemplateCache, CONFIG_FROM_KUBE, CONFIG_FROM_TEMPLATE, CONFIG_FROM_AUTOCONF, CONFIG_FROM_LABELS
 from utils.service_discovery.sd_backend import get_sd_backend
 from utils.service_discovery.sd_docker_backend import SDDockerBackend, _SDDockerBackendConfigFetchState
 from utils.dockerutil import DockerUtil
@@ -174,6 +174,26 @@ class TestServiceDiscovery(unittest.TestCase):
         ])),
     }
 
+    image_formats = {
+        # Don't crash on empty string or None
+        '': '',
+        None: '',
+        # Shortest possibility
+        'alpine': 'alpine',
+        # Historical docker format
+        'nginx:latest': 'nginx',
+        # Org prefix to be removed
+        'datadog/docker-dd-agent:latest-jmx': 'docker-dd-agent',
+        # Sha-pinning used by many orchestrators
+        'redis@sha256:5bef08742407efd622d243692b79ba0055383bbce12900324f75e56f589aedb0': 'redis',
+        # Quirky pinning used by swarm
+        'org/redis:latest@sha256:5bef08742407efd622d243692b79ba0055383bbce12900324f75e56f589aedb0': 'redis',
+        # Custom registry, simple form
+        'myregistry.local:5000/testing/test-image:version': 'test-image',
+        # Custom registry, most insane form possible
+        'myregistry.local:5000/testing/test-image:version@sha256:5bef08742407efd622d243692b79ba0055383bbce12900324f75e56f589aedb0': 'test-image',
+    }
+
     def setUp(self):
         self.etcd_agentConfig = {
             'service_discovery': True,
@@ -225,18 +245,14 @@ class TestServiceDiscovery(unittest.TestCase):
             ({'NetworkSettings': {}}, 'host', None),
             ({'NetworkSettings': {'IPAddress': ''}}, 'host', None),
 
-            ({'NetworkSettings': {'IPAddress': '127.0.0.1'}}, 'host', '127.0.0.1'),
-            ({'NetworkSettings': {'IPAddress': '127.0.0.1', 'Networks': {}}}, 'host', '127.0.0.1'),
+            ({'NetworkSettings': {'Networks': {'bridge': {'IPAddress': '127.0.0.1'}}}}, 'host', '127.0.0.1'),
             ({'NetworkSettings': {
-                'IPAddress': '127.0.0.1',
                 'Networks': {'bridge': {'IPAddress': '127.0.0.1'}}}},
              'host', '127.0.0.1'),
             ({'NetworkSettings': {
-                'IPAddress': '',
                 'Networks': {'bridge': {'IPAddress': '127.0.0.1'}}}},
              'host_bridge', '127.0.0.1'),
             ({'NetworkSettings': {
-                'IPAddress': '127.0.0.1',
                 'Networks': {
                     'bridge': {'IPAddress': '172.17.0.2'},
                     'foo': {'IPAddress': '192.168.0.2'}}}},
@@ -310,6 +326,52 @@ class TestServiceDiscovery(unittest.TestCase):
 
     @mock.patch('config.get_auto_confd_path', return_value=os.path.join(
         os.path.dirname(__file__), 'fixtures/auto_conf/'))
+    @mock.patch('utils.http.requests.get')
+    @mock.patch('utils.dockerutil.DockerUtil.is_k8s', return_value=True)
+    def test_get_kube_tags(self, *args):
+        inspect = {
+            'Id': 'eae3f1f47eea2527be52b5380f8bfa6db34764bcc05da7506dbcf42f92a40a0e',
+            'Image': 'sha256:c3eb149853f0ec3390629c547c0ed75c020d91db8511927d7d13deb456de1997',
+            'Name': '/k8s_redis_redis-3073568142-z7gxl_default_c50800e9-dbf7-11e7-807b-06809d17eee8_0',
+            'Config': {
+                "Labels": {
+                    "io.kubernetes.container.name": "redis",
+                    "io.kubernetes.docker.type": "container",
+                    "io.kubernetes.pod.name": "redis-3073568142-z7gxl",
+                    "io.kubernetes.pod.namespace": "default",
+                    "io.kubernetes.sandbox.id": "f8ca7c0144ecab47fd13713b93eb1d2cc1ac143726d66027fd5d83b4e583be29"
+                },
+            },
+            'NetworkSettings': {'IPAddress': '', 'Ports': None}
+        }
+        kube_pods = [{
+            "metadata": {
+                "name": "redis-3073568142-z7gxl",
+                "generateName": "redis-3073568142-",
+                "namespace": "default",
+                "uid": "c50800e9-dbf7-11e7-807b-06809d17eee8",
+                "labels": {
+                    "pod-template-hash": "3073568142",
+                    "run": "redis"
+                }
+            },
+            "status": {"containerStatuses": [
+                {"name": "redis",
+                 "image": "redis:latest",
+                 "imageID": "docker-pullable://redis@sha256:de4e675f62e4f3f71f43e98ae46a67dba92459ff950de4428d13289b69328f96",
+                 "containerID": "docker://eae3f1f47eea2527be52b5380f8bfa6db34764bcc05da7506dbcf42f92a40a0e"}
+            ]}}]
+        clear_singletons(self.auto_conf_agentConfig)
+        state = _SDDockerBackendConfigFetchState(lambda _: inspect, kube_pods)
+        docker = SDDockerBackend(self.auto_conf_agentConfig)
+        tags = docker.get_tags(state, inspect["Id"])
+        self.assertIn('kube_container_name:redis', tags)
+        self.assertIn('kube_namespace:default', tags)
+        self.assertIn('run:redis', tags)
+        self.assertIn('pod-template-hash:3073568142', tags)
+
+    @mock.patch('config.get_auto_confd_path', return_value=os.path.join(
+        os.path.dirname(__file__), 'fixtures/auto_conf/'))
     @mock.patch('utils.dockerutil.DockerUtil.client', return_value=None)
     @mock.patch.object(ConsulStore, 'get_client', return_value=None)
     @mock.patch.object(EtcdStore, 'get_client', return_value=None)
@@ -327,6 +389,16 @@ class TestServiceDiscovery(unittest.TestCase):
             for image in self.bad_mock_templates.keys():
                 self.assertEquals(sd_backend._get_config_templates(image), None)
             clear_singletons(agentConfig)
+
+    @mock.patch('config.get_auto_confd_path', return_value=os.path.join(
+        os.path.dirname(__file__), 'fixtures/auto_conf/'))
+    @mock.patch('utils.dockerutil.DockerUtil.client', return_value=None)
+    #@mock.patch.object(AbstractConfigStore, 'get_check_tpls', side_effect=_get_check_tpls)
+    def test_get_image_ident(self, *args):
+        sd_backend = get_sd_backend(agentConfig=self.auto_conf_agentConfig)
+        # normal cases
+        for image, ident in self.image_formats.iteritems():
+            self.assertEquals(ident, sd_backend.config_store._get_image_ident(image))
 
     @mock.patch('config.get_auto_confd_path', return_value=os.path.join(
         os.path.dirname(__file__), 'fixtures/auto_conf/'))
@@ -375,10 +447,6 @@ class TestServiceDiscovery(unittest.TestCase):
             # ((inspect, instance_tpl, variables, tags), (expected_instance_tpl, expected_var_values))
             (({}, {'host': 'localhost'}, [], None), ({'host': 'localhost'}, {})),
             (
-                ({'NetworkSettings': {'IPAddress': ''}}, {'host': 'localhost'}, [], None),
-                ({'host': 'localhost'}, {})
-            ),
-            (
                 ({'NetworkSettings': {'Networks': {}}}, {'host': 'localhost'}, [], None),
                 ({'host': 'localhost'}, {})
             ),
@@ -387,18 +455,7 @@ class TestServiceDiscovery(unittest.TestCase):
                 ({'host': 'localhost'}, {})
             ),
             (
-                ({'NetworkSettings': {'IPAddress': '127.0.0.1'}},
-                 {'host': '%%host%%', 'port': 1337}, ['host'], ['foo', 'bar:baz']),
-                ({'host': '%%host%%', 'port': 1337, 'tags': ['foo', 'bar:baz']}, {'host': '127.0.0.1'}),
-            ),
-            (
-                ({'NetworkSettings': {'IPAddress': '127.0.0.1', 'Networks': {}}},
-                 {'host': '%%host%%', 'port': 1337}, ['host'], ['foo', 'bar:baz']),
-                ({'host': '%%host%%', 'port': 1337, 'tags': ['foo', 'bar:baz']}, {'host': '127.0.0.1'}),
-            ),
-            (
                 ({'NetworkSettings': {
-                    'IPAddress': '127.0.0.1',
                     'Networks': {'bridge': {'IPAddress': '172.17.0.2'}}}
                   },
                  {'host': '%%host%%', 'port': 1337}, ['host'], ['foo', 'bar:baz']),
@@ -406,7 +463,6 @@ class TestServiceDiscovery(unittest.TestCase):
             ),
             (
                 ({'NetworkSettings': {
-                    'IPAddress': '',
                     'Networks': {
                         'bridge': {'IPAddress': '172.17.0.2'},
                         'foo': {'IPAddress': '192.168.0.2'}
@@ -418,7 +474,6 @@ class TestServiceDiscovery(unittest.TestCase):
             ),
             (
                 ({'NetworkSettings': {
-                    'IPAddress': '',
                     'Networks': {
                         'bridge': {'IPAddress': '172.17.0.2'},
                         'foo': {'IPAddress': '192.168.0.2'}
@@ -429,14 +484,14 @@ class TestServiceDiscovery(unittest.TestCase):
                  {'host_foo': '192.168.0.2'}),
             ),
             (
-                ({'NetworkSettings': {'IPAddress': '127.0.0.1', 'Ports': {'42/tcp': None, '22/tcp': None}}},
+                ({'NetworkSettings': {'Networks': {'bridge': {'IPAddress': '127.0.0.1'}}, 'Ports': {'42/tcp': None, '22/tcp': None}}},
                  {'host': '%%host%%', 'port': '%%port_1%%', 'tags': ['env:test']},
                  ['host', 'port_1'], ['foo', 'bar:baz']),
                 ({'host': '%%host%%', 'port': '%%port_1%%', 'tags': ['env:test', 'foo', 'bar:baz']},
                  {'host': '127.0.0.1', 'port_1': '42'})
             ),
             (
-                ({'NetworkSettings': {'IPAddress': '127.0.0.1', 'Ports': {'42/tcp': None, '22/tcp': None}}},
+                ({'NetworkSettings': {'Networks': {'bridge': {'IPAddress': '127.0.0.1'}}, 'Ports': {'42/tcp': None, '22/tcp': None}}},
                  {'host': '%%host%%', 'port': '%%port_1%%', 'tags': {'env': 'test'}},
                  ['host', 'port_1'], ['foo', 'bar:baz']),
                 ({'host': '%%host%%', 'port': '%%port_1%%', 'tags': ['env:test', 'foo', 'bar:baz']},
@@ -451,7 +506,6 @@ class TestServiceDiscovery(unittest.TestCase):
             # specify bridge but there is also a default IPAddress (networks should be preferred)
             (
                 ({'NetworkSettings': {
-                    'IPAddress': '127.0.0.1',
                     'Networks': {'bridge': {'IPAddress': '172.17.0.2'}}}},
                  {'host': '%%host_bridge%%', 'port': 1337}, ['host_bridge'], ['foo', 'bar:baz']),
                 ({'host': '%%host_bridge%%', 'port': 1337, 'tags': ['foo', 'bar:baz']},
@@ -460,7 +514,6 @@ class TestServiceDiscovery(unittest.TestCase):
             # specify index but there is a default IPAddress (there's a specifier, even if it's wrong, walking networks should be preferred)
             (
                 ({'NetworkSettings': {
-                    'IPAddress': '127.0.0.1',
                     'Networks': {'bridge': {'IPAddress': '172.17.0.2'}}}},
                  {'host': '%%host_0%%', 'port': 1337}, ['host_0'], ['foo', 'bar:baz']),
                 ({'host': '%%host_0%%', 'port': 1337, 'tags': ['foo', 'bar:baz']}, {'host_0': '172.17.0.2'}),
@@ -475,7 +528,7 @@ class TestServiceDiscovery(unittest.TestCase):
             ),
             # missing index for port
             (
-                ({'NetworkSettings': {'IPAddress': '127.0.0.1', 'Ports': {'42/tcp': None, '22/tcp': None}}},
+                ({'NetworkSettings': {'Networks': {'bridge': {'IPAddress': '127.0.0.1'}}, 'Ports': {'42/tcp': None, '22/tcp': None}}},
                  {'host': '%%host%%', 'port': '%%port_2%%', 'tags': ['env:test']},
                  ['host', 'port_2'], ['foo', 'bar:baz']),
                 ({'host': '%%host%%', 'port': '%%port_2%%', 'tags': ['env:test', 'foo', 'bar:baz']},
@@ -609,6 +662,31 @@ class TestServiceDiscovery(unittest.TestCase):
                         ['service-discovery.serverdensity.com/foo.check_names',
                          'service-discovery.serverdensity.com/foo.init_configs',
                          'service-discovery.serverdensity.com/foo.instances'],
+                        self.mock_raw_templates[image][0]))))
+
+    @mock.patch('config.get_auto_confd_path', return_value=os.path.join(
+        os.path.dirname(__file__), 'fixtures/auto_conf/'))
+    @mock.patch.object(AbstractConfigStore, 'client_read', side_effect=client_read)
+    def test_get_check_tpls_labels(self, *args):
+        """Test get_check_tpls from docker labesl"""
+        valid_config = ['image_0', 'image_1', 'image_2', 'image_3', 'image_4']
+        invalid_config = ['bad_image_0']
+        config_store = get_config_store(self.auto_conf_agentConfig)
+        for image in valid_config + invalid_config:
+            tpl = self.mock_raw_templates.get(image)[1]
+            tpl = [(CONFIG_FROM_LABELS, t[1]) for t in tpl]
+            if tpl:
+                self.assertNotEquals(
+                    tpl,
+                    config_store.get_check_tpls(image, auto_conf=True))
+            self.assertEquals(
+                tpl,
+                config_store.get_check_tpls(
+                    image, auto_conf=True,
+                    docker_labels=dict(zip(
+                        ['com.serverdensity.ad.check_names',
+                         'com.serverdensity.ad.init_configs',
+                         'com.serverdensity.ad.instances'],
                         self.mock_raw_templates[image][0]))))
 
     @mock.patch('config.get_auto_confd_path', return_value=os.path.join(

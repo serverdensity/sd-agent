@@ -55,4 +55,5 @@ debian/build/lib/python2.7/site-packages/yaml usr/share/python/sd-agent/lib/pyth
 debian/build/lib/python2.7/site-packages/certifi* usr/share/python/sd-agent/lib/python2.7/site-packages
 debian/build/lib/python2.7/site-packages/chardet* usr/share/python/sd-agent/lib/python2.7/site-packages
 debian/build/lib/python2.7/site-packages/idna* usr/share/python/sd-agent/lib/python2.7/site-packages
+debian/build/lib/python2.7/site-packages/prometheus_client* usr/share/python/sd-agent/lib/python2.7/site-packages
 debian/build/local usr/share/python/sd-agent

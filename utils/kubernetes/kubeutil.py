@@ -6,23 +6,25 @@
 from collections import defaultdict
 import logging
 import os
-from urlparse import urljoin
-from urllib import urlencode
 import simplejson as json
+import time
+from urllib import urlencode
+from urlparse import urljoin
 
 # project
 from util import check_yaml
 from utils.checkfiles import get_conf_path
-from utils.http import retrieve_json
-from utils.singleton import Singleton
 from utils.dockerutil import DockerUtil
-from utils.kubernetes import PodServiceMapper, KubeEventRetriever
+from utils.http import retrieve_json
+from utils.kubernetes import LeaderElector, KubeEventRetriever, PodServiceMapper
+from utils.singleton import Singleton
 
 import requests
 
 log = logging.getLogger('collector')
 
 KUBERNETES_CHECK_NAME = 'kubernetes'
+DEFAULT_NAMESPACE = 'default'
 
 DEFAULT_TLS_VERIFY = True
 
@@ -30,9 +32,16 @@ CREATOR_KIND_TO_TAG = {
     'DaemonSet': 'kube_daemon_set',
     'ReplicaSet': 'kube_replica_set',
     'ReplicationController': 'kube_replication_controller',
+    'StatefulSet': 'kube_stateful_set',
     'Deployment': 'kube_deployment',
     'Job': 'kube_job'
 }
+
+DEFAULT_INIT_RETRIES = 0
+DEFAULT_RETRY_INTERVAL = 20  # seconds
+
+# Taken from https://github.com/kow3ns/kubernetes/blob/96067e6d7b24a05a6a68a0d94db622957448b5ab/staging/src/k8s.io/apimachinery/pkg/util/rand/rand.go#L76
+ALLOWED_ENCODESTRING_ALPHANUMS = "bcdfghjklmnpqrstvwxz2456789"
 
 
 def detect_is_k8s():
@@ -75,26 +84,30 @@ class KubeUtil:
     NAMESPACE_LABEL = "io.kubernetes.pod.namespace"
     CONTAINER_NAME_LABEL = "io.kubernetes.container.name"
 
-    def __init__(self, instance=None):
+    def __init__(self, **kwargs):
         self.docker_util = DockerUtil()
-        if instance is None:
+        if 'init_config' in kwargs and 'instance' in kwargs:
+            init_config = kwargs.get('init_config', {})
+            instance = kwargs.get('instance', {})
+        else:
             try:
                 config_file_path = get_conf_path(KUBERNETES_CHECK_NAME)
                 check_config = check_yaml(config_file_path)
-                instance = check_config['instances'][0]
+                init_config = check_config['init_config'] or {}
+                instance = check_config['instances'][0] or {}
             # kubernetes.yaml was not found
             except IOError as ex:
                 log.error(ex.message)
-
-                instance = {}
+                init_config, instance = {}, {}
             except Exception:
                 log.error('Kubernetes configuration file is invalid. '
                           'Trying connecting to kubelet with default settings anyway...')
-                instance = {}
+                init_config, instance = {}, {}
 
         self.method = instance.get('method', KubeUtil.DEFAULT_METHOD)
         self._node_ip = self._node_name = None  # lazy evaluation
         self.host_name = os.environ.get('HOSTNAME')
+        self.pod_name = os.environ.get('KUBERNETES_POD_NAME') or self.host_name
         self.tls_settings = self._init_tls_settings(instance)
 
         # apiserver
@@ -107,31 +120,28 @@ class KubeUtil:
 
         self.kubernetes_api_url = '%s/api/v1' % self.kubernetes_api_root_url
 
-        # kubelet
-        try:
-            self.kubelet_api_url = self._locate_kubelet(instance)
-            if not self.kubelet_api_url:
-                raise Exception("Couldn't find a method to connect to kubelet.")
-        except Exception as ex:
-            log.error("Kubernetes check exiting, cannot run without access to kubelet.")
-            raise ex
-
         # Service mapping helper class
         self._service_mapper = PodServiceMapper(self)
-
-        self.kubelet_host = self.kubelet_api_url.split(':')[1].lstrip('/')
-        self.pods_list_url = urljoin(self.kubelet_api_url, KubeUtil.PODS_LIST_PATH)
-        self.kube_health_url = urljoin(self.kubelet_api_url, KubeUtil.KUBELET_HEALTH_PATH)
-        self.kube_label_prefix = instance.get('label_to_tag_prefix', KubeUtil.DEFAULT_LABEL_PREFIX)
-
-        # cadvisor
-        self.cadvisor_port = instance.get('port', KubeUtil.DEFAULT_CADVISOR_PORT)
-        self.cadvisor_url = '%s://%s:%d' % (self.method, self.kubelet_host, self.cadvisor_port)
-        self.metrics_url = urljoin(self.cadvisor_url, KubeUtil.METRICS_PATH)
-        self.machine_info_url = urljoin(self.cadvisor_url, KubeUtil.MACHINE_INFO_PATH)
-
         from config import _is_affirmative
         self.collect_service_tag = _is_affirmative(instance.get('collect_service_tags', KubeUtil.DEFAULT_COLLECT_SERVICE_TAG))
+
+
+        # leader status triggers event collection
+        self.is_leader = False
+        self.leader_elector = None
+        self.leader_lease_duration = instance.get('leader_lease_duration')
+
+        # kubelet
+        # If kubelet_api_url is None, init_kubelet didn't succeed yet.
+        self.init_success = False
+        self.kubelet_api_url = None
+        self.init_retry_interval = init_config.get('init_retry_interval', DEFAULT_RETRY_INTERVAL)
+        self.last_init_retry = None
+        self.left_init_retries = init_config.get('init_retries', DEFAULT_INIT_RETRIES) + 1
+        self.init_kubelet(instance)
+
+        self.kube_label_prefix = instance.get('label_to_tag_prefix', KubeUtil.DEFAULT_LABEL_PREFIX)
+        self.kube_node_labels = instance.get('node_labels_to_host_tags', {})
 
         # keep track of the latest k8s event we collected and posted
         # default value is 0 but TTL for k8s events is one hour anyways
@@ -174,11 +184,59 @@ class KubeUtil:
 
         return tls_settings
 
+    def init_kubelet(self, instance):
+        """
+        Handles the retry logic around _locate_kubelet.
+        Once _locate_kubelet succeeds, initialize all kubelet-related
+        URLs and settings.
+        """
+        if self.left_init_retries == 0:
+            raise Exception("Kubernetes client initialization failed permanently. "
+                "Kubernetes-related features will fail.")
+
+        now = time.time()
+
+        # last retry was less than retry_interval ago
+        if self.last_init_retry and now <= self.last_init_retry + self.init_retry_interval:
+            return
+        # else it's the first try, or last retry was long enough ago
+        self.last_init_retry = now
+        self.left_init_retries -= 1
+
+        try:
+            self.kubelet_api_url = self._locate_kubelet(instance)
+        except Exception as ex:
+            log.error("Failed to initialize kubelet connection. Will retry %s time(s). Error: %s" % (self.left_init_retries, str(ex)))
+            return
+        if not self.kubelet_api_url:
+            log.error("Failed to initialize kubelet connection. Will retry %s time(s)." % self.left_init_retries)
+            return
+
+        self.init_success = True
+
+        self.kubelet_host = self.kubelet_api_url.split(':')[1].lstrip('/')
+        self.pods_list_url = urljoin(self.kubelet_api_url, KubeUtil.PODS_LIST_PATH)
+        self.kube_health_url = urljoin(self.kubelet_api_url, KubeUtil.KUBELET_HEALTH_PATH)
+
+        # namespace of the agent pod
+        try:
+            self.self_namespace = self.get_self_namespace()
+        except Exception:
+            log.warning("Failed to get the agent pod namespace, defaulting to default.")
+            self.self_namespace = DEFAULT_NAMESPACE
+
+        # cadvisor
+        self.cadvisor_port = instance.get('port', KubeUtil.DEFAULT_CADVISOR_PORT)
+        self.cadvisor_url = '%s://%s:%d' % (self.method, self.kubelet_host, self.cadvisor_port)
+        self.metrics_url = urljoin(self.cadvisor_url, KubeUtil.METRICS_PATH)
+        self.machine_info_url = urljoin(self.cadvisor_url, KubeUtil.MACHINE_INFO_PATH)
+
     def _locate_kubelet(self, instance):
         """
         Kubelet may or may not accept un-authenticated http requests.
         If it doesn't we need to use its HTTPS API that may or may not
         require auth.
+        Returns the kubelet URL or raises.
         """
         host = os.environ.get('KUBERNETES_KUBELET_HOST') or instance.get("host")
         if not host:
@@ -194,23 +252,34 @@ class KubeUtil:
                     host = docker_hostname
             else:
                 host = docker_hostname
+
+        # check if the no-auth endpoint is enabled
+        port = instance.get('kubelet_port', KubeUtil.DEFAULT_HTTP_KUBELET_PORT)
+        no_auth_url = 'http://%s:%s' % (host, port)
+        test_url = urljoin(no_auth_url, KubeUtil.KUBELET_HEALTH_PATH)
         try:
-            # check if the no-auth endpoint is enabled
-            port = instance.get('kubelet_port', KubeUtil.DEFAULT_HTTP_KUBELET_PORT)
-            no_auth_url = 'http://%s:%s' % (host, port)
-            test_url = urljoin(no_auth_url, KubeUtil.KUBELET_HEALTH_PATH)
             self.perform_kubelet_query(test_url)
             return no_auth_url
         except Exception:
             log.debug("Couldn't query kubelet over HTTP, assuming it's not in no_auth mode.")
 
         port = instance.get('kubelet_port', KubeUtil.DEFAULT_HTTPS_KUBELET_PORT)
-
         https_url = 'https://%s:%s' % (host, port)
         test_url = urljoin(https_url, KubeUtil.KUBELET_HEALTH_PATH)
-        self.perform_kubelet_query(test_url)
+        try:
+            self.perform_kubelet_query(test_url)
+            return https_url
+        except Exception as ex:
+            log.warning("Couldn't query kubelet over HTTP, assuming it's not in no_auth mode.")
+            raise ex
 
-        return https_url
+    def get_self_namespace(self):
+        pods = self.retrieve_pods_list()
+        for pod in pods.get('items', []):
+            if pod.get('metadata', {}).get('name') == self.pod_name:
+                return pod['metadata']['namespace']
+        log.warning("Couldn't find the agent pod and namespace, using the default.")
+        return DEFAULT_NAMESPACE
 
     def get_node_hostname(self, host):
         """
@@ -220,7 +289,7 @@ class KubeUtil:
         node_filter = {'labelSelector': 'kubernetes.io/hostname=%s' % host}
         node = self.retrieve_json_auth(
             self.kubernetes_api_url + '/nodes?%s' % urlencode(node_filter)
-        )
+        ).json()
         if len(node['items']) != 1:
             log.error('Error while getting node hostname: expected 1 node, got %s.' % len(node['items']))
         else:
@@ -235,6 +304,9 @@ class KubeUtil:
         Gets pods' labels as tags + creator and service tags.
         Returns a dict{namespace/podname: [tags]}
         """
+        if not self.init_success:
+            log.warning("Kubernetes client is not initialized, can't get pod tags.")
+            return {}
         pods = self.retrieve_pods_list()
         return self.extract_kube_pod_tags(pods, excluded_keys=excluded_keys)
 
@@ -306,9 +378,25 @@ class KubeUtil:
         https://github.com/kubernetes/kubernetes/blob/release-1.6/pkg/controller/deployment/sync.go#L299
         But it might change in a future k8s version. The other way to match RS and deployments is
         to parse and cache /apis/extensions/v1beta1/replicasets, mirroring PodServiceMapper
+        In 1.8, the hash generation logic changed: https://github.com/kubernetes/kubernetes/pull/51538/files
+
+        As none of these naming schemes have guaranteed suffix lenghts, we have to be pretty permissive
+        in what kind of suffix we match. That can lead to false positives, although their impact would
+        be limited (erroneous kube_deployment tag, but the kube_replica_set tag will be present).
+        For example, the hardcoded replicaset name prefix-34 or prefix-cfd will match.
+
+        For agent6, we plan on doing this pod->replicaset->deployment matching in the cluster agent, with
+        replicaset data from the apiserver. This will address that risk.
         """
         end = rs_name.rfind("-")
         if end > 0 and rs_name[end + 1:].isdigit():
+            # k8s before 1.8
+            return rs_name[0:end]
+        if end > 0 and len(rs_name[end + 1:]) > 2:
+            # k8s 1.8+ maybe? Check contents
+            for char in rs_name[end + 1:]:
+                if char not in ALLOWED_ENCODESTRING_ALPHANUMS:
+                    return None
             return rs_name[0:end]
         else:
             return None
@@ -330,7 +418,7 @@ class KubeUtil:
         return requests.get(url, timeout=timeout, verify=verify,
             cert=cert, headers=headers, params={'verbose': verbose})
 
-    def retrieve_json_auth(self, url, timeout=10, verify=None, params=None):
+    def get_apiserver_auth_settings(self):
         """
         Kubernetes API requires authentication using a token available in
         every pod, or with a client X509 cert/key pair.
@@ -347,11 +435,33 @@ class KubeUtil:
 
         cert = self.tls_settings.get('apiserver_client_cert')
         bearer_token = self.tls_settings.get('bearer_token') if not cert else None
-        headers = {'Authorization': 'Bearer {}'.format(bearer_token)} if bearer_token else None
+        headers = {'Authorization': 'Bearer {}'.format(bearer_token)} if bearer_token else {}
+        headers['content-type'] = 'application/json'
+        return cert, headers, verify
 
-        r = requests.get(url, timeout=timeout, headers=headers, verify=verify, cert=cert, params=params)
-        r.raise_for_status()
-        return r.json()
+    def retrieve_json_auth(self, url, params=None, timeout=3):
+        cert, headers, verify = self.get_apiserver_auth_settings()
+        res = requests.get(url, timeout=timeout, headers=headers, verify=verify, cert=cert, params=params)
+        res.raise_for_status()
+        return res
+
+    def post_json_to_apiserver(self, url, data, timeout=3):
+        cert, headers, verify = self.get_apiserver_auth_settings()
+        res = requests.post(url, timeout=timeout, headers=headers, verify=verify, cert=cert, data=json.dumps(data))
+        res.raise_for_status()
+        return res
+
+    def put_json_to_apiserver(self, url, data, timeout=3):
+        cert, headers, verify = self.get_apiserver_auth_settings()
+        res = requests.put(url, timeout=timeout, headers=headers, verify=verify, cert=cert, data=json.dumps(data))
+        res.raise_for_status()
+        return res
+
+    def delete_to_apiserver(self, url, timeout=3):
+        cert, headers, verify = self.get_apiserver_auth_settings()
+        res = requests.delete(url, timeout=timeout, headers=headers, verify=verify, cert=cert)
+        res.raise_for_status()
+        return res
 
     def get_node_info(self):
         """
@@ -361,31 +471,62 @@ class KubeUtil:
             self._fetch_host_data()
         return self._node_ip, self._node_name
 
-    def get_node_hosttags(self):
-        tags = []
+    def get_node_metadata(self):
+        """Returns host metadata about the local k8s node"""
+        meta = {}
 
         # API server version
         try:
             request_url = "%s/version" % self.kubernetes_api_root_url
-            master_info = self.retrieve_json_auth(request_url)
+            master_info = self.retrieve_json_auth(request_url).json()
             version = master_info.get("gitVersion")
-            tags.append("kube_master_version:%s" % version[1:])
-        except Exception as e:
+            meta['kube_master_version'] = version[1:]
+        except Exception as ex:
             # Intentional use of non-safe lookups to get the exception in the debug logs
             # if the parsing were to fail
-            log.debug("Error getting Kube master version: %s" % str(e))
+            log.debug("Error getting Kube master version: %s" % str(ex))
 
-        # Kubelet version
+        # Kubelet version & labels
+        if not self.init_success:
+            log.warning("Kubelet client failed to initialize, kubelet host tags will be missing for now.")
+            return meta
         try:
             _, node_name = self.get_node_info()
             if not node_name:
                 raise ValueError("node name missing or empty")
             request_url = "%s/nodes/%s" % (self.kubernetes_api_url, node_name)
-            node_info = self.retrieve_json_auth(request_url)
+            node_info = self.retrieve_json_auth(request_url).json()
             version = node_info.get("status").get("nodeInfo").get("kubeletVersion")
-            tags.append("kubelet_version:%s" % version[1:])
-        except Exception as e:
-            log.debug("Error getting Kubelet version: %s" % str(e))
+            meta['kubelet_version'] = version[1:]
+        except Exception as ex:
+            log.debug("Error getting Kubelet version: %s" % str(ex))
+
+        return meta
+
+
+    def get_node_hosttags(self):
+        """
+        Returns node labels as tags. Tag name is transformed as defined
+        in node_labels_to_host_tags in the kubernetes check configuration.
+        Note: queries the API server for node info. Configure RBAC accordingly.
+        """
+        tags = []
+
+        try:
+            _, node_name = self.get_node_info()
+            if not node_name:
+                raise ValueError("node name missing or empty")
+
+            request_url = "%s/nodes/%s" % (self.kubernetes_api_url, node_name)
+            node_info = self.retrieve_json_auth(request_url).json()
+            node_labels = node_info.get('metadata', {}).get('labels', {})
+
+            for l_name, t_name in self.kube_node_labels.iteritems():
+                if l_name in node_labels:
+                    tags.append('%s:%s' % (t_name, node_labels[l_name]))
+
+        except Exception as ex:
+            log.debug("Error getting node labels: %s" % str(ex))
 
         return tags
 
@@ -402,16 +543,24 @@ class KubeUtil:
             log.warning("Unable to retrieve pod list %s. Not fetching host data", str(e))
             return
 
+        # Take the first Pod with a status:
+        # all running pods have the adapted '.spec.nodeName'
+        # static pods doesn't have the '.status.hostIP'
         for pod in pod_items:
-            metadata = pod.get("metadata", {})
-            name = metadata.get("name")
-            if name == self.host_name:
-                status = pod.get('status', {})
-                spec = pod.get('spec', {})
-                # if not found, use an empty string - we use None as "not initialized"
-                self._node_ip = status.get('hostIP', '')
-                self._node_name = spec.get('nodeName', '')
-                break
+            node_name = pod.get('spec', {}).get('nodeName', '')
+            if not self._node_name and node_name:
+                self._node_name = node_name
+
+            # hostIP is not fill on static Pods
+            host_ip = pod.get('status', {}).get('hostIP', '')
+            if not self._node_ip and host_ip:
+                self._node_ip = host_ip
+
+            if self._node_name and self._node_ip:
+                return
+
+        log.warning("Cannot set both node_name: '%s' and node_ip: '%s' from PodList with %d items",
+                    self._node_name, self._node_ip, len(pod_items))
 
     def extract_event_tags(self, event):
         """
@@ -427,6 +576,10 @@ class KubeUtil:
             tags.append('node_name:%s' % event['source']['host'])
         if 'kind' in event.get('involvedObject', {}):
             tags.append('object_type:%s' % event['involvedObject'].get('kind', '').lower())
+        if 'name' in event.get('involvedObject', {}):
+            tags.append('object_name:%s' % event['involvedObject'].get('name','').lower())
+        if 'component' in event.get('source', {}):
+            tags.append('source_component:%s' % event['source'].get('component','').lower())
 
         return tags
 
@@ -501,13 +654,21 @@ class KubeUtil:
         This allows for consitency across code path
         """
         try:
-            created_by = json.loads(pod_metadata['annotations']['kubernetes.io/created-by'])
-            creator_kind = created_by.get('reference', {}).get('kind')
-            creator_name = created_by.get('reference', {}).get('name')
-            return (creator_kind, creator_name)
-        except Exception:
-            log.debug('Could not parse creator for pod ' + pod_metadata.get('name', ''))
-            return (None, None)
+            owner_references_entry = pod_metadata['ownerReferences'][0]
+            creator_kind = owner_references_entry['kind']
+            creator_name = owner_references_entry['name']
+            return creator_kind, creator_name
+        except LookupError as e:
+            try:
+                log.debug('Could not parse creator for pod %s through `OwnerReferences`, falling back to annotation: %s',
+                          pod_metadata.get('name', ''), type(e))
+                created_by = json.loads(pod_metadata['annotations']['kubernetes.io/created-by'])
+                creator_kind = created_by.get('reference', {}).get('kind')
+                creator_name = created_by.get('reference', {}).get('name')
+                return creator_kind, creator_name
+            except Exception as e:
+                log.debug('Could not parse creator for pod %s: %s', pod_metadata.get('name', ''), type(e))
+                return None, None
 
     def get_pod_creator_tags(self, pod_metadata, legacy_rep_controller_tag=False):
         """
@@ -548,3 +709,23 @@ class KubeUtil:
         except Exception as e:
             log.warning("Error processing events %s: %s" % (str(event_array), e))
             return set()
+
+    def refresh_leader(self):
+        if not self.init_success:
+            log.warning("Kubelet client is not initialized, leader election is disabled.")
+            return
+        if not self.leader_elector:
+            self.leader_elector = LeaderElector(self)
+        self.leader_elector.try_acquire_or_refresh()
+
+    def image_name_resolver(self, image):
+        """
+        Wraps around the sibling dockerutil method and catches exceptions
+        """
+        if image is None:
+            return None
+        try:
+            return self.docker_util.image_name_resolver(image)
+        except Exception as e:
+            log.warning("Error resolving image name: %s", str(e))
+            return image

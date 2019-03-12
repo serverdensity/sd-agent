@@ -21,6 +21,7 @@ from socket import gaierror, gethostbyname
 import string
 import sys
 import traceback
+from importlib import import_module
 
 # 3p
 import simplejson as json
@@ -41,8 +42,8 @@ from utils.windows_configuration import get_registry_conf, get_windows_sdk_check
 
 
 # CONSTANTS
-AGENT_VERSION = "2.2.4"
-JMX_VERSION = "0.15.0"
+AGENT_VERSION = "2.2.5"
+JMX_VERSION = "0.20.1"
 SD_CONF = "config.cfg"
 UNIX_CONFIG_PATH = '/etc/sd-agent'
 MAC_CONFIG_PATH = '/usr/local/etc/sd-agent/'
@@ -91,6 +92,11 @@ MANIFEST_VALIDATION = {
 class PathNotFound(Exception):
     pass
 
+class ApiKeyNotFound(Exception):
+    pass
+
+class ApiKeyInvalid(Exception):
+    pass
 
 def get_parsed_args():
     parser = OptionParser()
@@ -334,7 +340,7 @@ def remove_empty(string_array):
     return filter(lambda x: x, string_array)
 
 
-def get_config(parse_args=True, cfg_path=None, options=None, can_query_registry=True):
+def get_config(parse_args=True, cfg_path=None, options=None, can_query_registry=True, allow_invalid_api_key=False):
     if parse_args:
         options, _ = get_parsed_args()
 
@@ -354,7 +360,8 @@ def get_config(parse_args=True, cfg_path=None, options=None, can_query_registry=
         'additional_checksd': '/etc/sd-agent/checks.d/',
         'bind_host': get_default_bind_host(),
         'statsd_metric_namespace': None,
-        'utf8_decoding': False
+        'utf8_decoding': False,
+        'apm_enabled': False
     }
 
     if Platform.is_mac():
@@ -393,7 +400,6 @@ def get_config(parse_args=True, cfg_path=None, options=None, can_query_registry=
         if not (config.has_option('Main', 'sd_url') or config.has_option('Main', 'sd_account')):
             log.warning(u"No sd_account or sd_url was found. Aborting.")
             sys.exit(2)
-
         endpoints = {}
         agentConfig['endpoints'] = endpoints
         if config.has_option('Main', 'sd_account'):
@@ -551,6 +557,11 @@ def get_config(parse_args=True, cfg_path=None, options=None, can_query_registry=
             # Default to False as there are some issues with the curl client and ELB
             agentConfig["use_curl_http_client"] = False
 
+        if config.has_option("Main", "allow_ipv6"):
+            agentConfig["allow_ipv6"] = _is_affirmative(config.get("Main", "allow_ipv6"))
+        else:
+            agentConfig["allow_ipv6"] = True
+
         if config.has_section('WMI'):
             agentConfig['WMI'] = {}
             for key, value in config.items('WMI'):
@@ -582,6 +593,28 @@ def get_config(parse_args=True, cfg_path=None, options=None, can_query_registry=
         agentConfig["gce_updated_hostname"] = False
         if config.has_option("Main", "gce_updated_hostname"):
             agentConfig["gce_updated_hostname"] = _is_affirmative(config.get("Main", "gce_updated_hostname"))
+
+        # APM config
+        agentConfig["apm_enabled"] = True
+        if config.has_option("Main", "apm_enabled"):
+            agentConfig["apm_enabled"] = _is_affirmative(config.get("Main", "apm_enabled"))
+
+        agentConfig["process_agent_enabled"] = False
+        if config.has_option("Main", "process_agent_enabled"):
+            agentConfig["process_agent_enabled"] = _is_affirmative(config.get("Main", "process_agent_enabled"))
+
+
+        agentConfig["enable_gohai"] = True
+        if config.has_option("Main", "enable_gohai"):
+            agentConfig["enable_gohai"] = _is_affirmative(config.get("Main", "enable_gohai"))
+
+        agentConfig["openstack_use_uuid"] = False
+        if config.has_option("Main", "openstack_use_uuid"):
+            agentConfig["openstack_use_uuid"] = _is_affirmative(config.get("Main", "openstack_use_uuid"))
+
+        agentConfig["openstack_use_metadata_tags"] = True
+        if config.has_option("Main", "openstack_use_metadata_tags"):
+            agentConfig["openstack_use_metadata_tags"] = _is_affirmative(config.get("Main", "openstack_use_metadata_tags"))
 
     except ConfigParser.NoSectionError as e:
         sys.stderr.write('Config file not found or incorrectly formatted.\n')
@@ -811,18 +844,49 @@ def get_ssl_certificate(osname, filename):
     log.info("Certificate file NOT found at %s" % str(path))
     return None
 
+def _get_check_module(check_name, check_path, from_site=False):
+    error = None
+    traceback_message = None
+    if from_site:
+        try:
+            check_module = import_module("serverdensity_checks.{}".format(check_name))
+        except Exception as e:
+            error = e
+            # Log at debug level since this code path is expected if the check is not installed as a wheel
+            #log.debug('Unable to import check module %s from site-packages: %s', check_name, e)
+    else:
+        try:
+            check_module = imp.load_source('checksd_%s' % check_name, check_path)
+        except Exception as e:
+            error = e
+            traceback_message = traceback.format_exc()
+            # There is a configuration file for that check but the module can't be imported
+            log.exception('Unable to import check module %s.py from checks.d' % check_name)
 
-def _get_check_class(check_name, check_path):
+    if error:
+        return None, {'error': error, 'traceback': traceback_message}
+
+    return check_module, None
+
+
+def _get_wheel_version(check_name):
+    check_module, err = _get_check_module(check_name, None, True)
+    if err:
+        return err
+
+    if hasattr(check_module, "__version__"):
+        return check_module.__version__
+
+    return None
+
+def _get_check_class(check_name, check_path, from_site=False):
     '''Return the corresponding check class for a check name if available.'''
     from checks import AgentCheck
     check_class = None
-    try:
-        check_module = imp.load_source('checksd_%s' % check_name, check_path)
-    except Exception as e:
-        traceback_message = traceback.format_exc()
-        # There is a configuration file for that check but the module can't be imported
-        log.exception('Unable to import check module %s.py from checks.d' % check_name)
-        return {'error': e, 'traceback': traceback_message}
+
+    check_module, err = _get_check_module(check_name, check_path, from_site)
+    if err:
+        return err
 
     # We make sure that there is an AgentCheck class defined
     check_class = None
@@ -909,9 +973,10 @@ def get_checks_places(osname, agentConfig):
     try:
         checksd_path = get_checksd_path(osname)
     except PathNotFound as e:
-        log.error(e.args[0])
-        sys.exit(3)
+        log.info("no bundled checks.d path (checks provided as wheels): %s", e.args[0])
+        checksd_path = None
 
+    # custom checks
     places = [lambda name: (os.path.join(agentConfig['additional_checksd'], '%s.py' % name), None)]
 
     try:
@@ -924,7 +989,12 @@ def get_checks_places(osname, agentConfig):
     except PathNotFound:
         log.debug('No sdk integrations path found')
 
-    places.append(lambda name: (os.path.join(checksd_path, '%s.py' % name), None))
+    # wheel integrations
+    places.append(lambda name: (None, None))
+
+    # agent-bundled integrations
+    if checksd_path:
+        places.append(lambda name: (os.path.join(checksd_path, '%s.py' % name), None))
     return places
 
 
@@ -945,8 +1015,8 @@ def _load_file_config(config_path, check_name, agentConfig):
     return True, check_config, {}
 
 
-def get_valid_check_class(check_name, check_path):
-    check_class = _get_check_class(check_name, check_path)
+def get_valid_check_class(check_name, check_path, from_site=False):
+    check_class = _get_check_class(check_name, check_path, from_site)
 
     if not check_class:
         log.error('No check class (inheriting from AgentCheck) found in %s.py' % check_name)
@@ -958,7 +1028,8 @@ def get_valid_check_class(check_name, check_path):
     return True, check_class, {}
 
 
-def _initialize_check(check_config, check_name, check_class, agentConfig, manifest_path):
+def _initialize_check(check_config, check_name, check_class, agentConfig,
+                      manifest_path, version_override=None):
     init_config = check_config.get('init_config') or {}
     instances = check_config['instances']
     try:
@@ -974,7 +1045,11 @@ def _initialize_check(check_config, check_name, check_class, agentConfig, manife
 
         if manifest_path:
             check.set_manifest_path(manifest_path)
-        check.set_check_version(load_manifest(manifest_path))
+
+        if not version_override:
+            check.set_check_version(manifest=load_manifest(manifest_path))
+        else:
+            check.set_check_version(version=version_override)
     except Exception as e:
         log.exception('Unable to initialize check %s' % check_name)
         traceback_message = traceback.format_exc()
@@ -982,6 +1057,8 @@ def _initialize_check(check_config, check_name, check_class, agentConfig, manife
         if manifest is not None:
             check_version = '{core}:{vers}'.format(core=AGENT_VERSION,
                                                    vers=manifest.get('version', 'unknown'))
+        elif version_override:
+            check_version = version_override
         else:
             check_version = AGENT_VERSION
 
@@ -1036,13 +1113,19 @@ def load_check_from_places(check_config, check_name, checks_places, agentConfig)
     load_success, load_failure = {}, {}
     for check_path_builder in checks_places:
         check_path, manifest_path = check_path_builder(check_name)
+
+        is_wheel = not check_path and not manifest_path
         # The windows SDK function will return None,
         # so the loop should also continue if there is no path.
-        if not (check_path and os.path.exists(check_path)):
+        if not (check_path and os.path.exists(check_path)) and not is_wheel:
             continue
 
-        check_is_valid, check_class, load_failure = get_valid_check_class(check_name, check_path)
+        prev_failures = bool(load_failure)
+        check_is_valid, check_class, load_failure = get_valid_check_class(check_name, check_path, from_site=is_wheel)
         if not check_is_valid:
+            load_error = load_failure.get(check_name, {}).get('error')
+            if is_wheel and not prev_failures and isinstance(load_error, ImportError):
+                load_failure = {}
             continue
 
         if manifest_path:
@@ -1051,13 +1134,27 @@ def load_check_from_places(check_config, check_name, checks_places, agentConfig)
                 log.warn("The SDK check (%s) was designed for a different agent core "
                          "or couldnt be validated - behavior is undefined" % check_name)
 
+        version_override = None
+        if is_wheel:
+            wheel_version = _get_wheel_version(check_name)
+            if wheel_version is None or isinstance(wheel_version, dict):
+                version_override = 'Unknown Wheel'
+            else:
+                version_override = wheel_version
+        elif not manifest_path and agentConfig['additional_checksd'] in check_path:
+            version_override = 'custom'  # custom check
+
+
         load_success, load_failure = _initialize_check(
-            check_config, check_name, check_class, agentConfig, manifest_path
+            check_config, check_name, check_class, agentConfig, manifest_path, version_override
         )
 
         _update_python_path(check_config)
 
-        log.debug('Loaded %s' % check_path)
+        if is_wheel:
+            log.debug('Loaded %s' % check_name)
+        else:
+            log.debug('Loaded %s' % check_path)
         break  # we successfully initialized this check
 
     return load_success, load_failure
