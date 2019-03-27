@@ -16,6 +16,7 @@ for arch in amd64 i386; do
     if [ ! -d /packages/"$distro"/"$RELEASE"/"$arch" ]; then
         sudo mkdir -p /packages/"$distro"/"$RELEASE"/"$arch"
     fi
+    pbuilder-dist $RELEASE $arch update
     pbuilder-dist $RELEASE $arch build \
     --buildresult /packages/"$distro"/"$RELEASE"/"$arch" *"$RELEASE"*.dsc
 done;
