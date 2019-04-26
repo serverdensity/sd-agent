@@ -1,6 +1,7 @@
 FROM serverdensity/centos:6-i386
 RUN yum install -y yum-plugin-ovl && yum clean all
 RUN rpm -Uvh http://www.city-fan.org/ftp/contrib/yum-repo/rhel6/i386/city-fan.org-release-2-1.rhel6.noarch.rpm
+RUN yum update -y
 RUN yum install epel-release -y
 RUN linux32 yum -y  --enablerepo=city-fan.org install yum-utils \
     rpm-build \
