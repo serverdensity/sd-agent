@@ -9,7 +9,6 @@ if [ ! -d "$CACHE_DIR" ]; then
 fi
 
 container_name=${RELEASE}
-echo -en "travis_fold:start:build_${container_name}_container\\r"
 cache_file_var="CACHE_FILE_${container_name}"
 docker_cache=${!cache_file_var}
 if [ ! -f "$docker_cache"  ]; then
@@ -21,4 +20,3 @@ if [ ! -f "$docker_cache"  ]; then
     cd ..
     docker save serverdensity:${container_name} | gzip > "$docker_cache"
 fi
-echo -en "travis_fold:end:build_${container_name}_container\\r"
