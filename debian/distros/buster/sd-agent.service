@@ -1,0 +1,18 @@
+[Unit]
+Description=ServerDensity Agent collector
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/share/python/sd-agent/bin/python /usr/share/python/sd-agent/agent.py foreground --use-local-forwarder
+User=sd-agent
+ExecStop=/bin/kill -s QUIT $MAINPID
+PIDFile=/run/sd-agent/sd-agent.pid
+Restart=always
+RestartSec=5
+Environment="PYTHONPATH=/usr/share/python/sd-agent,LANG=POSIX"
+StandardOutput=null
+StandardError=null
+
+[Install]
+WantedBy=multi-user.target

@@ -2,7 +2,7 @@
 set -ev
 echo "${RELEASE}"
 dockerfiles_dir=".travis/dockerfiles"
-deb=(bionic xenial trusty jessie stretch)
+deb=(bionic xenial trusty jessie stretch buster)
 cd "$dockerfiles_dir"/"$RELEASE"
 if [ ! -d "$CACHE_DIR" ]; then
     sudo mkdir "$CACHE_DIR"

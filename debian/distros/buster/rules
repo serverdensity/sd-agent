@@ -1,0 +1,69 @@
+#!/usr/bin/make -f
+
+BUILD_DIR=debian/build
+DEST_VENV=/usr/share/python/sd-agent
+JMXFETCH_URL=https://dd-jmxfetch.s3.amazonaws.com
+JMX_VERSION=0.15.0
+JMX_ARTIFACT=jmxfetch-${JMX_VERSION}-jar-with-dependencies.jar
+
+%:
+	dh $@ --no-test --with systemd
+
+#override_dh_auto_configure:
+
+override_dh_auto_build:
+	$(create_venv)
+	$(BUILD_DIR)/bin/python $(BUILD_DIR)/bin/pip install -r requirements.txt
+	$(BUILD_DIR)/bin/python $(BUILD_DIR)/bin/pip install -r requirements-opt.txt
+	$(fix_activate_path)
+	$(fix_shebangs)
+	$(fix_local_symlinks)
+	$(download_jmx_fetch)
+
+override_dh_auto_clean:
+	rm -rf $(BUILD_DIR)
+
+override_dh_auto_test:
+
+override_dh_auto_install:
+	# install default configuration file
+	mkdir -p $(BUILD_DIR)/etc/sd-agent/
+	cp config.cfg.example $(BUILD_DIR)/etc/sd-agent/config.cfg
+	cp plugins.cfg.example $(BUILD_DIR)/etc/sd-agent/plugins.cfg
+	pyclean $(BUILD_DIR)
+
+#override_dh_install-arch:
+
+define create_venv
+	curl -LO https://raw.github.com/pypa/virtualenv/1.11.6/virtualenv.py
+	python virtualenv.py -p python2 --no-site-packages --no-pip --no-setuptools $(BUILD_DIR)
+	curl -LO https://bootstrap.pypa.io/ez_setup.py
+	$(BUILD_DIR)/bin/python ez_setup.py --version="20.9.0"
+	curl -LO https://bootstrap.pypa.io/get-pip.py
+	$(BUILD_DIR)/bin/python get-pip.py
+endef
+
+# The following 3 functions are ported from dh-virtualenv:
+define fix_activate_path
+	@echo Fixing activate path
+	sed -i "s|^VIRTUAL_ENV=.*|VIRTUAL_ENV=$(DEST_VENV)|" $(BUILD_DIR)/bin/activate
+	sed -i "s|^setenv VIRTUAL_ENV.*|setenv VIRTUAL_ENV $(DEST_VENV)|" $(BUILD_DIR)/bin/activate.csh
+	sed -i "s|^set -gx VIRTUAL_ENV.*|set -gx VIRTUAL_ENV $(DEST_VENV)|" $(BUILD_DIR)/bin/activate.fish
+endef
+
+define fix_shebangs
+	@echo Fixing shebangs
+	grep -l -r -e '^#!.*bin/\(env \)\?\(python\|pypy\|ipy\|jython\)' $(BUILD_DIR)/bin | \
+	xargs sed -i 's|^#!.*bin/\(env \)\?.*|#!$(DEST_VENV)/bin/python|'
+	sed -i 's|^#!.*bin/\(env \)\?.*|#!$(DEST_VENV)/bin/python|' agent.py
+endef
+
+define fix_local_symlinks
+	@echo Fixing local symlinks
+	symlinks -sc $(BUILD_DIR)/local
+endef
+
+define download_jmx_fetch
+	@echo jmx-fetch version: ${JMX_VERSION}
+	curl -LO ${JMXFETCH_URL}/${JMX_ARTIFACT}
+endef
