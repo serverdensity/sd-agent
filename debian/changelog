@@ -1,3 +1,10 @@
+sd-agent (2.2.6-1trusty0) trusty; urgency=medium
+
+  * Adds support for Debian Buster.
+  * Minor packaging fix
+
+ -- Server Density <hello@serverdensity.com>  Wed, 24 Jul 2019 10:30:00 +0100
+
 sd-agent (2.2.5-1trusty0) trusty; urgency=medium
 
   * Adds required KubeUtil Libs for Kubernetes checks.

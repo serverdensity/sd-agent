@@ -1,2 +1,2 @@
 # Source this file to import version info
-AGENT_VERSION=2.2.5
+AGENT_VERSION=2.2.6
