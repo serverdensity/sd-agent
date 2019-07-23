@@ -1,4 +1,6 @@
 %changelog
+* Wed Jul 24 2019 Server Density <hello@serverdensity.com> 2.2.6-1
+- Minor packaging fix.
 * Mon Mar 11 2019 Server Density <hello@serverdensity.com> 2.2.5-1
 - Adds required KubeUtil Libs for Kubernetes checks.
 - Updates JMXFetch to 0.20.1
