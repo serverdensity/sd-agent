@@ -49,7 +49,7 @@ class Ganglia(Check):
                 while True:
                     data = s.recv(Ganglia.BUFFER)
                     if len(data) > 0:
-                        sio.write(data)
+                        sio.write(data.decode())
                     else:
                         break
             finally:
