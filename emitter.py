@@ -157,7 +157,7 @@ def serialize_and_compress_metrics_payload(metrics_payload, max_compressed_size,
     compressed_payloads = []
 
     serialized_payload = serialize_payload(metrics_payload, log)
-    zipped = zlib.compress(serialized_payload)
+    zipped = zlib.compress(serialized_payload.encode())
     compression_ratio = float(len(serialized_payload))/float(len(zipped))
     log.debug("payload_size=%d, compressed_size=%d, compression_ratio=%.3f"
               % (len(serialized_payload), len(zipped), compression_ratio))
