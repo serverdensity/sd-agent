@@ -33,22 +33,22 @@ class TestCore(unittest.TestCase):
         self.ac = AgentCheck('test', {}, {'checksd_hostname': "foo"})
 
     def test_gauge(self):
-        self.assertEquals(self.c.is_gauge("test-metric"), True)
-        self.assertEquals(self.c.is_counter("test-metric"), False)
+        self.assertEqual(self.c.is_gauge("test-metric"), True)
+        self.assertEqual(self.c.is_counter("test-metric"), False)
         self.c.save_sample("test-metric", 1.0)
         # call twice in a row, should be invariant
-        self.assertEquals(self.c.get_sample("test-metric"), 1.0)
-        self.assertEquals(self.c.get_sample("test-metric"), 1.0)
-        self.assertEquals(self.c.get_sample_with_timestamp("test-metric")[1], 1.0)
+        self.assertEqual(self.c.get_sample("test-metric"), 1.0)
+        self.assertEqual(self.c.get_sample("test-metric"), 1.0)
+        self.assertEqual(self.c.get_sample_with_timestamp("test-metric")[1], 1.0)
         # new value, old one should be gone
         self.c.save_sample("test-metric", 2.0)
-        self.assertEquals(self.c.get_sample("test-metric"), 2.0)
-        self.assertEquals(len(self.c._sample_store["test-metric"]), 1)
+        self.assertEqual(self.c.get_sample("test-metric"), 2.0)
+        self.assertEqual(len(self.c._sample_store["test-metric"]), 1)
         # with explicit timestamp
         self.c.save_sample("test-metric", 3.0, 1298066183.607717)
-        self.assertEquals(self.c.get_sample_with_timestamp("test-metric"), (1298066183.607717, 3.0, None, None))
+        self.assertEqual(self.c.get_sample_with_timestamp("test-metric"), (1298066183.607717, 3.0, None, None))
         # get_samples()
-        self.assertEquals(self.c.get_samples(), {"test-metric": 3.0})
+        self.assertEqual(self.c.get_samples(), {"test-metric": 3.0})
 
     def testEdgeCases(self):
         self.assertRaises(CheckException, self.c.get_sample, "unknown-metric")
@@ -61,9 +61,9 @@ class TestCore(unittest.TestCase):
         self.c.save_sample("test-counter", 1.0, 1.0)
         self.assertRaises(UnknownValue, self.c.get_sample, "test-counter", expire=False)
         self.c.save_sample("test-counter", 2.0, 2.0)
-        self.assertEquals(self.c.get_sample("test-counter", expire=False), 1.0)
-        self.assertEquals(self.c.get_sample_with_timestamp("test-counter", expire=False), (2.0, 1.0, None, None))
-        self.assertEquals(self.c.get_samples(expire=False), {"test-counter": 1.0})
+        self.assertEqual(self.c.get_sample("test-counter", expire=False), 1.0)
+        self.assertEqual(self.c.get_sample_with_timestamp("test-counter", expire=False), (2.0, 1.0, None, None))
+        self.assertEqual(self.c.get_samples(expire=False), {"test-counter": 1.0})
         self.c.save_sample("test-counter", -2.0, 3.0)
         self.assertRaises(UnknownValue, self.c.get_sample_with_timestamp, "test-counter")
 
@@ -82,40 +82,40 @@ class TestCore(unittest.TestCase):
         self.c.save_sample("test-metric", 3.0, now, tags = ["tag5", "tag3"])
         results = self.c.get_metrics()
         results.sort()
-        self.assertEquals(results,
-                          [("test-counter", 2.0, 1.0, {"tags": ["tag1", "tag2"]}),
-                           ("test-metric", now, 3.0, {"tags": ["tag3", "tag4"]}),
-                           ("test-metric", now, 3.0, {"tags": ["tag3", "tag5"]}),
-                           ])
+        self.assertEqual(results,
+                       [("test-counter", 2.0, 1.0, {"tags": ["tag1", "tag2"]}),
+                        ("test-metric", now, 3.0, {"tags": ["tag3", "tag4"]}),
+                        ("test-metric", now, 3.0, {"tags": ["tag3", "tag5"]}),
+                        ])
         # Tagged metrics are not available through get_samples anymore
-        self.assertEquals(self.c.get_samples(), {})
+        self.assertEqual(self.c.get_samples(), {})
 
     def test_samples(self):
-        self.assertEquals(self.c.get_samples(), {})
+        self.assertEqual(self.c.get_samples(), {})
         self.c.save_sample("test-metric", 1.0, 0.0)  # value, ts
         self.c.save_sample("test-counter", 1.0, 1.0) # value, ts
         self.c.save_sample("test-counter", 4.0, 2.0) # value, ts
         assert "test-metric" in self.c.get_samples_with_timestamps(expire=False), self.c.get_samples_with_timestamps(expire=False)
-        self.assertEquals(self.c.get_samples_with_timestamps(expire=False)["test-metric"], (0.0, 1.0, None, None))
+        self.assertEqual(self.c.get_samples_with_timestamps(expire=False)["test-metric"], (0.0, 1.0, None, None))
         assert "test-counter" in self.c.get_samples_with_timestamps(expire=False), self.c.get_samples_with_timestamps(expire=False)
-        self.assertEquals(self.c.get_samples_with_timestamps(expire=False)["test-counter"], (2.0, 3.0, None, None))
+        self.assertEqual(self.c.get_samples_with_timestamps(expire=False)["test-counter"], (2.0, 3.0, None, None))
 
     def test_name(self):
-        self.assertEquals(self.c.normalize("metric"), "metric")
-        self.assertEquals(self.c.normalize("metric", "prefix"), "prefix.metric")
-        self.assertEquals(self.c.normalize("__metric__", "prefix"), "prefix.metric")
-        self.assertEquals(self.c.normalize("abc.metric(a+b+c{}/5)", "prefix"), "prefix.abc.metric_a_b_c_5")
-        self.assertEquals(self.c.normalize("VBE.default(127.0.0.1,,8080).happy", "varnish"), "varnish.VBE.default_127.0.0.1_8080.happy")
-        self.assertEquals(self.c.normalize("metric@device"), "metric_device")
+        self.assertEqual(self.c.normalize("metric"), "metric")
+        self.assertEqual(self.c.normalize("metric", "prefix"), "prefix.metric")
+        self.assertEqual(self.c.normalize("__metric__", "prefix"), "prefix.metric")
+        self.assertEqual(self.c.normalize("abc.metric(a+b+c{}/5)", "prefix"), "prefix.abc.metric_a_b_c_5")
+        self.assertEqual(self.c.normalize("VBE.default(127.0.0.1,,8080).happy", "varnish"), "varnish.VBE.default_127.0.0.1_8080.happy")
+        self.assertEqual(self.c.normalize("metric@device"), "metric_device")
 
         # Same tests for the AgentCheck
         self.setUpAgentCheck()
-        self.assertEquals(self.ac.normalize("metric"), "metric")
-        self.assertEquals(self.ac.normalize("metric", "prefix"), "prefix.metric")
-        self.assertEquals(self.ac.normalize("__metric__", "prefix"), "prefix.metric")
-        self.assertEquals(self.ac.normalize("abc.metric(a+b+c{}/5)", "prefix"), "prefix.abc.metric_a_b_c_5")
-        self.assertEquals(self.ac.normalize("VBE.default(127.0.0.1,,8080).happy", "varnish"), "varnish.VBE.default_127.0.0.1_8080.happy")
-        self.assertEquals(self.ac.normalize("metric@device"), "metric_device")
+        self.assertEqual(self.ac.normalize("metric"), "metric")
+        self.assertEqual(self.ac.normalize("metric", "prefix"), "prefix.metric")
+        self.assertEqual(self.ac.normalize("__metric__", "prefix"), "prefix.metric")
+        self.assertEqual(self.ac.normalize("abc.metric(a+b+c{}/5)", "prefix"), "prefix.abc.metric_a_b_c_5")
+        self.assertEqual(self.ac.normalize("VBE.default(127.0.0.1,,8080).happy", "varnish"), "varnish.VBE.default_127.0.0.1_8080.happy")
+        self.assertEqual(self.ac.normalize("metric@device"), "metric_device")
 
         self.assertEqual(self.ac.normalize("PauseTotalNs", "prefix", fix_case = True), "prefix.pause_total_ns")
         self.assertEqual(self.ac.normalize("Metric.wordThatShouldBeSeparated", "prefix", fix_case = True), "prefix.metric.word_that_should_be_separated")
@@ -131,28 +131,28 @@ class TestCore(unittest.TestCase):
         check = AgentCheck('test', {}, {'checksd_hostname':'foo'})
         # No "message"/"tags" field
         check.service_check(check_name, status, timestamp=timestamp, hostname=host_name)
-        self.assertEquals(len(check.service_checks), 1, check.service_checks)
+        self.assertEqual(len(check.service_checks), 1, check.service_checks)
         val = check.get_service_checks()
-        self.assertEquals(len(val), 1)
+        self.assertEqual(len(val), 1)
         check_run_id = val[0].get('id', None)
-        self.assertNotEquals(check_run_id, None)
-        self.assertEquals([{
+        self.assertNotEqual(check_run_id, None)
+        self.assertEqual([{
             'id': check_run_id,
             'check': check_name,
             'status': status,
             'host_name': host_name,
             'timestamp': timestamp,
         }], val)
-        self.assertEquals(len(check.service_checks), 0, check.service_checks)
+        self.assertEqual(len(check.service_checks), 0, check.service_checks)
 
         # With "message" field
         check.service_check(check_name, status, tags, timestamp, host_name, message='foomessage')
-        self.assertEquals(len(check.service_checks), 1, check.service_checks)
+        self.assertEqual(len(check.service_checks), 1, check.service_checks)
         val = check.get_service_checks()
-        self.assertEquals(len(val), 1)
+        self.assertEqual(len(val), 1)
         check_run_id = val[0].get('id', None)
-        self.assertNotEquals(check_run_id, None)
-        self.assertEquals([{
+        self.assertNotEqual(check_run_id, None)
+        self.assertEqual([{
             'id': check_run_id,
             'check': check_name,
             'status': status,
@@ -161,7 +161,7 @@ class TestCore(unittest.TestCase):
             'timestamp': timestamp,
             'message': 'foomessage',
         }], val)
-        self.assertEquals(len(check.service_checks), 0, check.service_checks)
+        self.assertEqual(len(check.service_checks), 0, check.service_checks)
 
 
     def test_no_proxy(self):
@@ -180,8 +180,8 @@ class TestCore(unittest.TestCase):
 
         self.assertTrue("no_proxy" in env)
 
-        self.assertEquals(env["no_proxy"], "127.0.0.1,localhost,169.254.169.254")
-        self.assertEquals({}, get_environ_proxies(
+        self.assertEqual(env["no_proxy"], "127.0.0.1,localhost,169.254.169.254")
+        self.assertEqual({}, get_environ_proxies(
             "http://localhost:17123/intake"))
 
         expected_proxies = {
@@ -193,8 +193,8 @@ class TestCore(unittest.TestCase):
         if os.environ.get('TRAVIS') and 'travis_apt' in environ_proxies:
             # Travis CI adds a `travis_apt` proxy which breaks this test if it's not removed.
             environ_proxies.pop("travis_apt", None)
-        self.assertEquals(expected_proxies, environ_proxies,
-                          (expected_proxies, environ_proxies))
+        self.assertEqual(expected_proxies, environ_proxies,
+                        (expected_proxies, environ_proxies))
 
         # Clear the env variables set
         del env["http_proxy"]
@@ -256,7 +256,7 @@ class TestCollectionInterval(unittest.TestCase):
         check.run()
         metrics = check.get_metrics()
         # No metrics should be collected as it's too early
-        self.assertEquals(len(metrics), 0, metrics)
+        self.assertEqual(len(metrics), 0, metrics)
 
         # equivalent to time.sleep(20)
         check.last_collection_time[0] -= 20
@@ -266,7 +266,7 @@ class TestCollectionInterval(unittest.TestCase):
         check.last_collection_time[0] -= 3
         check.run()
         metrics = check.get_metrics()
-        self.assertEquals(len(metrics), 0, metrics)
+        self.assertEqual(len(metrics), 0, metrics)
         check.min_collection_interval = 0
         check.run()
         metrics = check.get_metrics()
@@ -279,7 +279,7 @@ class TestCollectionInterval(unittest.TestCase):
         self.assertTrue(len(metrics) > 0, metrics)
         check.run()
         metrics = check.get_metrics()
-        self.assertEquals(len(metrics), 0, metrics)
+        self.assertEqual(len(metrics), 0, metrics)
         check.last_collection_time[0] -= 4
         check.run()
         metrics = check.get_metrics()
@@ -292,11 +292,11 @@ class TestCollectionInterval(unittest.TestCase):
         self.assertTrue(len(metrics) > 0, metrics)
         check.run()
         metrics = check.get_metrics()
-        self.assertEquals(len(metrics), 0, metrics)
+        self.assertEqual(len(metrics), 0, metrics)
         check.last_collection_time[0] -= 4
         check.run()
         metrics = check.get_metrics()
-        self.assertEquals(len(metrics), 0, metrics)
+        self.assertEqual(len(metrics), 0, metrics)
         check.last_collection_time[0] -= 8
         check.run()
         metrics = check.get_metrics()
@@ -379,6 +379,6 @@ class TestAggregator(unittest.TestCase):
     def test_dupe_tags(self):
         self.aggr.increment('test-counter', 1, tags=['a', 'b'])
         self.aggr.increment('test-counter', 1, tags=['a', 'b', 'b'])
-        self.assertEquals(len(self.aggr.metrics), 1, self.aggr.metrics)
-        metric = self.aggr.metrics.values()[0]
-        self.assertEquals(metric.value, 2)
+        self.assertEqual(len(self.aggr.metrics), 1, self.aggr.metrics)
+        metric = list(self.aggr.metrics.values())[0]
+        self.assertEqual(metric.value, 2)

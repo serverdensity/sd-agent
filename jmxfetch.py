@@ -109,8 +109,8 @@ class JMXFetch(ProcessRunner):
         if command == JMX_LIST_JVMS:
             if not tools_jar_path:
                 raise InvalidJMXConfiguration(
-                    u"Command `{}` requires access to the JDK `tools.jar` file. "
-                    u"See `tools_jar_path` parameter in JMX YAML configuration files.".format(
+                    "Command `{}` requires access to the JDK `tools.jar` file. "
+                    "See `tools_jar_path` parameter in JMX YAML configuration files.".format(
                         JMX_LIST_JVMS
                     )
                 )
@@ -408,15 +408,15 @@ class JMXFetch(ProcessRunner):
 
             if use_attach_api and not tools_jar_path:
                 raise InvalidJMXConfiguration(
-                    u"You must specify the path to `tools.jar` in your JDK."
+                    "You must specify the path to `tools.jar` in your JDK."
                 )
             if tools_jar_path and not os.path.isfile(tools_jar_path):
                 raise InvalidJMXConfiguration(
-                    u"Unable to find `tools.jar` at %s" % tools_jar_path
+                    "Unable to find `tools.jar` at %s" % tools_jar_path
                 )
 
             if custom_jar_paths:
-                if isinstance(custom_jar_paths, basestring):
+                if isinstance(custom_jar_paths, str):
                     log.warn('Using a string when having only one custom jar will be deprecated in future versions' +
                         ' of the agent. Only the list syntax will be supported. %s', LINK_TO_DOC)
                     custom_jar_paths = [custom_jar_paths]

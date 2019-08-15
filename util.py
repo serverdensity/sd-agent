@@ -31,7 +31,7 @@ COLON_NON_WIN_PATH = re.compile(':(?!\\\\)')
 
 log = logging.getLogger(__name__)
 
-NumericTypes = (float, int, long)
+NumericTypes = (float, int, int)
 
 
 def plural(count):
@@ -153,7 +153,7 @@ def chunks(iterable, chunk_size):
         count = 0
         try:
             for _ in range(chunk_size):
-                chunk[count] = iterable.next()
+                chunk[count] = next(iterable)
                 count += 1
             yield chunk[:count]
         except StopIteration:

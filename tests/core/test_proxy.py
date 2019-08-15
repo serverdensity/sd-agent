@@ -50,8 +50,8 @@ class TestNoProxy(TestCase):
 
         self.assertTrue("no_proxy" in env)
 
-        self.assertEquals(env["no_proxy"], "127.0.0.1,localhost,169.254.169.254")
-        self.assertEquals({}, get_environ_proxies(
+        self.assertEqual(env["no_proxy"], "127.0.0.1,localhost,169.254.169.254")
+        self.assertEqual({}, get_environ_proxies(
             "http://localhost:17123/api/v1/series"))
 
         expected_proxies = {
@@ -85,19 +85,19 @@ class TestNoProxy(TestCase):
         gen_proxies = config_proxy_skip(proxies, 's3://anything', skip_proxy=True)
         self.assertTrue('http' in gen_proxies)
         self.assertTrue('https' in gen_proxies)
-        self.assertEquals(gen_proxies.get('http'), None)
-        self.assertEquals(gen_proxies.get('https'), None)
+        self.assertEqual(gen_proxies.get('http'), None)
+        self.assertEqual(gen_proxies.get('https'), None)
 
         gen_proxies = config_proxy_skip(proxies, 'https://host.foo.bar', skip_proxy=False)
-        self.assertEquals(gen_proxies.get('http'), None)
-        self.assertEquals(gen_proxies.get('https'), None)
+        self.assertEqual(gen_proxies.get('http'), None)
+        self.assertEqual(gen_proxies.get('https'), None)
 
         gen_proxies = config_proxy_skip(proxies, 'baz', skip_proxy=False)
-        self.assertEquals(proxies, gen_proxies)
+        self.assertEqual(proxies, gen_proxies)
 
         proxies.pop('no')
         gen_proxies = config_proxy_skip(proxies, 'baz', skip_proxy=False)
-        self.assertEquals(proxies, gen_proxies)
+        self.assertEqual(proxies, gen_proxies)
 
 
 class CustomAgentTransaction(AgentTransaction):
@@ -144,7 +144,7 @@ class TestProxy(AsyncTestCase):
         access_log = self.docker_client.exec_start(
             self.docker_client.exec_create(CONTAINER_NAME, 'cat /var/log/squid/access.log')['Id'])
         self.assertTrue("CONNECT" in access_log) # There should be an entry in the proxy access log
-        self.assertEquals(len(trManager._endpoints_errors), 1) # There should be an error since we gave a bogus api_key
+        self.assertEqual(len(trManager._endpoints_errors), 1) # There should be an error since we gave a bogus api_key
 
     def setUp(self):
         super(TestProxy, self).setUp()

@@ -8,16 +8,16 @@ def shell():
     from config import get_version, set_win32_requests_ca_bundle_path
 
     set_win32_requests_ca_bundle_path()
-    print """
+    print("""
 Datadog Agent v%s - Python Shell
 
-    """ % (get_version())
+    """ % (get_version()))
     while True:
-        cmd = raw_input('>>> ')
+        cmd = input('>>> ')
         try:
             exec(cmd)
         except Exception as e:
-            print traceback.format_exc(e)
+            print(traceback.format_exc(e))
 
 if __name__ == "__main__":
     shell()

@@ -4,7 +4,7 @@
 
 # stdlib
 import cProfile  # noqa, it seems that import-names thinks it's not stdlib
-from cStringIO import StringIO
+from io import StringIO
 import logging
 import os
 import pstats  # noqa, same here

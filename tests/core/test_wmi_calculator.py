@@ -29,7 +29,7 @@ class TestWMICalculators(unittest.TestCase):
         Handler to assert the value returned by the counter_type's calculator on the given sample.
         """
         calculator = get_calculator(counter_type)
-        self.assertEquals(value, calculator(self.previous, self.current, "WMIPropertyName"))
+        self.assertEqual(value, calculator(self.previous, self.current, "WMIPropertyName"))
 
     def test_calculator_decorator(self):
         """
@@ -40,8 +40,8 @@ class TestWMICalculators(unittest.TestCase):
             """A function that does something."""
             pass
 
-        self.assertEquals("do_something", do_something.__name__)
-        self.assertEquals("A function that does something.", do_something.__doc__)
+        self.assertEqual("do_something", do_something.__name__)
+        self.assertEqual("A function that does something.", do_something.__doc__)
 
         self.assertTrue(get_calculator(123456))
 

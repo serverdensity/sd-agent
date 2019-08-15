@@ -57,9 +57,7 @@ DEFAULT_CONTAINER_EXCLUDE = [
 log = logging.getLogger(__name__)
 
 
-class DockerUtil:
-    __metaclass__ = Singleton
-
+class DockerUtil(metaclass=Singleton):
     DEFAULT_SETTINGS = {"version": DEFAULT_VERSION}
     DEFAULT_PROCFS_GW_PATH = "proc/net/route"
 
@@ -263,7 +261,7 @@ class DockerUtil:
                     fields = line.strip().split()
                     if fields[1] == '00000000':
                         return socket.inet_ntoa(struct.pack('<L', int(fields[2], 16)))
-        except IOError, e:
+        except IOError as e:
             log.error('Unable to open {}: %s'.format(procfs_route), e)
 
         return None
@@ -393,8 +391,8 @@ class DockerUtil:
             cgroup /sys/fs/cgroup/hugetlb cgroup rw,relatime,hugetlb 0 0
         """
         with open(os.path.join(self._docker_root, "/proc/mounts"), 'r') as fp:
-            mounts = map(lambda x: x.split(), fp.read().splitlines())
-        cgroup_mounts = filter(lambda x: x[2] == "cgroup", mounts)
+            mounts = [x.split() for x in fp.read().splitlines()]
+        cgroup_mounts = [x for x in mounts if x[2] == "cgroup"]
         if len(cgroup_mounts) == 0:
             raise Exception(
                 "Can't find mounted cgroups. If you run the Agent inside a container,"
@@ -482,8 +480,8 @@ class DockerUtil:
     def find_cgroup_from_proc(cls, mountpoints, pid, subsys, docker_root='/'):
         proc_path = os.path.join(docker_root, 'proc', str(pid), 'cgroup')
         with open(proc_path, 'r') as fp:
-            lines = map(lambda x: x.split(':'), fp.read().splitlines())
-            subsystems = dict(zip(map(lambda x: x[1], lines), map(cls._parse_subsystem, lines)))
+            lines = [x.split(':') for x in fp.read().splitlines()]
+            subsystems = dict(list(zip([x[1] for x in lines], list(map(cls._parse_subsystem, lines)))))
 
         if subsys not in subsystems and subsys == 'cpuacct':
             for form in "{},cpu", "cpu,{}":
@@ -495,13 +493,13 @@ class DockerUtil:
         # In Ubuntu Xenial, we've encountered containers with no `cpu`
         # cgroup in /proc/<pid>/cgroup
         if subsys == 'cpu' and subsys not in subsystems:
-            for sub, mountpoint in subsystems.iteritems():
+            for sub, mountpoint in subsystems.items():
                 if 'cpuacct' in sub:
                     subsystems['cpu'] = mountpoint
                     break
 
         if subsys in subsystems:
-            for mountpoint in mountpoints.itervalues():
+            for mountpoint in mountpoints.values():
                 stat_file_path = os.path.join(mountpoint, subsystems[subsys])
                 if subsys == mountpoint.split('/')[-1] and os.path.exists(stat_file_path):
                     return os.path.join(stat_file_path, '%(file)s')
@@ -521,7 +519,7 @@ class DockerUtil:
     @classmethod
     def find_cgroup_filename_pattern(cls, mountpoints, container_id):
         # We try with different cgroups so that it works even if only one is properly working
-        for mountpoint in mountpoints.itervalues():
+        for mountpoint in mountpoints.values():
             stat_file_path_lxc = os.path.join(mountpoint, "lxc")
             stat_file_path_docker = os.path.join(mountpoint, "docker")
             stat_file_path_coreos = os.path.join(mountpoint, "system.slice")
@@ -657,7 +655,7 @@ class DockerUtil:
         labels = ctr.get('Config', {}).get('Labels', {})
         if not labels:
             return tags
-        for lbl_name, lbl_val in labels.iteritems():
+        for lbl_name, lbl_val in labels.items():
             if lbl_name in lbl_to_tags:
                 tags.append('{}:{}'.format(lbl_name, lbl_val))
         return tags
@@ -684,14 +682,14 @@ class DockerUtil:
             proc_net_route_file = os.path.join(container['_proc_root'], 'net/route')
 
             docker_gateways = {}
-            for netname, netconf in container['NetworkSettings']['Networks'].iteritems():
+            for netname, netconf in container['NetworkSettings']['Networks'].items():
 
-                if netname == 'host' or netconf.get(u'Gateway') == '':
+                if netname == 'host' or netconf.get('Gateway') == '':
                     log.debug("Empty network gateway, container %s is in network host mode, "
                         "its network metrics are for the whole host." % container['Id'][:12])
                     return {'eth0': 'bridge'}
 
-                docker_gateways[netname] = struct.unpack('<L', socket.inet_aton(netconf.get(u'Gateway')))[0]
+                docker_gateways[netname] = struct.unpack('<L', socket.inet_aton(netconf.get('Gateway')))[0]
 
             mapping = {}
             with open(proc_net_route_file, 'r') as fp:
@@ -702,7 +700,7 @@ class DockerUtil:
                         continue
                     destination = int(cols[1], 16)
                     mask = int(cols[7], 16)
-                    for net, gw in docker_gateways.iteritems():
+                    for net, gw in docker_gateways.items():
                         if gw & mask == destination:
                             mapping[cols[0]] = net
                 return mapping

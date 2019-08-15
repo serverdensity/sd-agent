@@ -22,7 +22,7 @@ class UtilsProcessTest(unittest.TestCase):
 
     def test_inexistant_pid(self):
         # There will be one point where we finally find a free PID
-        for pid in xrange(30000):
+        for pid in range(30000):
             if not pid_exists(pid):
                 return
         raise Exception("Probably a bug in pid_exists or more than 30000 procs!!")

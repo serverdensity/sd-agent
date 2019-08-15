@@ -46,8 +46,8 @@ class TestMetadata(unittest.TestCase):
         service_metadata = check.get_service_metadata()
         service_metadata_count = len(service_metadata)
 
-        self.assertEquals(service_metadata_count, 1)
-        self.assertEquals(service_metadata[0], {'foo': "bar", 'baz': "qux"})
+        self.assertEqual(service_metadata_count, 1)
+        self.assertEqual(service_metadata[0], {'foo': "bar", 'baz': "qux"})
 
     def test_metadata_length(self):
         """
@@ -63,10 +63,10 @@ class TestMetadata(unittest.TestCase):
         service_metadata = check.get_service_metadata()
         service_metadata_count = len(service_metadata)
 
-        self.assertEquals(service_metadata_count, 3)
-        self.assertEquals(service_metadata[0], {'foo': "bar"})
-        self.assertEquals(service_metadata[1], {})
-        self.assertEquals(service_metadata[2], {'foo': "bar"})
+        self.assertEqual(service_metadata_count, 3)
+        self.assertEqual(service_metadata[0], {'foo': "bar"})
+        self.assertEqual(service_metadata[1], {})
+        self.assertEqual(service_metadata[2], {'foo': "bar"})
 
     @mock.patch('utils.platform.Platform.is_windows', return_value=True)
     def test_decode_tzname(self, mock_platform):
@@ -74,19 +74,19 @@ class TestMetadata(unittest.TestCase):
 
         # Korean systems
         with mock.patch('locale.getpreferredencoding', return_value='cp949'):
-            self.assertEquals(
+            self.assertEqual(
                 Collector._decode_tzname(('\xb4\xeb\xc7\xd1\xb9\xce\xb1\xb9 \xc7\xa5\xc1\xd8\xbd\xc3', '\xb4\xeb\xc7\xd1\xb9\xce\xb1\xb9 \xc0\xcf\xb1\xa4 \xc0\xfd\xbe\xe0 \xbd\xc3\xb0\xa3')),
-                (u'대한민국 표준시', u'대한민국 일광 절약 시간')
+                ('대한민국 표준시', '대한민국 일광 절약 시간')
             )
         # Japanese systems
         with mock.patch('locale.getpreferredencoding', return_value='cp932'):
-            self.assertEquals(
+            self.assertEqual(
                 Collector._decode_tzname(('\x93\x8c\x8b\x9e (\x95W\x8f\x80\x8e\x9e)', '\x93\x8c\x8b\x9e (\x89\xc4\x8e\x9e\x8a\xd4)')),
-                (u'東京 (標準時)', u'東京 (夏時間)')
+                ('東京 (標準時)', '東京 (夏時間)')
             )
         # if the preferred encoding were to be invalid, return empty timezone
         with mock.patch('locale.getpreferredencoding', return_value='invalidencoding'):
-            self.assertEquals(
+            self.assertEqual(
                 Collector._decode_tzname(('\x93\x8c\x8b\x9e (\x95W\x8f\x80\x8e\x9e)', '\x93\x8c\x8b\x9e (\x89\xc4\x8e\x9e\x8a\xd4)')),
                 ('', '')
             )

@@ -18,7 +18,7 @@ from subprocess import (
     check_output,
 )
 import sys
-import thread  # To manage the windows process asynchronously
+import _thread  # To manage the windows process asynchronously
 import warnings
 
 # 3p
@@ -181,7 +181,7 @@ def get_checks():
            (not agent_check.is_example and not checks[agent_check.module_name].enabled)):
             checks[agent_check.module_name] = agent_check
 
-    checks_list = checks.values()
+    checks_list = list(checks.values())
     checks_list.sort(key=lambda c: c.module_name)
 
     return checks_list
@@ -822,7 +822,7 @@ def agent_manager(action, async=True):
     if not async:
         manager(action)
     else:
-        thread.start_new_thread(manager, (action,))
+        _thread.start_new_thread(manager, (action,))
 
 
 def warning_popup(message, parent=None):

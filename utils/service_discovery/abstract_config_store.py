@@ -67,7 +67,7 @@ class _TemplateCache(object):
     def _populate_auto_conf(self):
         """Retrieve auto_conf templates"""
         raw_templates = get_auto_conf_images(full_tpl=True)
-        for image, tpls in raw_templates.iteritems():
+        for image, tpls in raw_templates.items():
             for check_name, init_tpl, instance_tpl in zip(*tpls):
                 if image in self.auto_conf_templates:
                     if check_name in self.auto_conf_templates[image][0]:
@@ -175,9 +175,8 @@ class _TemplateCache(object):
 
 
 
-class AbstractConfigStore(object):
+class AbstractConfigStore(object, metaclass=Singleton):
     """Singleton for config stores"""
-    __metaclass__ = Singleton
 
     previous_config_index = None
 
@@ -329,7 +328,7 @@ class AbstractConfigStore(object):
 
         res = []
 
-        for source, config in configs.iteritems():
+        for source, config in configs.items():
             if not config:
                 continue
 

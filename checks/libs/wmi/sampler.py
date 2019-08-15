@@ -57,11 +57,10 @@ class ProviderArchitectureMeta(type):
         return provider in cls._AVAILABLE_PROVIDER_ARCHITECTURES
 
 
-class ProviderArchitecture(object):
+class ProviderArchitecture(object, metaclass=ProviderArchitectureMeta):
     """
     Enumerate WMI Provider Architectures.
     """
-    __metaclass__ = ProviderArchitectureMeta
 
     # Available Provider Architecture(s)
     DEFAULT = 0
@@ -157,7 +156,7 @@ class WMISampler(object):
 
         if result is None:
             self.logger.error(
-                u"Invalid '%s' WMI Provider Architecture. The parameter is ignored.", value
+                "Invalid '%s' WMI Provider Architecture. The parameter is ignored.", value
             )
 
         self._provider = result or ProviderArchitecture.DEFAULT
@@ -214,7 +213,7 @@ class WMISampler(object):
             self._current_sample = self._query()
         except TimeoutException:
             self.logger.debug(
-                u"Query timeout after {timeout}s".format(
+                "Query timeout after {timeout}s".format(
                     timeout=self._timeout_duration
                 )
             )
@@ -229,7 +228,7 @@ class WMISampler(object):
         # No data is returned while sampling
         if self._sampling:
             raise TypeError(
-                u"Sampling `WMISampler` object has no len()"
+                "Sampling `WMISampler` object has no len()"
             )
 
         return len(self._current_sample)
@@ -241,7 +240,7 @@ class WMISampler(object):
         # No data is returned while sampling
         if self._sampling:
             raise TypeError(
-                u"Sampling `WMISampler` object is not iterable"
+                "Sampling `WMISampler` object is not iterable"
             )
 
         if self.is_raw_perf_class:
@@ -295,7 +294,7 @@ class WMISampler(object):
             calculator = get_calculator(counter_type)
         except UndefinedCalculator:
             self.logger.warning(
-                u"Undefined WMI calculator for counter_type {counter_type}."
+                "Undefined WMI calculator for counter_type {counter_type}."
                 " Values are reported as RAW.".format(
                     counter_type=counter_type
                 )
@@ -311,7 +310,7 @@ class WMISampler(object):
         """
         formatted_wmi_object = CaseInsensitiveDict()
 
-        for property_name, property_raw_value in current.iteritems():
+        for property_name, property_raw_value in current.items():
             counter_type = self._property_counter_types.get(property_name)
             property_formatted_value = property_raw_value
 
@@ -328,8 +327,8 @@ class WMISampler(object):
         Create a new WMI connection
         """
         self.logger.debug(
-            u"Connecting to WMI server "
-            u"(host={host}, namespace={namespace}, provider={provider}, username={username})."
+            "Connecting to WMI server "
+            "(host={host}, namespace={namespace}, provider={provider}, username={username})."
             .format(
                 host=self.host, namespace=self.namespace,
                 provider=self.provider, username=self.username
@@ -389,10 +388,9 @@ class WMISampler(object):
                     if not len(value):
                         continue
 
-                    internal_filter = map(lambda x:
-                                          (prop, x) if isinstance(x, tuple)
-                                          else (prop, ('LIKE', x)) if '%' in x
-                                          else (prop, (oper, x)), value)
+                    internal_filter = [(prop, x) if isinstance(x, tuple)
+                                      else (prop, ('LIKE', x)) if '%' in x
+                                      else (prop, (oper, x)) for x in value]
 
                     bool_op = ' OR '
                     for p in and_props:
@@ -449,7 +447,7 @@ class WMISampler(object):
             class_name=self.class_name,
             filters=self.formatted_filters,
         )
-        self.logger.debug(u"Querying WMI: {0}".format(wql))
+        self.logger.debug("Querying WMI: {0}".format(wql))
 
         try:
             # From: https://msdn.microsoft.com/en-us/library/aa393866(v=vs.85).aspx
@@ -474,7 +472,7 @@ class WMISampler(object):
             results = self._parse_results(raw_results, includes_qualifiers=includes_qualifiers)
 
         except pywintypes.com_error:
-            self.logger.warning(u"Failed to execute WMI query (%s)", wql, exc_info=True)
+            self.logger.warning("Failed to execute WMI query (%s)", wql, exc_info=True)
             results = []
 
         return results
@@ -529,7 +527,7 @@ class WMISampler(object):
                         self._property_counter_types[wmi_property.Name] = counter_type
 
                         self.logger.debug(
-                            u"Caching property qualifier CounterType: "
+                            "Caching property qualifier CounterType: "
                             "{class_name}.{property_names} = {counter_type}"
                             .format(
                                 class_name=self.class_name,
@@ -539,7 +537,7 @@ class WMISampler(object):
                         )
                     else:
                         self.logger.debug(
-                            u"CounterType qualifier not found for {class_name}.{property_names}"
+                            "CounterType qualifier not found for {class_name}.{property_names}"
                             .format(
                                 class_name=self.class_name,
                                 property_names=wmi_property.Name,
@@ -548,7 +546,7 @@ class WMISampler(object):
                     if "CIMTYPE" in qualifiers:
                         self._property_data_types[wmi_property.Name] = qualifiers["CIMTYPE"]
                         self.logger.debug(
-                            u"CIMTYPE for {class_name}.{property_name} is {CIMTYPE}"
+                            "CIMTYPE for {class_name}.{property_name} is {CIMTYPE}"
                             .format(
                                 class_name=self.class_name,
                                 property_name=wmi_property.Name,

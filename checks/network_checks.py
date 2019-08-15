@@ -3,7 +3,7 @@
 # Licensed under Simplified BSD License (see LICENSE)
 
 # stdlib
-from Queue import Empty, Queue
+from queue import Empty, Queue
 import threading
 import time
 
@@ -156,13 +156,13 @@ class NetworkCheck(AgentCheck):
 
         except Exception:
             self.log.exception(
-                u"Failed to process instance '%s'.", instance.get('name', u"")
+                "Failed to process instance '%s'.", instance.get('name', "")
             )
             result = (FAILURE, FAILURE, FAILURE, instance)
             self.resultsq.put(result)
 
     def _process_results(self):
-        for i in xrange(MAX_LOOP_ITERATIONS):
+        for i in range(MAX_LOOP_ITERATIONS):
             try:
                 # We want to fetch the result in a non blocking way
                 status, msg, sc_name, instance = self.resultsq.get_nowait()
@@ -205,7 +205,7 @@ class NetworkCheck(AgentCheck):
 
     def _clean(self):
         now = time.time()
-        for name, start_time in self.jobs_status.iteritems():
+        for name, start_time in self.jobs_status.items():
             if now - start_time > TIMEOUT:
                 self.log.critical("Restarting Pool. One check is stuck: %s" % name)
                 self.restart_pool()

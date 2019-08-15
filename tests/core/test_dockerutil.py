@@ -41,7 +41,7 @@ class TestDockerUtil(unittest.TestCase):
 
         du = DockerUtil()
         for line, exp_res in lines:
-            self.assertEquals(du._parse_subsystem(line), exp_res)
+            self.assertEqual(du._parse_subsystem(line), exp_res)
 
     def test_image_name_from_container(self):
         co = {'Image': 'redis:3.2'}

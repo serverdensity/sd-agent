@@ -79,30 +79,30 @@ def issue_read(identifier):
 @attr('unix')
 class TestServiceDiscovery(unittest.TestCase):
     docker_container_inspect = {
-        u'Id': u'69ff25598b2314d1cdb7752cc3a659fb1c1352b32546af4f1454321550e842c0',
-        u'Image': u'nginx',
-        u'Name': u'/nginx',
-        u'NetworkSettings': {u'IPAddress': u'172.17.0.21', u'Ports': {u'443/tcp': None, u'80/tcp': None}},
-        u'State': {u'Pid': 1234}
+        'Id': '69ff25598b2314d1cdb7752cc3a659fb1c1352b32546af4f1454321550e842c0',
+        'Image': 'nginx',
+        'Name': '/nginx',
+        'NetworkSettings': {'IPAddress': '172.17.0.21', 'Ports': {'443/tcp': None, '80/tcp': None}},
+        'State': {'Pid': 1234}
     }
     docker_container_inspect_with_label = {
-        u'Id': u'69ff25598b2314d1cdb7752cc3a659fb1c1352b32546af4f1454321550e842c0',
-        u'Image': u'nginx',
-        u'Name': u'/nginx',
-        u'NetworkSettings': {u'IPAddress': u'172.17.0.21', u'Ports': {u'443/tcp': None, u'80/tcp': None}},
-        u'Config': {'Labels': {'com.serverdensity.sd.check.id': 'custom-nginx'}}
+        'Id': '69ff25598b2314d1cdb7752cc3a659fb1c1352b32546af4f1454321550e842c0',
+        'Image': 'nginx',
+        'Name': '/nginx',
+        'NetworkSettings': {'IPAddress': '172.17.0.21', 'Ports': {'443/tcp': None, '80/tcp': None}},
+        'Config': {'Labels': {'com.serverdensity.sd.check.id': 'custom-nginx'}}
     }
     kubernetes_container_inspect = {
-        u'Id': u'389dc8a4361f3d6c866e9e9a7b6972b26a31c589c4e2f097375d55656a070bc9',
-        u'Image': u'foo',
-        u'Name': u'/k8s_sentinel.38057ab9_redis-master_default_27b84e1e-a81c-11e5-8347-42010af00002_f70875a1',
-        u'Config': {u'ExposedPorts': {u'6379/tcp': {}}},
-        u'NetworkSettings': {u'IPAddress': u'', u'Ports': None}
+        'Id': '389dc8a4361f3d6c866e9e9a7b6972b26a31c589c4e2f097375d55656a070bc9',
+        'Image': 'foo',
+        'Name': '/k8s_sentinel.38057ab9_redis-master_default_27b84e1e-a81c-11e5-8347-42010af00002_f70875a1',
+        'Config': {'ExposedPorts': {'6379/tcp': {}}},
+        'NetworkSettings': {'IPAddress': '', 'Ports': None}
     }
     malformed_container_inspect = {
-        u'Id': u'69ff25598b2314d1cdb7752cc3a659fb1c1352b32546af4f1454321550e842c0',
-        u'Image': u'foo',
-        u'Name': u'/nginx'
+        'Id': '69ff25598b2314d1cdb7752cc3a659fb1c1352b32546af4f1454321550e842c0',
+        'Image': 'foo',
+        'Name': '/nginx'
     }
     container_inspects = [
         # (inspect_dict, expected_ip, tpl_var, expected_port, expected_ident, expected_id, expected_pid)
@@ -117,18 +117,18 @@ class TestServiceDiscovery(unittest.TestCase):
         # image_name: ([(source, (check_name, init_tpl, instance_tpl, variables))], (expected_config_template))
         'image_0': (
             [('template', ('check_0', {}, {'host': '%%host%%'}, ['host']))],
-            ('template', ('check_0', {}, [{'host': '127.0.0.1', 'tags': [u'docker_image:nginx', u'image_name:nginx']}]))),
+            ('template', ('check_0', {}, [{'host': '127.0.0.1', 'tags': ['docker_image:nginx', 'image_name:nginx']}]))),
         'image_1': (
             [('template', ('check_1', {}, {'port': '%%port%%'}, ['port']))],
-            ('template', ('check_1', {}, [{'port': '1337', 'tags': [u'docker_image:nginx', u'image_name:nginx']}]))),
+            ('template', ('check_1', {}, [{'port': '1337', 'tags': ['docker_image:nginx', 'image_name:nginx']}]))),
         'image_2': (
             [('template', ('check_2', {}, {'host': '%%host%%', 'port': '%%port%%'}, ['host', 'port']))],
-            ('template', ('check_2', {}, [{'host': '127.0.0.1', 'port': '1337', 'tags': [u'docker_image:nginx', u'image_name:nginx']}]))),
+            ('template', ('check_2', {}, [{'host': '127.0.0.1', 'port': '1337', 'tags': ['docker_image:nginx', 'image_name:nginx']}]))),
         'image_3': (
             [('template', ('check_3', {}, [{'host': '%%host%%', 'port': '%%port%%'}, {"foo": "%%host%%", "bar": "%%port%%"}], ['host', 'port', 'host', 'port']))],
             ('template', ('check_3', {}, [
-                {'host': '127.0.0.1', 'port': '1337', 'tags': [u'docker_image:nginx', u'image_name:nginx']},
-                {'foo': '127.0.0.1', 'bar': '1337', 'tags': [u'docker_image:nginx', u'image_name:nginx']}]))),
+                {'host': '127.0.0.1', 'port': '1337', 'tags': ['docker_image:nginx', 'image_name:nginx']},
+                {'foo': '127.0.0.1', 'bar': '1337', 'tags': ['docker_image:nginx', 'image_name:nginx']}]))),
     }
 
     # raw templates coming straight from the config store
@@ -281,7 +281,7 @@ class TestServiceDiscovery(unittest.TestCase):
         for c_ins, tpl_var, expected_ip in ip_address_inspects:
             state = _SDDockerBackendConfigFetchState(lambda _: c_ins)
             sd_backend = get_sd_backend(agentConfig=self.auto_conf_agentConfig)
-            self.assertEquals(sd_backend._get_host_address(state, 'container id', tpl_var), expected_ip)
+            self.assertEqual(sd_backend._get_host_address(state, 'container id', tpl_var), expected_ip)
             clear_singletons(self.auto_conf_agentConfig)
 
     @mock.patch('config.get_auto_confd_path', return_value=os.path.join(
@@ -292,7 +292,7 @@ class TestServiceDiscovery(unittest.TestCase):
             state = _SDDockerBackendConfigFetchState(lambda _: c_ins)
             sd_backend = get_sd_backend(agentConfig=self.auto_conf_agentConfig)
             if isinstance(expected_ports, str):
-                self.assertEquals(sd_backend._get_port(state, 'container id', var_tpl), expected_ports)
+                self.assertEqual(sd_backend._get_port(state, 'container id', var_tpl), expected_ports)
             else:
                 self.assertRaises(expected_ports, sd_backend._get_port, state, 'c_id', var_tpl)
             clear_singletons(self.auto_conf_agentConfig)
@@ -304,7 +304,7 @@ class TestServiceDiscovery(unittest.TestCase):
         for c_ins, _, var_tpl, _, _, expected_pid in self.container_inspects:
             state = _SDDockerBackendConfigFetchState(lambda _: c_ins)
             sd_backend = get_sd_backend(agentConfig=self.auto_conf_agentConfig)
-            self.assertEquals(sd_backend._get_container_pid(state, 'container id', var_tpl), expected_pid)
+            self.assertEqual(sd_backend._get_container_pid(state, 'container id', var_tpl), expected_pid)
             clear_singletons(self.auto_conf_agentConfig)
 
     @mock.patch('config.get_auto_confd_path', return_value=os.path.join(
@@ -316,10 +316,10 @@ class TestServiceDiscovery(unittest.TestCase):
     def test_get_check_configs(self, *args):
         """Test get_check_config with mocked container inspect and config template"""
         c_id = self.docker_container_inspect.get('Id')
-        for image in self.mock_templates.keys():
+        for image in list(self.mock_templates.keys()):
             sd_backend = get_sd_backend(agentConfig=self.auto_conf_agentConfig)
             state = _SDDockerBackendConfigFetchState(_get_container_inspect)
-            self.assertEquals(
+            self.assertEqual(
                 sd_backend._get_check_configs(state, c_id, image)[0],
                 self.mock_templates[image][1])
             clear_singletons(self.auto_conf_agentConfig)
@@ -381,13 +381,13 @@ class TestServiceDiscovery(unittest.TestCase):
         for agentConfig in self.agentConfigs:
             sd_backend = get_sd_backend(agentConfig=agentConfig)
             # normal cases
-            for image in self.mock_templates.keys():
+            for image in list(self.mock_templates.keys()):
                 template = sd_backend._get_config_templates(image)
                 expected_template = self.mock_templates.get(image)[0]
-                self.assertEquals(template, expected_template)
+                self.assertEqual(template, expected_template)
             # error cases
-            for image in self.bad_mock_templates.keys():
-                self.assertEquals(sd_backend._get_config_templates(image), None)
+            for image in list(self.bad_mock_templates.keys()):
+                self.assertEqual(sd_backend._get_config_templates(image), None)
             clear_singletons(agentConfig)
 
     @mock.patch('config.get_auto_confd_path', return_value=os.path.join(
@@ -397,8 +397,8 @@ class TestServiceDiscovery(unittest.TestCase):
     def test_get_image_ident(self, *args):
         sd_backend = get_sd_backend(agentConfig=self.auto_conf_agentConfig)
         # normal cases
-        for image, ident in self.image_formats.iteritems():
-            self.assertEquals(ident, sd_backend.config_store._get_image_ident(image))
+        for image, ident in self.image_formats.items():
+            self.assertEqual(ident, sd_backend.config_store._get_image_ident(image))
 
     @mock.patch('config.get_auto_confd_path', return_value=os.path.join(
         os.path.dirname(__file__), 'fixtures/auto_conf/'))
@@ -429,10 +429,10 @@ class TestServiceDiscovery(unittest.TestCase):
                         for tpl, res in valid_configs:
                             init, instance, variables = tpl
                             config = sd_backend._render_template(init, instance, variables)
-                            self.assertEquals(config, res)
+                            self.assertEqual(config, res)
                         for init, instance, variables in invalid_configs:
                             config = sd_backend._render_template(init, instance, variables)
-                            self.assertEquals(config, None)
+                            self.assertEqual(config, None)
                             clear_singletons(agentConfig)
 
     @mock.patch('config.get_auto_confd_path', return_value=os.path.join(
@@ -586,15 +586,15 @@ class TestServiceDiscovery(unittest.TestCase):
                     inspect, tpl, variables, tags = co[0]
                     state = _SDDockerBackendConfigFetchState(lambda _: inspect)
                     instance_tpl, var_values = sd_backend._fill_tpl(state, 'c_id', tpl, variables, tags)
-                    for key in instance_tpl.keys():
+                    for key in list(instance_tpl.keys()):
                         if isinstance(instance_tpl[key], list):
-                            self.assertEquals(len(instance_tpl[key]), len(co[1][0].get(key)))
+                            self.assertEqual(len(instance_tpl[key]), len(co[1][0].get(key)))
 
                             for elem in instance_tpl[key]:
                                 self.assertTrue(elem in co[1][0].get(key))
                         else:
-                            self.assertEquals(instance_tpl[key], co[1][0].get(key))
-                    self.assertEquals(var_values, co[1][1])
+                            self.assertEqual(instance_tpl[key], co[1][0].get(key))
+                    self.assertEqual(var_values, co[1][1])
 
                 for co in invalid_config:
                     inspect, tpl, variables, tags = co[0]
@@ -618,9 +618,9 @@ class TestServiceDiscovery(unittest.TestCase):
             'foobar': []
         }
         config_store = get_config_store(self.auto_conf_agentConfig)
-        for image in expected_tpl.keys():
+        for image in list(expected_tpl.keys()):
             config = config_store._get_auto_config(image)
-            self.assertEquals(config, expected_tpl.get(image))
+            self.assertEqual(config, expected_tpl.get(image))
 
     @mock.patch('config.get_auto_confd_path', return_value=os.path.join(
         os.path.dirname(__file__), 'fixtures/auto_conf/'))
@@ -632,10 +632,10 @@ class TestServiceDiscovery(unittest.TestCase):
         config_store = get_config_store(self.auto_conf_agentConfig)
         for image in valid_config:
             tpl = self.mock_raw_templates.get(image)[1]
-            self.assertEquals(tpl, config_store.get_check_tpls(image))
+            self.assertEqual(tpl, config_store.get_check_tpls(image))
         for image in invalid_config:
             tpl = self.mock_raw_templates.get(image)[1]
-            self.assertEquals(tpl, config_store.get_check_tpls(image))
+            self.assertEqual(tpl, config_store.get_check_tpls(image))
 
     @mock.patch('config.get_auto_confd_path', return_value=os.path.join(
         os.path.dirname(__file__), 'fixtures/auto_conf/'))
@@ -649,20 +649,20 @@ class TestServiceDiscovery(unittest.TestCase):
             tpl = self.mock_raw_templates.get(image)[1]
             tpl = [(CONFIG_FROM_KUBE, t[1]) for t in tpl]
             if tpl:
-                self.assertNotEquals(
+                self.assertNotEqual(
                     tpl,
                     config_store.get_check_tpls('k8s-' + image, auto_conf=True))
-            self.assertEquals(
+            self.assertEqual(
                 tpl,
                 config_store.get_check_tpls(
                     'k8s-' + image, auto_conf=True,
                     kube_pod_name=image,
                     kube_container_name='foo',
-                    kube_annotations=dict(zip(
+                    kube_annotations=dict(list(zip(
                         ['service-discovery.serverdensity.com/foo.check_names',
                          'service-discovery.serverdensity.com/foo.init_configs',
                          'service-discovery.serverdensity.com/foo.instances'],
-                        self.mock_raw_templates[image][0]))))
+                        self.mock_raw_templates[image][0])))))
 
     @mock.patch('config.get_auto_confd_path', return_value=os.path.join(
         os.path.dirname(__file__), 'fixtures/auto_conf/'))
@@ -676,18 +676,18 @@ class TestServiceDiscovery(unittest.TestCase):
             tpl = self.mock_raw_templates.get(image)[1]
             tpl = [(CONFIG_FROM_LABELS, t[1]) for t in tpl]
             if tpl:
-                self.assertNotEquals(
+                self.assertNotEqual(
                     tpl,
                     config_store.get_check_tpls(image, auto_conf=True))
-            self.assertEquals(
+            self.assertEqual(
                 tpl,
                 config_store.get_check_tpls(
                     image, auto_conf=True,
-                    docker_labels=dict(zip(
+                    docker_labels=dict(list(zip(
                         ['com.serverdensity.ad.check_names',
                          'com.serverdensity.ad.init_configs',
                          'com.serverdensity.ad.instances'],
-                        self.mock_raw_templates[image][0]))))
+                        self.mock_raw_templates[image][0])))))
 
     @mock.patch('config.get_auto_confd_path', return_value=os.path.join(
         os.path.dirname(__file__), 'fixtures/auto_conf/'))
@@ -715,7 +715,7 @@ class TestServiceDiscovery(unittest.TestCase):
         for ident, expected_key in valid_idents:
             tpl = config_store.read_config_from_store(ident)
             # source is added after reading from the store
-            self.assertEquals(
+            self.assertEqual(
                 tpl,
                 {
                     CONFIG_FROM_AUTOCONF: None,
@@ -723,7 +723,7 @@ class TestServiceDiscovery(unittest.TestCase):
                 }
             )
         for ident in invalid_idents:
-            self.assertEquals(config_store.read_config_from_store(ident), [])
+            self.assertEqual(config_store.read_config_from_store(ident), [])
 
     @mock.patch('config.get_auto_confd_path', return_value=os.path.join(
         os.path.dirname(__file__), 'fixtures/auto_conf/'))
@@ -740,7 +740,7 @@ class TestServiceDiscovery(unittest.TestCase):
         }
         for check in self.jmx_sd_configs:
             key = '{}_0'.format(check)
-            self.assertEquals(jmx_configs[key], valid_configs[key])
+            self.assertEqual(jmx_configs[key], valid_configs[key])
 
     # Template cache
     @mock.patch('utils.service_discovery.abstract_config_store.get_auto_conf_images')
@@ -755,8 +755,8 @@ class TestServiceDiscovery(unittest.TestCase):
         mock_get_auto_conf_images.return_value = auto_tpls
 
         cache._populate_auto_conf()
-        self.assertEquals(cache.auto_conf_templates['foo'], auto_tpls['foo'])
-        self.assertEquals(cache.auto_conf_templates['bar'],
+        self.assertEqual(cache.auto_conf_templates['foo'], auto_tpls['foo'])
+        self.assertEqual(cache.auto_conf_templates['bar'],
             [['check2', 'check3'], [{}, {}], [{}, {'foo': 'bar'}]])
 
     @mock.patch('config.get_auto_confd_path', return_value=os.path.join(
@@ -776,23 +776,23 @@ class TestServiceDiscovery(unittest.TestCase):
         cache = _TemplateCache(issue_read, '')
         cache.kv_templates = kv_tpls
         cache.auto_conf_templates = auto_tpls
-        self.assertEquals(cache.get_templates('foo'),
+        self.assertEqual(cache.get_templates('foo'),
             {CONFIG_FROM_TEMPLATE: [['check0', 'check1'], [{}, {}], [{}, {}]],
                 CONFIG_FROM_AUTOCONF: [['check3', 'check5'], [{}, {}], [{}, {}]]}
         )
 
-        self.assertEquals(cache.get_templates('bar'),
+        self.assertEqual(cache.get_templates('bar'),
             # check3 must come from template not autoconf
             {CONFIG_FROM_TEMPLATE: [['check2', 'check3'], [{}, {}], [{}, {}]],
                 CONFIG_FROM_AUTOCONF: [['check6'], [{}], [{}]]}
         )
 
-        self.assertEquals(cache.get_templates('foobar'),
+        self.assertEqual(cache.get_templates('foobar'),
             {CONFIG_FROM_TEMPLATE: None,
                 CONFIG_FROM_AUTOCONF: [['check4'], [{}], [{}]]}
         )
 
-        self.assertEquals(cache.get_templates('baz'), None)
+        self.assertEqual(cache.get_templates('baz'), None)
 
     @mock.patch('config.get_auto_confd_path', return_value=os.path.join(
         os.path.dirname(__file__), 'fixtures/auto_conf/'))
@@ -810,7 +810,7 @@ class TestServiceDiscovery(unittest.TestCase):
         cache = _TemplateCache(issue_read, '')
         cache.kv_templates = kv_tpls
         cache.auto_conf_templates = auto_tpls
-        self.assertEquals(cache.get_check_names('foo'), set(['check0', 'check1', 'check4', 'check5']))
-        self.assertEquals(cache.get_check_names('bar'), set(['check2', 'check3', 'check6']))
-        self.assertEquals(cache.get_check_names('foobar'), set())
-        self.assertEquals(cache.get_check_names('baz'), set())
+        self.assertEqual(cache.get_check_names('foo'), set(['check0', 'check1', 'check4', 'check5']))
+        self.assertEqual(cache.get_check_names('bar'), set(['check2', 'check3', 'check6']))
+        self.assertEqual(cache.get_check_names('foobar'), set())
+        self.assertEqual(cache.get_check_names('baz'), set())

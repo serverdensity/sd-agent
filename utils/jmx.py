@@ -28,17 +28,17 @@ def jmx_command(args, agent_config, redirect_std_streams=False):
     Run JMXFetch with the given command if it is valid (and print user-friendly info if it's not)
     """
     from jmxfetch import JMX_LIST_COMMANDS, JMXFetch
-    if len(args) < 1 or args[0] not in JMX_LIST_COMMANDS.keys():
-        print "#" * 80
-        print "JMX tool to be used to help configuring your JMX checks."
-        print "See https://support.serverdensity.com/hc/en-us/articles/115014942368 for more information"
-        print "#" * 80
-        print "\n"
-        print "You have to specify one of the following commands:"
-        for command, desc in JMX_LIST_COMMANDS.iteritems():
-            print "      - %s [OPTIONAL: LIST OF CHECKS]: %s" % (command, desc)
-        print "Example: sudo /etc/init.d/sd-agent jmx list_matching_attributes tomcat jmx solr"
-        print "\n"
+    if len(args) < 1 or args[0] not in list(JMX_LIST_COMMANDS.keys()):
+        print("#" * 80)
+        print("JMX tool to be used to help configuring your JMX checks.")
+        print("See https://support.serverdensity.com/hc/en-us/articles/115014942368 for more information")
+        print("#" * 80)
+        print("\n")
+        print("You have to specify one of the following commands:")
+        for command, desc in JMX_LIST_COMMANDS.items():
+            print("      - %s [OPTIONAL: LIST OF CHECKS]: %s" % (command, desc))
+        print("Example: sudo /etc/init.d/sd-agent jmx list_matching_attributes tomcat jmx solr")
+        print("\n")
 
     else:
         jmx_command = args[0]
@@ -52,9 +52,9 @@ def jmx_command(args, agent_config, redirect_std_streams=False):
         if should_run:
             jmx_process.run(jmx_command, checks_list, reporter="console", redirect_std_streams=redirect_std_streams)
         else:
-            print "Couldn't find any valid JMX configuration in your conf.d directory: %s" % confd_directory
-            print "Have you enabled any JMX check ?"
-            print "If you think it's not normal please get in touch with Server Density Support"
+            print("Couldn't find any valid JMX configuration in your conf.d directory: %s" % confd_directory)
+            print("Have you enabled any JMX check ?")
+            print("If you think it's not normal please get in touch with Server Density Support")
 
 
 class JMXFiles(object):
@@ -99,7 +99,7 @@ class JMXFiles(object):
             'timestamp': time.time(),
             'invalid_checks': invalid_checks
         }
-        stream = file(os.path.join(cls._get_dir(), cls._PYTHON_STATUS_FILE), 'w')
+        stream = open(os.path.join(cls._get_dir(), cls._PYTHON_STATUS_FILE), 'w')
         yaml.dump(data, stream, Dumper=yDumper)
         stream.close()
 
@@ -146,6 +146,6 @@ class JMXFiles(object):
         check_names = []
         jmx_status_path = os.path.join(cls._get_dir(), cls._STATUS_FILE)
         if os.path.exists(jmx_status_path):
-            jmx_checks = yaml.safe_load(file(jmx_status_path)).get('checks', {})
-            check_names = [name for name in jmx_checks.get('initialized_checks', {}).iterkeys()]
+            jmx_checks = yaml.safe_load(open(jmx_status_path)).get('checks', {})
+            check_names = [name for name in jmx_checks.get('initialized_checks', {}).keys()]
         return check_names

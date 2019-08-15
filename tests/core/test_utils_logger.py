@@ -44,7 +44,7 @@ class TestUtilsLogger(unittest.TestCase):
             """
             Raise an exception.
             """
-            raise Exception(u"Bad exception.")
+            raise Exception("Bad exception.")
 
         self.assertRaises(Exception, raise_exception)
         self.assertTrue(mock_logger.exception.called)
@@ -72,7 +72,7 @@ class TestUtilsLogger(unittest.TestCase):
             url = "https://x-x-x-app.agent.datadog.com/intake/?api_key=foobar"
 
             logger.info(
-                u"Sending %s to endpoint %s at %s",
+                "Sending %s to endpoint %s at %s",
                 mtype, endpoint, url
             )
 
@@ -80,7 +80,7 @@ class TestUtilsLogger(unittest.TestCase):
 
         # API key is obfuscated
         result = handler.pop()
-        expected_result = u"Sending metrics to endpoint dd_url at "\
+        expected_result = "Sending metrics to endpoint dd_url at "\
             "https://x-x-x-app.agent.datadog.com/intake/?api_key=*************************oobar"
 
-        self.assertEquals(result, expected_result)
+        self.assertEqual(result, expected_result)

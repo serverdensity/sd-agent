@@ -4,8 +4,8 @@
 # Licensed under Simplified BSD License (see LICENSE)
 
 # stdlib
-import ConfigParser
-from cStringIO import StringIO
+import configparser
+from io import StringIO
 import glob
 import imp
 import inspect
@@ -18,7 +18,6 @@ import os
 import platform
 import re
 from socket import gaierror, gethostbyname
-import string
 import sys
 import traceback
 from importlib import import_module
@@ -146,7 +145,7 @@ def _version_string_to_tuple(version_string):
 # Return url endpoint, here because needs access to version number
 def get_url_endpoint(default_url, endpoint_type='app', cfg_path=None):
     config_path = get_config_path(cfg_path, os_name=get_os())
-    config = ConfigParser.ConfigParser()
+    config = configparser.ConfigParser()
     config.readfp(skip_leading_wsp(open(config_path)))
     if config.has_option('Main', 'sd_url') and config.get('Main', 'sd_url'):
         url = config.get('Main', 'sd_url')
@@ -337,7 +336,7 @@ def clean_dd_url(url):
 
 
 def remove_empty(string_array):
-    return filter(lambda x: x, string_array)
+    return [x for x in string_array if x]
 
 
 def get_config(parse_args=True, cfg_path=None, options=None, can_query_registry=True, allow_invalid_api_key=False):
@@ -376,7 +375,7 @@ def get_config(parse_args=True, cfg_path=None, options=None, can_query_registry=
         path = os.path.dirname(path)
 
         config_path = get_config_path(cfg_path, os_name=get_os())
-        config = ConfigParser.ConfigParser()
+        config = configparser.ConfigParser()
         config.readfp(skip_leading_wsp(open(config_path)))
 
         # bulk import
@@ -394,11 +393,11 @@ def get_config(parse_args=True, cfg_path=None, options=None, can_query_registry=
         # Core config
         #ap
         if not config.has_option('Main', 'agent_key'):
-            log.warning(u"No agent key was found. Aborting.")
+            log.warning("No agent key was found. Aborting.")
             sys.exit(2)
 
         if not (config.has_option('Main', 'sd_url') or config.has_option('Main', 'sd_account')):
-            log.warning(u"No sd_account or sd_url was found. Aborting.")
+            log.warning("No sd_account or sd_url was found. Aborting.")
             sys.exit(2)
         endpoints = {}
         agentConfig['endpoints'] = endpoints
@@ -498,7 +497,7 @@ def get_config(parse_args=True, cfg_path=None, options=None, can_query_registry=
             'sdstatsd_port': 8125,
             'sdstatsd_target': 'http://' + agentConfig['bind_host'] + ':17124',
         }
-        for key, value in sdstatsd_defaults.iteritems():
+        for key, value in sdstatsd_defaults.items():
             if config.has_option('Main', key):
                 agentConfig[key] = config.get('Main', key)
             else:
@@ -533,7 +532,7 @@ def get_config(parse_args=True, cfg_path=None, options=None, can_query_registry=
         try:
             filter_device_re = config.get('Main', 'device_blacklist_re')
             agentConfig['device_blacklist_re'] = re.compile(filter_device_re)
-        except ConfigParser.NoOptionError:
+        except configparser.NoOptionError:
             pass
 
         # Dogstream config
@@ -616,15 +615,15 @@ def get_config(parse_args=True, cfg_path=None, options=None, can_query_registry=
         if config.has_option("Main", "openstack_use_metadata_tags"):
             agentConfig["openstack_use_metadata_tags"] = _is_affirmative(config.get("Main", "openstack_use_metadata_tags"))
 
-    except ConfigParser.NoSectionError as e:
+    except configparser.NoSectionError as e:
         sys.stderr.write('Config file not found or incorrectly formatted.\n')
         sys.exit(2)
 
-    except ConfigParser.ParsingError as e:
+    except configparser.ParsingError as e:
         sys.stderr.write('Config file not found or incorrectly formatted.\n')
         sys.exit(2)
 
-    except ConfigParser.NoOptionError as e:
+    except configparser.NoOptionError as e:
         sys.stderr.write('There are some items missing from your config file, but nothing fatal [%s]' % e)
 
     # Storing proxy settings in the agentConfig
@@ -1003,7 +1002,7 @@ def _load_file_config(config_path, check_name, agentConfig):
         log.warning("Configuring Nagios in config.cfg is deprecated "
                     "and will be removed in a future version. "
                     "Please use conf.d")
-        check_config = {'instances': [dict((key, value) for (key, value) in agentConfig.iteritems() if key in NAGIOS_OLD_CONF_KEYS)]}
+        check_config = {'instances': [dict((key, value) for (key, value) in agentConfig.items() if key in NAGIOS_OLD_CONF_KEYS)]}
         return True, check_config, {}
 
     try:
@@ -1202,7 +1201,7 @@ def load_check_directory(agentConfig, hostname):
         initialized_checks.update(load_success)
         init_failed_checks.update(load_failure)
 
-    for check_name, service_disco_check_config in _service_disco_configs(agentConfig).iteritems():
+    for check_name, service_disco_check_config in _service_disco_configs(agentConfig).items():
         # ignore this config from service disco if the check has been loaded through a file config
         if check_name in initialized_checks or \
                 check_name in init_failed_checks or \
@@ -1224,13 +1223,13 @@ def load_check_directory(agentConfig, hostname):
         init_failed_checks.update(load_failure)
 
     init_failed_checks.update(deprecated_checks)
-    log.info('initialized checks.d checks: %s' % [k for k in initialized_checks.keys() if k != AGENT_METRICS_CHECK_NAME])
-    log.info('initialization failed checks.d checks: %s' % init_failed_checks.keys())
+    log.info('initialized checks.d checks: %s' % [k for k in list(initialized_checks.keys()) if k != AGENT_METRICS_CHECK_NAME])
+    log.info('initialization failed checks.d checks: %s' % list(init_failed_checks.keys()))
 
     if agentConfig.get(TRACE_CONFIG):
         return configs_and_sources
 
-    return {'initialized_checks': initialized_checks.values(),
+    return {'initialized_checks': list(initialized_checks.values()),
             'init_failed_checks': init_failed_checks}
 
 
@@ -1251,17 +1250,17 @@ def load_check(agentConfig, hostname, checkname):
 
             # try to load the check and return the result
             load_success, load_failure = load_check_from_places(check_config, check_name, checks_places, agentConfig)
-            return load_success.values()[0] or load_failure
+            return list(load_success.values())[0] or load_failure
 
     # the check was not found, try with service discovery
-    for check_name, service_disco_check_config in _service_disco_configs(agentConfig).iteritems():
+    for check_name, service_disco_check_config in _service_disco_configs(agentConfig).items():
         if check_name == checkname:
             sd_init_config, sd_instances = service_disco_check_config[1]
             check_config = {'init_config': sd_init_config, 'instances': sd_instances}
 
             # try to load the check and return the result
             load_success, load_failure = load_check_from_places(check_config, check_name, checks_places, agentConfig)
-            return load_success.values()[0] if load_success else load_failure
+            return list(load_success.values())[0] if load_success else load_failure
 
     return None
 
@@ -1277,7 +1276,7 @@ def generate_jmx_configs(agentConfig, hostname, checknames=None):
 
     # the check was not found, try with service discovery
     generated = {}
-    for check_name, service_disco_check_config in _service_disco_configs(agentConfig).iteritems():
+    for check_name, service_disco_check_config in _service_disco_configs(agentConfig).items():
         if check_name in checknames and check_name in jmx_checks:
             log.debug('Generating JMX config for: %s' % check_name)
 
@@ -1337,7 +1336,7 @@ def get_logging_config(cfg_path=None):
         logging_config['log_to_syslog'] = True
 
     config_path = get_config_path(cfg_path, os_name=system_os)
-    config = ConfigParser.ConfigParser()
+    config = configparser.ConfigParser()
     config.readfp(skip_leading_wsp(open(config_path)))
 
     if config.has_section('handlers') or config.has_section('loggers') or config.has_section('formatters'):

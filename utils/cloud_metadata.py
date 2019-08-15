@@ -4,7 +4,6 @@
 
 # stdlib
 import logging
-import types
 import os
 import socket
 
@@ -90,7 +89,7 @@ class GCE(object):
             host_metadata = GCE._get_metadata(agentConfig)
             tags = []
 
-            for key, value in host_metadata['instance'].get('attributes', {}).iteritems():
+            for key, value in host_metadata['instance'].get('attributes', {}).items():
                 if key in GCE.EXCLUDED_ATTRIBUTES:
                     continue
                 tags.append("%s:%s" % (key, value))
@@ -103,7 +102,7 @@ class GCE(object):
             tags.append('project:%s' % host_metadata['project']['projectId'])
             tags.append('numeric_project_id:%s' % host_metadata['project']['numericProjectId'])
 
-            GCE.metadata['hostname'] = host_metadata['instance']['hostname'].split('.')[0]
+            setattr(GCE.metadata, 'hostname', host_metadata['instance']['hostname'].split('.')[0])
 
             return tags
         except Exception as e:
@@ -140,7 +139,7 @@ class EC2(object):
     METADATA_URL_BASE = EC2_METADATA_HOST + "/latest/meta-data"
     INSTANCE_IDENTITY_URL = EC2_METADATA_HOST + "/latest/dynamic/instance-identity/document"
     TIMEOUT = 0.1  # second
-    DEFAULT_PREFIXES = [u'ip-', u'domu']
+    DEFAULT_PREFIXES = ['ip-', 'domu']
     metadata = {}
     is_openstack = None
 
@@ -187,7 +186,7 @@ class EC2(object):
 
         try:
             iam_role = EC2.get_iam_role()
-            iam_url = EC2.METADATA_URL_BASE + "/iam/security-credentials/" + unicode(iam_role)
+            iam_url = EC2.METADATA_URL_BASE + "/iam/security-credentials/" + str(iam_role)
             r = requests.get(iam_url, timeout=EC2.TIMEOUT)
             r.raise_for_status() # Fail on 404 etc
             iam_params = r.json()
@@ -209,36 +208,36 @@ class EC2(object):
 
             tag_object = connection.get_all_tags({'resource-id': EC2.metadata['instance-id']})
 
-            EC2_tags = [u"%s:%s" % (tag.name, tag.value) for tag in tag_object]
+            EC2_tags = ["%s:%s" % (tag.name, tag.value) for tag in tag_object]
             if agentConfig.get('collect_security_groups') and EC2.metadata.get('security-groups'):
-                EC2_tags.append(u"security-group-name:{0}".format(EC2.metadata.get('security-groups')))
+                EC2_tags.append("security-group-name:{0}".format(EC2.metadata.get('security-groups')))
 
         except EC2.NoIAMRole:
             log.warning(
-                u"Unable to retrieve AWS EC2 custom tags: "
-                u"an IAM role associated with the instance is required"
+                "Unable to retrieve AWS EC2 custom tags: "
+                "an IAM role associated with the instance is required"
             )
         except Exception:
             log.exception("Problem retrieving custom EC2 tags")
 
         if EC2.is_openstack is True and agentConfig['openstack_use_metadata_tags']:
-            log.info(u"Attempting to collect tags from OpenStack meta_data.json")
+            log.info("Attempting to collect tags from OpenStack meta_data.json")
             openstack_metadata_url = EC2.EC2_METADATA_HOST + "/openstack/latest/meta_data.json"
             try:
                 r = requests.get(openstack_metadata_url, timeout=EC2.TIMEOUT)
                 r.raise_for_status() # Fail on 404 etc
                 openstack_metadata = r.json()
-                EC2_tags = [u"%s:%s" % (tag, openstack_metadata['meta'][tag]) for tag in openstack_metadata['meta']]
+                EC2_tags = ["%s:%s" % (tag, openstack_metadata['meta'][tag]) for tag in openstack_metadata['meta']]
                 if 'project_id' in openstack_metadata:
-                    EC2_tags.append(u"project_id:%s" % openstack_metadata['project_id'])
+                    EC2_tags.append("project_id:%s" % openstack_metadata['project_id'])
                 # Map the OS availability_zone to Datadog's use of availability-zone for UI defaults
-                EC2_tags.append(u"availability-zone:%s" % openstack_metadata['availability_zone'])
+                EC2_tags.append("availability-zone:%s" % openstack_metadata['availability_zone'])
                 # Even though the name is set in EC2.metadata it also needs to be a tag for filters
                 if 'name' not in openstack_metadata['meta']:
-                    EC2_tags.append(u"name:%s" % openstack_metadata['name'])
+                    EC2_tags.append("name:%s" % openstack_metadata['name'])
 
             except Exception:
-                log.warning(u"Problem retrieving tags from OpenStack meta_data.json")
+                log.warning("Problem retrieving tags from OpenStack meta_data.json")
 
         return EC2_tags
 
@@ -260,11 +259,11 @@ class EC2(object):
 
         for k in ('instance-id', 'hostname', 'local-hostname', 'public-hostname', 'ami-id', 'local-ipv4', 'public-keys/', 'public-ipv4', 'reservation-id', 'security-groups'):
             try:
-                url = EC2.METADATA_URL_BASE + "/" + unicode(k)
+                url = EC2.METADATA_URL_BASE + "/" + str(k)
                 r = requests.get(url, timeout=EC2.TIMEOUT)
                 r.raise_for_status()
                 v = r.content.strip()
-                assert type(v) in (types.StringType, types.UnicodeType) and len(v) > 0, "%s is not a string" % v
+                assert type(v) in (bytes, str) and len(v) > 0, "%s is not a string" % v
                 EC2.metadata[k.rstrip('/')] = v
             except Exception as e:
                 log.debug("Collecting EC2 Metadata failed %s", str(e))
@@ -272,7 +271,7 @@ class EC2(object):
 
         # Only check if we don't know yet or if it is known to be OpenStack
         if EC2.is_openstack is None or EC2.is_openstack is True:
-            log.info(u"Attempting to get OpenStack meta_data.json")
+            log.info("Attempting to get OpenStack meta_data.json")
             openstack_metadata_url = EC2.EC2_METADATA_HOST + "/openstack/latest/meta_data.json"
             try:
                 r = requests.get(openstack_metadata_url, timeout=EC2.TIMEOUT)
@@ -288,11 +287,11 @@ class EC2(object):
 
                 # the OpenStack instance-id can be recycled but the uuid will always be unique
                 if agentConfig['openstack_use_uuid']:
-                    log.info(u"Using the instance's uuid for instance-id")
+                    log.info("Using the instance's uuid for instance-id")
                     EC2.metadata["instance-id"] = openstack_metadata['uuid']
 
             except Exception:
-                log.info(u"Could not load meta_data.json, not OpenStack EC2 instance")
+                log.info("Could not load meta_data.json, not OpenStack EC2 instance")
                 EC2.is_openstack = False
 
         return EC2.metadata.copy()

@@ -41,7 +41,7 @@ class TestModuleLoad(unittest.TestCase):
     def test_modname_load_default(self):
         """When the specifier contains no module name, any provided default
         should be used"""
-        self.assertEquals(
+        self.assertEqual(
             modules.load(
                 TARGET_MODULE,
                 'default_target'),
@@ -51,7 +51,7 @@ class TestModuleLoad(unittest.TestCase):
     def test_modname_load_specified(self):
         """When the specifier contains a module name, any provided default
         should be overridden"""
-        self.assertEquals(
+        self.assertEqual(
             modules.load(
                 '{0}:specified_target'.format(TARGET_MODULE),
                 'default_target'),
@@ -66,4 +66,4 @@ class TestModuleLoad(unittest.TestCase):
         the loaded module to include any package containing it."""
         m = modules.load(os.path.join(os.getcwd(),
                                       TARGET_MODULE.replace('.', '/')))
-        self.assertEquals(m.__name__, TARGET_MODULE)
+        self.assertEqual(m.__name__, TARGET_MODULE)

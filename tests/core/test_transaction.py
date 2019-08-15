@@ -84,7 +84,7 @@ class TestTransaction(unittest.TestCase):
 
         step = 10
         oneTrSize = (MAX_QUEUE_SIZE / step) - 1
-        for i in xrange(step):
+        for i in range(step):
             trManager.append(memTransaction(oneTrSize, trManager))
 
         trManager.flush()
@@ -127,7 +127,7 @@ class TestTransaction(unittest.TestCase):
 
         # Add 3 transactions, make sure no memory limit is in the way
         oneTrSize = MAX_QUEUE_SIZE / 10
-        for i in xrange(3):
+        for i in range(3):
             tr = memTransaction(oneTrSize, trManager)
             trManager.append(tr)
 
@@ -255,7 +255,7 @@ class TestTransaction(unittest.TestCase):
 
         step = 10
         oneTrSize = (MAX_QUEUE_SIZE / step) - 1
-        for i in xrange(step):
+        for i in range(step):
             trManager.append(memTransaction(oneTrSize, trManager))
 
         trManager.flush()
@@ -291,7 +291,7 @@ class TestTransaction(unittest.TestCase):
         trManager = TransactionManager(timedelta(seconds=0), MAX_QUEUE_SIZE,
                                        timedelta(seconds=0), max_parallelism=step,
                                        max_endpoint_errors=100)
-        for i in xrange(step):
+        for i in range(step):
             trManager.append(SleepingTransaction(trManager))
 
         trManager.flush()
@@ -311,11 +311,11 @@ class TestTransaction(unittest.TestCase):
         trManager = TransactionManager(timedelta(seconds=0), MAX_QUEUE_SIZE,
                                        timedelta(seconds=0), max_parallelism=1,
                                        max_endpoint_errors=100)
-        for i in xrange(step):
+        for i in range(step):
             trManager.append(SleepingTransaction(trManager, delay=1))
         trManager.flush()
         # Flushes should be sequential
-        for i in xrange(step):
+        for i in range(step):
             self.assertEqual(trManager._running_flushes, 1)
             self.assertEqual(trManager._finished_flushes, i)
             self.assertEqual(len(trManager._trs_to_flush), step - (i + 1))

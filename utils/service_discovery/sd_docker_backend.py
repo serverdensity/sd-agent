@@ -193,7 +193,7 @@ class SDDockerBackend(AbstractSDBackend):
 
         networks = c_inspect.get('NetworkSettings', {}).get('Networks') or {}
         ip_dict = {}
-        for net_name, net_desc in networks.iteritems():
+        for net_name, net_desc in networks.items():
             ip = net_desc.get('IPAddress')
             if ip:
                 ip_dict[net_name] = ip
@@ -244,7 +244,7 @@ class SDDockerBackend(AbstractSDBackend):
             log.debug("Using the bridge network.")
             return ip_dict['bridge']
 
-        last_key = sorted(ip_dict.iterkeys())[-1]
+        last_key = sorted(ip_dict.keys())[-1]
         log.debug("Trying with the last (sorted) network: '%s'." % last_key)
         return ip_dict[last_key]
 
@@ -253,7 +253,7 @@ class SDDockerBackend(AbstractSDBackend):
         container_inspect = state.inspect_container(c_id)
         ports = []
         try:
-            ports = [x.split('/')[0] for x in container_inspect['NetworkSettings']['Ports'].keys()]
+            ports = [x.split('/')[0] for x in list(container_inspect['NetworkSettings']['Ports'].keys())]
             if len(ports) == 0:
                 raise IndexError
         except (IndexError, KeyError, AttributeError):
@@ -262,7 +262,7 @@ class SDDockerBackend(AbstractSDBackend):
                 if spec:
                     ports = [str(x.get('containerPort')) for x in spec.get('ports', [])]
             else:
-                ports = [p.split('/')[0] for p in container_inspect['Config'].get('ExposedPorts', {}).keys()]
+                ports = [p.split('/')[0] for p in list(container_inspect['Config'].get('ExposedPorts', {}).keys())]
 
         ports = sorted(ports, key=int)
         return self._extract_port_from_list(ports, tpl_var)
@@ -306,7 +306,7 @@ class SDDockerBackend(AbstractSDBackend):
 
             # get pod labels
             kube_labels = pod_metadata.get('labels', {})
-            for label, value in kube_labels.iteritems():
+            for label, value in kube_labels.items():
                 tags.append('%s:%s' % (label, value))
 
             # get kubernetes namespace
@@ -518,7 +518,7 @@ class SDDockerBackend(AbstractSDBackend):
         if tags:
             tpl_tags = instance_tpl.get('tags', [])
             if isinstance(tpl_tags, dict):
-                for key, val in tpl_tags.iteritems():
+                for key, val in tpl_tags.items():
                     tags.append("{}:{}".format(key, val))
             else:
                 tags += tpl_tags if isinstance(tpl_tags, list) else [tpl_tags]

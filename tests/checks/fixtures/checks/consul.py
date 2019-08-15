@@ -7,7 +7,7 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 from itertools import islice
 from math import ceil, floor, sqrt
-from urlparse import urljoin
+from urllib.parse import urljoin
 
 # project
 from checks import AgentCheck
@@ -207,7 +207,7 @@ class ConsulCheck(AgentCheck):
                 self.log.debug('Consul service whitelist not defined. Agent will poll for all %d services found', len(services))
             else:
                 self.warning('Consul service whitelist not defined. Agent will poll for at most %d services' % self.MAX_SERVICES)
-                services = list(islice(services.iterkeys(), 0, self.MAX_SERVICES))
+                services = list(islice(iter(services.keys()), 0, self.MAX_SERVICES))
 
         return services
 
@@ -354,7 +354,7 @@ class ConsulCheck(AgentCheck):
                         tags=main_tags+service_tags
                     )
 
-            for node, service_status in nodes_to_service_status.iteritems():
+            for node, service_status in nodes_to_service_status.items():
                 # For every node discovered for whitelisted services, gauge the following:
                 # `consul.catalog.services_up` : Total services registered on node
                 # `consul.catalog.services_passing` : Total passing services on node

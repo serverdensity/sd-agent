@@ -55,12 +55,12 @@ class WinWMICheck(AgentCheck):
             target_property = tag_query[3]
         except IndexError:
             self.log.error(
-                u"Wrong `tag_queries` parameter format. "
+                "Wrong `tag_queries` parameter format. "
                 "Please refer to the configuration file for more information.")
             raise
         except TypeError:
             self.log.error(
-                u"Incorrect 'link source property' in `tag_queries` parameter:"
+                "Incorrect 'link source property' in `tag_queries` parameter:"
                 " `{wmi_property}` is not a property of `{wmi_class}`".format(
                     wmi_property=tag_query[0],
                     wmi_class=sampler.class_name,
@@ -82,7 +82,7 @@ class WinWMICheck(AgentCheck):
                 message = "multiple results returned (one expected)"
 
             self.log.warning(
-                u"Failed to extract a tag from `tag_queries` parameter: {reason}."
+                "Failed to extract a tag from `tag_queries` parameter: {reason}."
                 " wmi_object={wmi_obj} - query={tag_query}".format(
                     reason=message,
                     wmi_obj=wmi_obj, tag_query=tag_query,
@@ -92,7 +92,7 @@ class WinWMICheck(AgentCheck):
 
         if sampler[0][target_property] is None:
             self.log.error(
-                u"Incorrect 'target property' in `tag_queries` parameter:"
+                "Incorrect 'target property' in `tag_queries` parameter:"
                 " `{wmi_property}` is empty or is not a property"
                 "of `{wmi_class}`".format(
                     wmi_property=target_property,
@@ -108,7 +108,7 @@ class WinWMICheck(AgentCheck):
         Returns: tag or TagQueryUniquenessFailure exception.
         """
         self.log.debug(
-            u"`tag_queries` parameter found."
+            "`tag_queries` parameter found."
             " wmi_object={wmi_obj} - query={tag_query}".format(
                 wmi_obj=wmi_obj, tag_query=tag_query,
             )
@@ -138,7 +138,7 @@ class WinWMICheck(AgentCheck):
             tag_value="_".join(link_value.split())
         )
 
-        self.log.debug(u"Extracted `tag_queries` tag: '{tag}'".format(tag=tag))
+        self.log.debug("Extracted `tag_queries` tag: '{tag}'".format(tag=tag))
         return tag
 
     def _extract_metrics(self, wmi_sampler, tag_by, tag_queries, constant_tags):
@@ -157,7 +157,7 @@ class WinWMICheck(AgentCheck):
         """
         if len(wmi_sampler) > 1 and not tag_by:
             raise MissingTagBy(
-                u"WMI query returned multiple rows but no `tag_by` value was given."
+                "WMI query returned multiple rows but no `tag_by` value was given."
                 " class={wmi_class} - properties={wmi_properties} - filters={filters}".format(
                     wmi_class=wmi_sampler.class_name, wmi_properties=wmi_sampler.property_names,
                     filters=wmi_sampler.filters,
@@ -177,10 +177,10 @@ class WinWMICheck(AgentCheck):
                 except TagQueryUniquenessFailure:
                     continue
 
-            for wmi_property, wmi_value in wmi_obj.iteritems():
+            for wmi_property, wmi_value in wmi_obj.items():
                 # skips any property not in arguments since SWbemServices.ExecQuery will return key prop properties
                 # https://msdn.microsoft.com/en-us/library/aa393866(v=vs.85).aspx
-                if wmi_property not in (map(str.lower,wmi_sampler.property_names)):
+                if wmi_property not in (list(map(str.lower,wmi_sampler.property_names))):
                     continue
                 # Tag with `tag_by` parameter
                 if wmi_property == tag_by:
@@ -202,11 +202,11 @@ class WinWMICheck(AgentCheck):
                 try:
                     metrics.append(WMIMetric(wmi_property, float(wmi_value), tags))
                 except ValueError:
-                    self.log.warning(u"When extracting metrics with WMI, found a non digit value"
+                    self.log.warning("When extracting metrics with WMI, found a non digit value"
                                      " for property '{0}'.".format(wmi_property))
                     continue
                 except TypeError:
-                    self.log.warning(u"When extracting metrics with WMI, found a missing property"
+                    self.log.warning("When extracting metrics with WMI, found a missing property"
                                      " '{0}'".format(wmi_property))
                     continue
         return metrics
@@ -225,7 +225,7 @@ class WinWMICheck(AgentCheck):
             try:
                 func = getattr(self, metric_type.lower())
             except AttributeError:
-                raise Exception(u"Invalid metric type: {0}".format(metric_type))
+                raise Exception("Invalid metric type: {0}".format(metric_type))
 
             func(metric_name, metric.value, metric.tags)
 
@@ -263,7 +263,7 @@ class WinWMICheck(AgentCheck):
                 (wmi_property.lower(), (metric_name, metric_type))
                 for wmi_property, metric_name, metric_type in metrics
             )
-            properties = map(lambda x: x[0], metrics + tag_queries)
+            properties = [x[0] for x in metrics + tag_queries]
             self.wmi_props[instance_key] = (metric_name_by_property, properties)
 
         return self.wmi_props[instance_key]

@@ -18,10 +18,10 @@ import os
 import signal
 import sys
 import time
-import xmlrpclib
+import xmlrpc.client
 
 # For pickle & PID files, see issue 293
-os.umask(022)
+os.umask(0o22)
 
 # 3p
 try:
@@ -189,8 +189,8 @@ class Agent(Daemon):
             # this is an error dict
             # checks that failed to load are added to init_failed_checks
             # and poped from initialized_checks
-            if isinstance(fresh_check, dict) and 'error' in fresh_check.keys():
-                checksd['init_failed_checks'][fresh_check.keys()[0]] = fresh_check.values()[0]
+            if isinstance(fresh_check, dict) and 'error' in list(fresh_check.keys()):
+                checksd['init_failed_checks'][list(fresh_check.keys())[0]] = list(fresh_check.values())[0]
                 if idx:
                     checksd['initialized_checks'].pop(idx)
 
@@ -238,7 +238,7 @@ class Agent(Daemon):
             signal.signal(signal.SIGHUP, self._handle_sighup)
         else:
             sdk_integrations = get_sdk_integration_paths()
-            for name, path in sdk_integrations.iteritems():
+            for name, path in sdk_integrations.items():
                 lib_path = os.path.join(path, 'lib')
                 if os.path.exists(lib_path):
                     sys.path.append(lib_path)
@@ -428,7 +428,7 @@ class Agent(Daemon):
             return None
 
         sockfile = agentConfig.get('supervisor_socket', DEFAULT_SUPERVISOR_SOCKET)
-        supervisor_proxy = xmlrpclib.ServerProxy(
+        supervisor_proxy = xmlrpc.client.ServerProxy(
             'http://127.0.0.1',
             transport=supervisor.xmlrpc.SupervisorTransport(
                 None, None, serverurl="unix://{socket}".format(socket=sockfile))
@@ -463,7 +463,7 @@ class Agent(Daemon):
         buffer = ""
         names = []
         try:
-            for name, yaml in jmx_sd_configs.iteritems():
+            for name, yaml in jmx_sd_configs.items():
                 buffer += SD_CONFIG_SEP
                 buffer += "# {}\n".format(name)
                 buffer += yaml
@@ -581,7 +581,7 @@ def main():
         try:
             import checks.collector
             # Try the old-style check first
-            print getattr(checks.collector, check_name)(log).check(agentConfig)
+            print(getattr(checks.collector, check_name)(log).check(agentConfig))
         except Exception:
             # If not an old-style check, try checks.d
             checks = load_check_directory(agentConfig, hostname)
@@ -591,15 +591,15 @@ def main():
                         check.run = AgentProfiler.wrap_profiling(check.run)
 
                     cs = Collector.run_single_check(check, verbose=True)
-                    print CollectorStatus.render_check_status(cs)
+                    print(CollectorStatus.render_check_status(cs))
 
                     if len(args) == 3 and args[2] == 'check_rate':
-                        print "Running 2nd iteration to capture rate metrics"
+                        print("Running 2nd iteration to capture rate metrics")
                         time.sleep(1)
                         cs = Collector.run_single_check(check, verbose=True)
-                        print CollectorStatus.render_check_status(cs)
+                        print(CollectorStatus.render_check_status(cs))
                     else:
-                        print "Check has run only once, if some metrics are missing you can run the command again with the 'check_rate' argument appended at the end to see any other metrics if available."
+                        print("Check has run only once, if some metrics are missing you can run the command again with the 'check_rate' argument appended at the end to see any other metrics if available.")
                     check.stop()
 
     elif 'configcheck' == command or 'configtest' == command:
@@ -615,7 +615,7 @@ def main():
 if __name__ == '__main__':
     try:
         sys.exit(main())
-    except StandardError:
+    except Exception:
         # Try our best to log the error.
         try:
             log.exception("Uncaught error running the Agent")

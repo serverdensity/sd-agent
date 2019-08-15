@@ -108,7 +108,7 @@ class Disk(AgentCheck):
                 disk_usage = timeout(5)(psutil.disk_usage)(part.mountpoint)
             except TimeoutException:
                 self.log.warn(
-                    u"Timeout while retrieving the disk usage of `%s` mountpoint. Skipping...",
+                    "Timeout while retrieving the disk usage of `%s` mountpoint. Skipping...",
                     part.mountpoint
                 )
                 continue
@@ -128,7 +128,7 @@ class Disk(AgentCheck):
             # legacy check names c: vs psutil name C:\\
             if Platform.is_win32():
                 device_name = device_name.strip('\\').lower()
-            for metric_name, metric_value in self._collect_part_metrics(part, disk_usage).iteritems():
+            for metric_name, metric_value in self._collect_part_metrics(part, disk_usage).items():
                 self.gauge(metric_name, metric_value,
                            tags=tags, device_name=device_name)
         # And finally, latency metrics, a legacy gift from the old Windows Check
@@ -188,7 +188,7 @@ class Disk(AgentCheck):
             inodes = timeout(5)(os.statvfs)(mountpoint)
         except TimeoutException:
             self.log.warn(
-                u"Timeout while retrieving the disk usage of `%s` mountpoint. Skipping...",
+                "Timeout while retrieving the disk usage of `%s` mountpoint. Skipping...",
                 mountpoint
             )
             return metrics
@@ -208,7 +208,7 @@ class Disk(AgentCheck):
         return metrics
 
     def collect_latency_metrics(self):
-        for disk_name, disk in psutil.disk_io_counters(True).iteritems():
+        for disk_name, disk in psutil.disk_io_counters(True).items():
             self.log.debug('IO Counters: {0} -> {1}'.format(disk_name, disk))
             # x100 to have it as a percentage,
             # /1000 as psutil returns the value in ms
@@ -227,7 +227,7 @@ class Disk(AgentCheck):
             self.log.debug("Passed: {0}".format(device))
             tags = [device[1]] if self._tag_by_filesystem else []
             device_name = device[-1] if self._use_mount else device[0]
-            for metric_name, value in self._collect_metrics_manually(device).iteritems():
+            for metric_name, value in self._collect_metrics_manually(device).items():
                 self.gauge(metric_name, value, tags=tags,
                            device_name=device_name)
 

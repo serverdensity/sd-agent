@@ -11,6 +11,7 @@ from mock import Mock, patch
 # project
 from tests.checks.common import Fixtures
 from utils.timeout import TimeoutException
+import importlib
 
 
 log = logging.getLogger(__name__)
@@ -290,7 +291,7 @@ class TestCommonWMI(unittest.TestCase):
             if isinstance(param, tuple):
                 key, value = param
                 self.assertIn(key, wmi_conn_kwargs)
-                self.assertEquals(wmi_conn_kwargs[key], value)
+                self.assertEqual(wmi_conn_kwargs[key], value)
             else:
                 self.assertIn(param, wmi_conn_args)
 
@@ -300,11 +301,11 @@ class TestCommonWMI(unittest.TestCase):
         """
         if query:
             last_wmi_query = SWbemServices.get_last_wmi_query()
-            self.assertEquals(last_wmi_query, query)
+            self.assertEqual(last_wmi_query, query)
 
         if flags:
             last_wmi_flags = SWbemServices.get_last_wmi_flags()
-            self.assertEquals(last_wmi_flags, flags)
+            self.assertEqual(last_wmi_flags, flags)
 
     def assertWMIObject(self, wmi_obj, properties):
         """
@@ -319,13 +320,13 @@ class TestCommonWMI(unittest.TestCase):
             if value is None:
                 continue
 
-            self.assertEquals(wmi_obj[prop], value)
+            self.assertEqual(wmi_obj[prop], value)
 
     def assertWMISampler(self, wmi_sampler, properties, count=None):
         """
         Assert WMI objects' integrity among the WMI sampler.
         """
-        self.assertEquals(len(wmi_sampler), count)
+        self.assertEqual(len(wmi_sampler), count)
 
         for wmi_obj in wmi_sampler:
             self.assertWMIObject(wmi_obj, properties)
@@ -379,7 +380,7 @@ class TestUnitWMISampler(TestCommonWMI):
 
         # Reload to apply the mocking if the module was already loaded
         from checks.libs.wmi import sampler
-        reload(sampler)
+        importlib.reload(sampler)
 
         WMISampler = partial(sampler.WMISampler, log)
         ProviderArchitecture = sampler.ProviderArchitecture
@@ -411,7 +412,7 @@ class TestUnitWMISampler(TestCommonWMI):
         """
         # No provider given, default
         wmi_sampler = WMISampler("Win32_PerfRawData_PerfOS_System", ["ProcessorQueueLength"])
-        self.assertEquals(wmi_sampler.provider, ProviderArchitecture.DEFAULT)
+        self.assertEqual(wmi_sampler.provider, ProviderArchitecture.DEFAULT)
 
         # Invalid provider, default
         wmi_sampler1 = WMISampler(
@@ -420,8 +421,8 @@ class TestUnitWMISampler(TestCommonWMI):
         wmi_sampler2 = WMISampler(
             "Win32_PerfRawData_PerfOS_System", ["ProcessorQueueLength"], provider=123
         )
-        self.assertEquals(wmi_sampler1.provider, ProviderArchitecture.DEFAULT)
-        self.assertEquals(wmi_sampler2.provider, ProviderArchitecture.DEFAULT)
+        self.assertEqual(wmi_sampler1.provider, ProviderArchitecture.DEFAULT)
+        self.assertEqual(wmi_sampler2.provider, ProviderArchitecture.DEFAULT)
 
         # Valid providers
         wmi_sampler32 = WMISampler(
@@ -431,8 +432,8 @@ class TestUnitWMISampler(TestCommonWMI):
             "Win32_PerfRawData_PerfOS_System", ["ProcessorQueueLength"], provider="64"
         )
 
-        self.assertEquals(wmi_sampler32.provider, ProviderArchitecture._32BIT)
-        self.assertEquals(wmi_sampler64.provider, ProviderArchitecture._64BIT)
+        self.assertEqual(wmi_sampler32.provider, ProviderArchitecture._32BIT)
+        self.assertEqual(wmi_sampler64.provider, ProviderArchitecture._64BIT)
 
     def test_no_wmi_connection_pooling(self):
         """
@@ -448,12 +449,12 @@ class TestUnitWMISampler(TestCommonWMI):
         wmi_sampler_2.sample()
 
         # 3 conns have been opened, 2 for the raw sampler and 1 for the other sampler
-        self.assertEquals(Dispatch.ConnectServer.call_count, 3, Dispatch.ConnectServer.call_count)
+        self.assertEqual(Dispatch.ConnectServer.call_count, 3, Dispatch.ConnectServer.call_count)
 
         wmi_sampler_3.sample()
 
         # 5 conns now
-        self.assertEquals(Dispatch.ConnectServer.call_count, 5, Dispatch.ConnectServer.call_count)
+        self.assertEqual(Dispatch.ConnectServer.call_count, 5, Dispatch.ConnectServer.call_count)
 
     def test_wql_filtering(self):
         """
@@ -466,8 +467,8 @@ class TestUnitWMISampler(TestCommonWMI):
         no_filters = []
         filters = [{'Name': "SomeName", 'Id': "SomeId"}]
 
-        self.assertEquals("", format_filter(no_filters))
-        self.assertEquals(" WHERE ( Name = 'SomeName' AND Id = 'SomeId' )",
+        self.assertEqual("", format_filter(no_filters))
+        self.assertEqual(" WHERE ( Name = 'SomeName' AND Id = 'SomeId' )",
                           format_filter(filters))
 
     def test_wql_multiquery_filtering(self):
@@ -481,8 +482,8 @@ class TestUnitWMISampler(TestCommonWMI):
         no_filters = []
         filters = [{'Name': "SomeName", 'Property1': "foo"}, {'Name': "OtherName", 'Property1': "bar"}]
 
-        self.assertEquals("", format_filter(no_filters))
-        self.assertEquals(" WHERE ( Property1 = 'bar' AND Name = 'OtherName' ) OR"
+        self.assertEqual("", format_filter(no_filters))
+        self.assertEqual(" WHERE ( Property1 = 'bar' AND Name = 'OtherName' ) OR"
                           " ( Property1 = 'foo' AND Name = 'SomeName' )",
                           format_filter(filters))
 
@@ -504,7 +505,7 @@ class TestUnitWMISampler(TestCommonWMI):
 
         filters.append(query)
 
-        self.assertEquals(" WHERE ( SourceName = 'MSSQL' AND User = 'luser' )",
+        self.assertEqual(" WHERE ( SourceName = 'MSSQL' AND User = 'luser' )",
                           format_filter(filters))
 
     def test_wql_filtering_op_adv(self):
@@ -516,7 +517,7 @@ class TestUnitWMISampler(TestCommonWMI):
 
         # Check `_format_filter` logic
         filters = [{'Name': "Foo%"}, {'Name': "Bar%", 'Id': ('>=', "SomeId")}, {'Name': "Zulu"}]
-        self.assertEquals(" WHERE ( Name = 'Zulu' ) OR ( Name LIKE 'Bar%' AND Id >= 'SomeId' ) OR ( Name LIKE 'Foo%' )",
+        self.assertEqual(" WHERE ( Name = 'Zulu' ) OR ( Name LIKE 'Bar%' AND Id >= 'SomeId' ) OR ( Name LIKE 'Foo%' )",
                           format_filter(filters))
 
     def test_wql_eventlog_filtering(self):
@@ -571,7 +572,7 @@ class TestUnitWMISampler(TestCommonWMI):
 
         filters.append(query)
 
-        self.assertEquals(" WHERE ( NOT Message LIKE 'foo' AND ( EventCode = '302' OR EventCode = '404' OR EventCode = '501' ) "
+        self.assertEqual(" WHERE ( NOT Message LIKE 'foo' AND ( EventCode = '302' OR EventCode = '404' OR EventCode = '501' ) "
                           "AND ( SourceName = 'MSSQLSERVER' OR SourceName = 'IIS' ) AND TimeGenerated >= '2016-01-01 15:08:24.078915**********.******+' "
                           "AND User = 'luser' AND Message LIKE '%bar%' AND Message LIKE '%zen%' AND ( LogFile = 'System' OR LogFile = 'Security' ) "
                           "AND ( Type = 'Error' OR Type = 'Warning' ) )",
@@ -586,7 +587,7 @@ class TestUnitWMISampler(TestCommonWMI):
 
         # Check `_format_filter` logic
         filters = [{'Name': "SomeName"}, {'Id': "SomeId"}]
-        self.assertEquals(" WHERE ( Id = 'SomeId' ) OR ( Name = 'SomeName' )",
+        self.assertEqual(" WHERE ( Id = 'SomeId' ) OR ( Name = 'SomeName' )",
                           format_filter(filters, True))
 
     def test_wmi_query(self):
@@ -648,7 +649,7 @@ class TestUnitWMISampler(TestCommonWMI):
             }
         ]
 
-        self.assertEquals(wmi_sampler, expected_results, wmi_sampler)
+        self.assertEqual(wmi_sampler, expected_results, wmi_sampler)
 
     def test_wmi_sampler_iterator_getter(self):
         """
@@ -658,14 +659,14 @@ class TestUnitWMISampler(TestCommonWMI):
                                  ["AvgDiskBytesPerWrite", "FreeMegabytes"])
         wmi_sampler.sample()
 
-        self.assertEquals(len(wmi_sampler), 2)
+        self.assertEqual(len(wmi_sampler), 2)
 
         # Using an iterator
         for wmi_obj in wmi_sampler:
             self.assertWMIObject(wmi_obj, ["AvgDiskBytesPerWrite", "FreeMegabytes", "name"])
 
         # Using an accessor
-        for index in xrange(0, 2):
+        for index in range(0, 2):
             self.assertWMIObject(wmi_sampler[index], ["AvgDiskBytesPerWrite", "FreeMegabytes", "name"])
 
     def test_wmi_sampler_timeout(self):
@@ -695,11 +696,11 @@ class TestUnitWMISampler(TestCommonWMI):
         self.assertFalse(wmi_sampler._sampling)
 
         # The existing query was retrieved
-        self.assertEquals(SWbemServices.ExecQuery.call_count, 1, SWbemServices.ExecQuery.call_count)
+        self.assertEqual(SWbemServices.ExecQuery.call_count, 1, SWbemServices.ExecQuery.call_count)
 
         # Data is populated
-        self.assertEquals(len(wmi_sampler), 2)
-        self.assertEquals(sum(1 for _ in wmi_sampler), 2)
+        self.assertEqual(len(wmi_sampler), 2)
+        self.assertEqual(sum(1 for _ in wmi_sampler), 2)
 
     def test_raw_perf_properties(self):
         """
@@ -707,11 +708,11 @@ class TestUnitWMISampler(TestCommonWMI):
         """
         # Formatted Performance class
         wmi_sampler = WMISampler("Win32_PerfFormattedData_PerfOS_System", ["ProcessorQueueLength"])
-        self.assertEquals(len(wmi_sampler.property_names), 1)
+        self.assertEqual(len(wmi_sampler.property_names), 1)
 
         # Raw Performance class
         wmi_sampler = WMISampler("Win32_PerfRawData_PerfOS_System", ["CounterRawCount", "CounterCounter"])  # noqa
-        self.assertEquals(len(wmi_sampler.property_names), 4)
+        self.assertEqual(len(wmi_sampler.property_names), 4)
 
     def test_raw_initial_sampling(self):
         """
@@ -721,11 +722,11 @@ class TestUnitWMISampler(TestCommonWMI):
         wmi_sampler.sample()
 
         # 2 queries should have been made: one for initialization, one for sampling
-        self.assertEquals(SWbemServices.ExecQuery.call_count, 2, SWbemServices.ExecQuery.call_count)
+        self.assertEqual(SWbemServices.ExecQuery.call_count, 2, SWbemServices.ExecQuery.call_count)
 
         # Repeat
         wmi_sampler.sample()
-        self.assertEquals(SWbemServices.ExecQuery.call_count, 3, SWbemServices.ExecQuery.call_count)
+        self.assertEqual(SWbemServices.ExecQuery.call_count, 3, SWbemServices.ExecQuery.call_count)
 
     def test_raw_cache_qualifiers(self):
         """

@@ -140,7 +140,7 @@ class Check(object):
 
     def get_metric_names(self):
         "Get all metric names"
-        return self._sample_store.keys()
+        return list(self._sample_store.keys())
 
     def save_gauge(self, metric, value, timestamp=None, tags=None, hostname=None, device_name=None):
         """ Save a gauge value. """
@@ -619,7 +619,7 @@ class AgentCheck(object):
         if hostname is None:
             hostname = self.hostname
         if message is not None:
-            message = unicode(message) # ascii converts to unicode but not viceversa
+            message = str(message) # ascii converts to unicode but not viceversa
         if tags:
             tags = sorted(set(tags))
         self.service_checks.append(
@@ -637,7 +637,7 @@ class AgentCheck(object):
         :param value: metadata value
         :type value: string
         """
-        self._instance_metadata.append((meta_name, unicode(value)))
+        self._instance_metadata.append((meta_name, str(value)))
 
     def has_events(self):
         """
@@ -899,7 +899,7 @@ class AgentCheck(object):
         :param fix_case A boolean, indicating whether to make sure that
                         the metric name returned is in underscore_case
         """
-        if isinstance(metric, unicode):
+        if isinstance(metric, str):
             metric_name = unicodedata.normalize('NFKD', metric).encode('ascii','ignore')
         else:
             metric_name = metric

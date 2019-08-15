@@ -22,7 +22,7 @@ def log_exceptions(logger):
                 result = func(*args, **kwargs)
             except Exception:
                 logger.exception(
-                    u"Uncaught exception while running {0}".format(func.__name__)
+                    "Uncaught exception while running {0}".format(func.__name__)
                 )
                 raise
             return result

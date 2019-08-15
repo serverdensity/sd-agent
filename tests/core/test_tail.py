@@ -42,7 +42,7 @@ class TestTail(unittest.TestCase):
             self.last_line = l
 
         tail = TailFile(logging.getLogger(), self.log_file.name, line_parser)
-        self.assertEquals(tail._size, 0)
+        self.assertEqual(tail._size, 0)
 
         # Write some data to the log file
         init_string = "hey there, I am a log\n"
@@ -51,10 +51,10 @@ class TestTail(unittest.TestCase):
 
         # Consume from the tail
         gen = tail.tail(line_by_line=False, move_end=True)
-        gen.next()
+        next(gen)
 
         # Verify that the tail consumed the data I wrote
-        self.assertEquals(tail._size, len(init_string))
+        self.assertEqual(tail._size, len(init_string))
 
         try:
             # Trigger a copytruncate logrotation on the log file
@@ -66,7 +66,7 @@ class TestTail(unittest.TestCase):
             self.log_file.flush()
 
             # Verify that the tail recognized the logrotation
-            gen.next()
-            self.assertEquals(self.last_line, new_string[:-1], self.last_line)
+            next(gen)
+            self.assertEqual(self.last_line, new_string[:-1], self.last_line)
         except OSError:
             "logrotate is not present"

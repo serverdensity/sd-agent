@@ -24,15 +24,14 @@ import optparse
 import select
 import signal
 import socket
-import string
 import sys
 import threading
 from time import sleep, time
-from urllib import urlencode
+from urllib.parse import urlencode
 #import zlib
 
 # For pickle & PID files, see issue 293
-os.umask(022)
+os.umask(0o22)
 
 # 3rd party
 import requests
@@ -110,14 +109,14 @@ def add_serialization_status_metric(status, hostname):
 
 def unicode_metrics(metrics):
     for i, metric in enumerate(metrics):
-        for key, value in metric.items():
-            if isinstance(value, basestring):
-                metric[key] = unicode(value, errors='replace')
+        for key, value in list(metric.items()):
+            if isinstance(value, str):
+                metric[key] = str(value, errors='replace')
             elif isinstance(value, tuple) or isinstance(value, list):
                 value_list = list(value)
                 for j, value_element in enumerate(value_list):
-                    if isinstance(value_element, basestring):
-                        value_list[j] = unicode(value_element, errors='replace')
+                    if isinstance(value_element, str):
+                        value_list[j] = str(value_element, errors='replace')
                 metric[key] = tuple(value_list)
         metrics[i] = metric
     return metrics

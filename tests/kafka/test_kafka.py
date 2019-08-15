@@ -5,7 +5,6 @@
 # stdlib
 import threading
 import time
-from types import ListType
 import unittest
 import os
 import mock
@@ -94,7 +93,7 @@ class TestKafka(unittest.TestCase):
         metrics = self.reporter.metrics
         # expected_tags = ['env:test', 'instance:kafka-172.17.0.1-9999', 'kafka:broker']
 
-        self.assertTrue(isinstance(metrics, ListType))
+        self.assertTrue(isinstance(metrics, list))
         self.assertTrue(len(metrics) > 0)
         log.info(metrics)
         log.info(len(metrics))

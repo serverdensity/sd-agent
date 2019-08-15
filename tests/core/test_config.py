@@ -51,41 +51,41 @@ class TestConfig(unittest.TestCase):
         """
         agentConfig = self.get_config('bad.conf')
 
-        self.assertEquals(agentConfig["sd_account"], "test")
-        self.assertEquals(agentConfig["agent_key"], "1234")
-        self.assertEquals(agentConfig["nagios_log"], "/var/log/nagios3/nagios.log")
-        self.assertEquals(agentConfig["graphite_listen_port"], 17126)
+        self.assertEqual(agentConfig["sd_account"], "test")
+        self.assertEqual(agentConfig["agent_key"], "1234")
+        self.assertEqual(agentConfig["nagios_log"], "/var/log/nagios3/nagios.log")
+        self.assertEqual(agentConfig["graphite_listen_port"], 17126)
         self.assertTrue("statsd_metric_namespace" in agentConfig)
 
     def test_one_endpoint(self):
         agent_config = self.get_config('one_endpoint.conf')
-        self.assertEquals(agent_config["sd_account"], "test")
-        self.assertEquals(agent_config["agent_key"], "1234")
+        self.assertEqual(agent_config["sd_account"], "test")
+        self.assertEqual(agent_config["agent_key"], "1234")
         endpoints = {'https://test.agent.serverdensity.io': ['1234']}
-        self.assertEquals(agent_config['endpoints'], endpoints)
+        self.assertEqual(agent_config['endpoints'], endpoints)
 
     def test_multiple_endpoints(self):
         raise SkipTest('multiple endpoints are not supported')
         agent_config = self.get_config('multiple_endpoints.conf')
-        self.assertEquals(agent_config["dd_url"], "https://app.datadoghq.com")
-        self.assertEquals(agent_config["api_key"], "0123456789abcdefghijklmnopqrstuv")
+        self.assertEqual(agent_config["dd_url"], "https://app.datadoghq.com")
+        self.assertEqual(agent_config["api_key"], "0123456789abcdefghijklmnopqrstuv")
         endpoints = {
             'https://app.datadoghq.com': ['0123456789abcdefghijklmnopqrstuv'],
             'https://app.example.com': ['123456789abcdefghijklmnopqrstuv0', '23456789abcdefghijklmnopqrstuv01']
         }
-        self.assertEquals(agent_config['endpoints'], endpoints)
+        self.assertEqual(agent_config['endpoints'], endpoints)
         with self.assertRaises(AssertionError):
             self.get_config('multiple_endpoints_bad.conf')
 
     def test_multiple_apikeys(self):
         raise SkipTest('multiple keys are not supported')
         agent_config = self.get_config('multiple_apikeys.conf')
-        self.assertEquals(agent_config["dd_url"], "https://app.datadoghq.com")
-        self.assertEquals(agent_config["api_key"], "0123456789abcdefghijklmnopqrstuv")
+        self.assertEqual(agent_config["dd_url"], "https://app.datadoghq.com")
+        self.assertEqual(agent_config["api_key"], "0123456789abcdefghijklmnopqrstuv")
         endpoints = {
             'https://app.datadoghq.com': ['0123456789abcdefghijklmnopqrstuv', '123456789abcdefghijklmnopqrstuv0', '23456789abcdefghijklmnopqrstuv01']
         }
-        self.assertEquals(agent_config['endpoints'], endpoints)
+        self.assertEqual(agent_config['endpoints'], endpoints)
 
     def testGoodPidFile(self):
         """Verify that the pid file succeeds and fails appropriately"""
@@ -101,44 +101,44 @@ class TestConfig(unittest.TestCase):
 
         p = PidFile(program, pid_dir)
 
-        self.assertEquals(p.get_pid(), 666)
+        self.assertEqual(p.get_pid(), 666)
         # clean up
-        self.assertEquals(p.clean(), True)
-        self.assertEquals(os.path.exists(expected_path), False)
+        self.assertEqual(p.clean(), True)
+        self.assertEqual(os.path.exists(expected_path), False)
 
     def testBadPidFile(self):
         pid_dir = "/does-not-exist"
 
         p = PidFile('test', pid_dir)
         path = p.get_path()
-        self.assertEquals(path, os.path.join(tempfile.gettempdir(), 'test.pid'))
+        self.assertEqual(path, os.path.join(tempfile.gettempdir(), 'test.pid'))
 
         pid = "666"
         pid_f = open(path, 'w')
         pid_f.write(pid)
         pid_f.close()
 
-        self.assertEquals(p.get_pid(), 666)
-        self.assertEquals(p.clean(), True)
-        self.assertEquals(os.path.exists(path), False)
+        self.assertEqual(p.get_pid(), 666)
+        self.assertEqual(p.clean(), True)
+        self.assertEqual(os.path.exists(path), False)
 
     def testHostname(self):
         valid_hostnames = [
-            u'i-123445',
-            u'5dfsdfsdrrfsv',
-            u'432498234234A'
-            u'234234235235235235',  # Couldn't find anything in the RFC saying it's not valid
-            u'A45fsdff045-dsflk4dfsdc.ret43tjssfd',
-            u'4354sfsdkfj4TEfdlv56gdgdfRET.dsf-dg',
-            u'r' * 255,
+            'i-123445',
+            '5dfsdfsdrrfsv',
+            '432498234234A'
+            '234234235235235235',  # Couldn't find anything in the RFC saying it's not valid
+            'A45fsdff045-dsflk4dfsdc.ret43tjssfd',
+            '4354sfsdkfj4TEfdlv56gdgdfRET.dsf-dg',
+            'r' * 255,
         ]
 
         not_valid_hostnames = [
-            u'abc' * 150,
-            u'sdf4..sfsd',
-            u'$42sdf',
-            u'.sfdsfds'
-            u's™£™£¢ª•ªdfésdfs'
+            'abc' * 150,
+            'sdf4..sfsd',
+            '$42sdf',
+            '.sfdsfds'
+            's™£™£¢ª•ªdfésdfs'
         ]
 
         for hostname in valid_hostnames:
@@ -204,7 +204,7 @@ class TestConfigLoadCheckDirectory(unittest.TestCase):
         copyfile('%s/valid_check_1.py' % FIXTURE_PATH,
             '%s/test_check.py' % TEMP_AGENT_CHECK_DIR)
         checks = load_check_directory({"additional_checksd": TEMP_ETC_CHECKS_DIR}, "foo")
-        self.assertEquals(1, len(checks['init_failed_checks']))
+        self.assertEqual(1, len(checks['init_failed_checks']))
 
 
     def test_conf_path_to_check_name(self, *args):
@@ -214,15 +214,15 @@ class TestConfigLoadCheckDirectory(unittest.TestCase):
         Note: Support Unix & Windows systems
         """
         # Samples
-        check_name = u"haproxy"
-        unix_check_path = u"/etc/dd-agent/conf.d/haproxy.yaml"
-        win_check_path = u"C:\\ProgramData\\Datadog\\conf.d\\haproxy.yaml"
+        check_name = "haproxy"
+        unix_check_path = "/etc/dd-agent/conf.d/haproxy.yaml"
+        win_check_path = "C:\\ProgramData\\Datadog\\conf.d\\haproxy.yaml"
         with mock.patch('config.os.path.splitext', side_effect=ntpath.splitext):
             with mock.patch('config.os.path.split', side_effect=ntpath.split):
-                self.assertEquals(
+                self.assertEqual(
                     _conf_path_to_check_name(win_check_path), check_name
                 )
-        self.assertEquals(
+        self.assertEqual(
             _conf_path_to_check_name(unix_check_path), check_name
         )
 
@@ -230,8 +230,8 @@ class TestConfigLoadCheckDirectory(unittest.TestCase):
         copyfile('%s/valid_conf.yaml' % FIXTURE_PATH,
             '%s/test_check.yaml' % TEMP_ETC_CONF_DIR)
         checks = load_check_directory({"additional_checksd": TEMP_ETC_CHECKS_DIR}, "foo")
-        self.assertEquals(0, len(checks['init_failed_checks']))
-        self.assertEquals(0, len(checks['initialized_checks']))
+        self.assertEqual(0, len(checks['init_failed_checks']))
+        self.assertEqual(0, len(checks['initialized_checks']))
 
     def testConfigAgentOnly(self, *args):
         copyfile('%s/valid_conf.yaml' % FIXTURE_PATH,
@@ -239,7 +239,7 @@ class TestConfigLoadCheckDirectory(unittest.TestCase):
         copyfile('%s/valid_check_1.py' % FIXTURE_PATH,
             '%s/test_check.py' % TEMP_AGENT_CHECK_DIR)
         checks = load_check_directory({"additional_checksd": TEMP_ETC_CHECKS_DIR}, "foo")
-        self.assertEquals(1, len(checks['initialized_checks']))
+        self.assertEqual(1, len(checks['initialized_checks']))
 
     def testConfigETCOnly(self, *args):
         copyfile('%s/valid_conf.yaml' % FIXTURE_PATH,
@@ -247,7 +247,7 @@ class TestConfigLoadCheckDirectory(unittest.TestCase):
         copyfile('%s/valid_check_1.py' % FIXTURE_PATH,
             '%s/test_check.py' % TEMP_ETC_CHECKS_DIR)
         checks = load_check_directory({"additional_checksd": TEMP_ETC_CHECKS_DIR}, "foo")
-        self.assertEquals(1, len(checks['initialized_checks']))
+        self.assertEqual(1, len(checks['initialized_checks']))
 
     def testConfigAgentETC(self, *args):
         copyfile('%s/valid_conf.yaml' % FIXTURE_PATH,
@@ -257,8 +257,8 @@ class TestConfigLoadCheckDirectory(unittest.TestCase):
         copyfile('%s/valid_check_1.py' % FIXTURE_PATH,
             '%s/test_check.py' % TEMP_ETC_CHECKS_DIR)
         checks = load_check_directory({"additional_checksd": TEMP_ETC_CHECKS_DIR}, "foo")
-        self.assertEquals(1, len(checks['initialized_checks']))
-        self.assertEquals('valid_check_1', checks['initialized_checks'][0].check(None))
+        self.assertEqual(1, len(checks['initialized_checks']))
+        self.assertEqual('valid_check_1', checks['initialized_checks'][0].check(None))
 
     def testConfigCheckNotAgentCheck(self, *args):
         copyfile('%s/valid_conf.yaml' % FIXTURE_PATH,
@@ -266,8 +266,8 @@ class TestConfigLoadCheckDirectory(unittest.TestCase):
         copyfile('%s/invalid_check_1.py' % FIXTURE_PATH,
             '%s/test_check.py' % TEMP_AGENT_CHECK_DIR)
         checks = load_check_directory({"additional_checksd": TEMP_ETC_CHECKS_DIR}, "foo")
-        self.assertEquals(0, len(checks['init_failed_checks']))
-        self.assertEquals(0, len(checks['initialized_checks']))
+        self.assertEqual(0, len(checks['init_failed_checks']))
+        self.assertEqual(0, len(checks['initialized_checks']))
 
     def testConfigCheckImportError(self, *args):
         copyfile('%s/valid_conf.yaml' % FIXTURE_PATH,
@@ -275,7 +275,7 @@ class TestConfigLoadCheckDirectory(unittest.TestCase):
         copyfile('%s/invalid_check_2.py' % FIXTURE_PATH,
             '%s/test_check.py' % TEMP_AGENT_CHECK_DIR)
         checks = load_check_directory({"additional_checksd": TEMP_ETC_CHECKS_DIR}, "foo")
-        self.assertEquals(1, len(checks['init_failed_checks']))
+        self.assertEqual(1, len(checks['init_failed_checks']))
 
     @mock.patch('utils.platform.Platform.is_windows', return_value=True)
     def testConfig3rdPartyAgent(self, *args):
@@ -286,8 +286,8 @@ class TestConfigLoadCheckDirectory(unittest.TestCase):
         copyfile('%s/valid_check_1.py' % FIXTURE_PATH,
             '%s/test_check/check.py' % TEMP_SDK_INTEGRATIONS_CHECKS_DIR)
         checks = load_check_directory({"additional_checksd": TEMP_ETC_CHECKS_DIR}, "foo")
-        self.assertEquals(1, len(checks['initialized_checks']))
-        self.assertEquals('valid_check_1', checks['initialized_checks'][0].check(None))
+        self.assertEqual(1, len(checks['initialized_checks']))
+        self.assertEqual('valid_check_1', checks['initialized_checks'][0].check(None))
 
     def testConfigETC3rdParty(self, *args):
         copyfile('%s/valid_conf.yaml' % FIXTURE_PATH,
@@ -297,8 +297,8 @@ class TestConfigLoadCheckDirectory(unittest.TestCase):
         copyfile('%s/valid_check_1.py' % FIXTURE_PATH,
             '%s/test_check.py' % TEMP_ETC_CHECKS_DIR)
         checks = load_check_directory({"additional_checksd": TEMP_ETC_CHECKS_DIR}, "foo")
-        self.assertEquals(1, len(checks['initialized_checks']))
-        self.assertEquals('valid_check_1', checks['initialized_checks'][0].check(None))
+        self.assertEqual(1, len(checks['initialized_checks']))
+        self.assertEqual('valid_check_1', checks['initialized_checks'][0].check(None))
 
     def testConfigInheritedCheck(self, *args):
         copyfile('%s/valid_conf.yaml' % FIXTURE_PATH,
@@ -306,15 +306,15 @@ class TestConfigLoadCheckDirectory(unittest.TestCase):
         copyfile('%s/valid_sub_check.py' % FIXTURE_PATH,
             '%s/test_check.py' % TEMP_ETC_CHECKS_DIR)
         checks = load_check_directory({"additional_checksd": TEMP_ETC_CHECKS_DIR}, "foo")
-        self.assertEquals(1, len(checks['initialized_checks']))
-        self.assertEquals('valid_check_1', checks['initialized_checks'][0].check(None))
+        self.assertEqual(1, len(checks['initialized_checks']))
+        self.assertEqual('valid_check_1', checks['initialized_checks'][0].check(None))
 
     def testConfigDeprecatedNagiosConfig(self, *args):
         copyfile('%s/valid_check_1.py' % FIXTURE_PATH,
             '%s/nagios.py' % TEMP_ETC_CHECKS_DIR)
         checks = load_check_directory({"nagios_perf_cfg": None, "additional_checksd": TEMP_ETC_CHECKS_DIR}, "foo")
-        self.assertEquals(1, len(checks['initialized_checks']))
-        self.assertEquals('valid_check_1', checks['initialized_checks'][0].check(None))
+        self.assertEqual(1, len(checks['initialized_checks']))
+        self.assertEqual('valid_check_1', checks['initialized_checks'][0].check(None))
 
     def testConfigDefault(self, *args):
         copyfile('%s/valid_conf.yaml' % FIXTURE_PATH,
@@ -322,7 +322,7 @@ class TestConfigLoadCheckDirectory(unittest.TestCase):
         copyfile('%s/valid_check_1.py' % FIXTURE_PATH,
             '%s/test_check.py' % TEMP_ETC_CHECKS_DIR)
         checks = load_check_directory({"additional_checksd": TEMP_ETC_CHECKS_DIR}, "foo")
-        self.assertEquals(1, len(checks['initialized_checks']))
+        self.assertEqual(1, len(checks['initialized_checks']))
 
     def testConfigCustomOverDefault(self, *args):
         copyfile('%s/valid_conf.yaml' % FIXTURE_PATH,
@@ -334,8 +334,8 @@ class TestConfigLoadCheckDirectory(unittest.TestCase):
         copyfile('%s/valid_check_1.py' % FIXTURE_PATH,
             '%s/test_check.py' % TEMP_ETC_CHECKS_DIR)
         checks = load_check_directory({"additional_checksd": TEMP_ETC_CHECKS_DIR}, "foo")
-        self.assertEquals(1, len(checks['initialized_checks']))
-        self.assertEquals(2, checks['initialized_checks'][0].instance_count())  # check that we picked the right conf
+        self.assertEqual(1, len(checks['initialized_checks']))
+        self.assertEqual(2, checks['initialized_checks'][0].instance_count())  # check that we picked the right conf
 
     def tearDown(self):
         for _dir in self.TEMP_DIRS:
@@ -347,19 +347,19 @@ class TestManifestValidation(unittest.TestCase):
     def testManifestValidateOK(self, *args):
         manifest_path = '{}/manifest.json'.format(FIXTURE_PATH)
         validate = validate_sdk_check(manifest_path)
-        self.assertEquals(True, validate)
+        self.assertEqual(True, validate)
 
     @mock.patch('config.get_version', return_value='4.0.1')
     def testManifestValidateNOKHigh(self, *args):
         manifest_path = '{}/manifest.json'.format(FIXTURE_PATH)
         validate = validate_sdk_check(manifest_path)
-        self.assertEquals(False, validate)
+        self.assertEqual(False, validate)
 
     @mock.patch('config.get_version', return_value='6.0.1')
     def testManifestValidateNOKLow(self, *args):
         manifest_path = '{}/manifest.json'.format(FIXTURE_PATH)
         validate = validate_sdk_check(manifest_path)
-        self.assertEquals(False, validate)
+        self.assertEqual(False, validate)
 
     def testVersionStringToTupleBadVersion(self, *args):
         with self.assertRaises(ValueError):

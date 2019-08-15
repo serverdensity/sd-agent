@@ -9,27 +9,27 @@ class TestHistogram(unittest.TestCase):
     def test_default(self):
         stats = MetricsAggregator('myhost')
 
-        for i in xrange(20):
+        for i in range(20):
             stats.submit_packets('myhistogram:{0}|h'.format(i))
 
         metrics = stats.flush()
 
-        self.assertEquals(len(metrics), 5, metrics)
+        self.assertEqual(len(metrics), 5, metrics)
 
         value_by_type = {}
         for k in metrics:
             value_by_type[k[0][len('myhistogram')+1:]] = k[2]
 
-        self.assertEquals(
+        self.assertEqual(
             sorted(value_by_type.keys()),
             ['95percentile', 'avg', 'count', 'max', 'median'], value_by_type
         )
 
-        self.assertEquals(value_by_type['max'], 19, value_by_type)
-        self.assertEquals(value_by_type['median'], 9, value_by_type)
-        self.assertEquals(value_by_type['avg'], 9.5, value_by_type)
-        self.assertEquals(value_by_type['count'], 20.0, value_by_type)
-        self.assertEquals(value_by_type['95percentile'], 18, value_by_type)
+        self.assertEqual(value_by_type['max'], 19, value_by_type)
+        self.assertEqual(value_by_type['median'], 9, value_by_type)
+        self.assertEqual(value_by_type['avg'], 9.5, value_by_type)
+        self.assertEqual(value_by_type['count'], 20.0, value_by_type)
+        self.assertEqual(value_by_type['95percentile'], 18, value_by_type)
 
     def test_custom_single_percentile(self):
         configstr = '0.40'
@@ -38,24 +38,24 @@ class TestHistogram(unittest.TestCase):
             histogram_percentiles=get_histogram_percentiles(configstr)
         )
 
-        self.assertEquals(
+        self.assertEqual(
             stats.metric_config[Histogram]['percentiles'],
             [0.40],
             stats.metric_config[Histogram]
         )
 
-        for i in xrange(20):
+        for i in range(20):
             stats.submit_packets('myhistogram:{0}|h'.format(i))
 
         metrics = stats.flush()
 
-        self.assertEquals(len(metrics), 5, metrics)
+        self.assertEqual(len(metrics), 5, metrics)
 
         value_by_type = {}
         for k in metrics:
             value_by_type[k[0][len('myhistogram')+1:]] = k[2]
 
-        self.assertEquals(value_by_type['40percentile'], 7, value_by_type)
+        self.assertEqual(value_by_type['40percentile'], 7, value_by_type)
 
     def test_custom_multiple_percentile(self):
         configstr = '0.4, 0.65, 0.999'
@@ -64,26 +64,26 @@ class TestHistogram(unittest.TestCase):
             histogram_percentiles=get_histogram_percentiles(configstr)
         )
 
-        self.assertEquals(
+        self.assertEqual(
             stats.metric_config[Histogram]['percentiles'],
             [0.4, 0.65, 0.99],
             stats.metric_config[Histogram]
         )
 
-        for i in xrange(20):
+        for i in range(20):
             stats.submit_packets('myhistogram:{0}|h'.format(i))
 
         metrics = stats.flush()
 
-        self.assertEquals(len(metrics), 7, metrics)
+        self.assertEqual(len(metrics), 7, metrics)
 
         value_by_type = {}
         for k in metrics:
             value_by_type[k[0][len('myhistogram')+1:]] = k[2]
 
-        self.assertEquals(value_by_type['40percentile'], 7, value_by_type)
-        self.assertEquals(value_by_type['65percentile'], 12, value_by_type)
-        self.assertEquals(value_by_type['99percentile'], 19, value_by_type)
+        self.assertEqual(value_by_type['40percentile'], 7, value_by_type)
+        self.assertEqual(value_by_type['65percentile'], 12, value_by_type)
+        self.assertEqual(value_by_type['99percentile'], 19, value_by_type)
 
     def test_custom_invalid_percentile(self):
         configstr = '1.2342'
@@ -92,7 +92,7 @@ class TestHistogram(unittest.TestCase):
             histogram_percentiles=get_histogram_percentiles(configstr)
         )
 
-        self.assertEquals(
+        self.assertEqual(
             stats.metric_config[Histogram]['percentiles'],
             [],
             stats.metric_config[Histogram]
@@ -105,7 +105,7 @@ class TestHistogram(unittest.TestCase):
             histogram_percentiles=get_histogram_percentiles(configstr)
         )
 
-        self.assertEquals(
+        self.assertEqual(
             stats.metric_config[Histogram]['percentiles'],
             [],
             stats.metric_config[Histogram]
@@ -118,7 +118,7 @@ class TestHistogram(unittest.TestCase):
             histogram_percentiles=get_histogram_percentiles(configstr)
         )
 
-        self.assertEquals(
+        self.assertEqual(
             stats.metric_config[Histogram]['percentiles'],
             [0.8],
             stats.metric_config[Histogram]
@@ -131,24 +131,24 @@ class TestHistogram(unittest.TestCase):
             histogram_aggregates=get_histogram_aggregates(configstr)
         )
 
-        self.assertEquals(
+        self.assertEqual(
             sorted(stats.metric_config[Histogram]['aggregates']),
             ['max', 'median', 'sum'],
             stats.metric_config[Histogram]
         )
 
-        for i in xrange(20):
+        for i in range(20):
             stats.submit_packets('myhistogram:{0}|h'.format(i))
 
         metrics = stats.flush()
 
-        self.assertEquals(len(metrics), 4, metrics)
+        self.assertEqual(len(metrics), 4, metrics)
 
         value_by_type = {}
         for k in metrics:
             value_by_type[k[0][len('myhistogram')+1:]] = k[2]
 
-        self.assertEquals(value_by_type['median'], 9, value_by_type)
-        self.assertEquals(value_by_type['max'], 19, value_by_type)
-        self.assertEquals(value_by_type['sum'], 190, value_by_type)
-        self.assertEquals(value_by_type['95percentile'], 18, value_by_type)
+        self.assertEqual(value_by_type['median'], 9, value_by_type)
+        self.assertEqual(value_by_type['max'], 19, value_by_type)
+        self.assertEqual(value_by_type['sum'], 190, value_by_type)
+        self.assertEqual(value_by_type['95percentile'], 18, value_by_type)

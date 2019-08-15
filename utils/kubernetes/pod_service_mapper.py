@@ -91,7 +91,7 @@ class PodServiceMapper:
             else:
                 if (self._service_cache_invalidated is True):
                     self._fill_services_cache()
-                for service_uid, label_selectors in self._service_cache_selectors.iteritems():
+                for service_uid, label_selectors in self._service_cache_selectors.items():
                     if self._does_pod_fulfill_selectors(pod_labels, label_selectors):
                         matches.append(service_uid)
                 self._pod_services_mapping[pod_id] = matches
@@ -115,7 +115,7 @@ class PodServiceMapper:
         """
         if len(pod_labels) == 0 or len(label_selectors) == 0:
             return False
-        for label, value in label_selectors.iteritems():
+        for label, value in label_selectors.items():
             if pod_labels.get(label, '') != value:
                 return False
         return True
@@ -138,7 +138,7 @@ class PodServiceMapper:
                 log.debug("No selectors cached for service %s, skipping search", service_uid)
                 return []
 
-            for pod_uid, labels in self._pod_labels_cache.iteritems():
+            for pod_uid, labels in self._pod_labels_cache.items():
                 if self._does_pod_fulfill_selectors(labels, self._service_cache_selectors[service_uid]):
                     matches.append(pod_uid)
         except Exception as e:
@@ -178,7 +178,7 @@ class PodServiceMapper:
 
                 # Possible values in kubernetes/pkg/controller/service/servicecontroller.go
                 if reason == 'DeletedLoadBalancer':
-                    for pod, services in self._pod_services_mapping.iteritems():
+                    for pod, services in self._pod_services_mapping.items():
                         if service_uid in services:
                             services.remove(service_uid)
                             pod_uids.add(pod)

@@ -14,9 +14,9 @@ class TestAggregatorPerf(object):
     def test_sdstatsd_aggregation_perf(self):
         ma = MetricsBucketAggregator('my.host')
 
-        for _ in xrange(self.FLUSH_COUNT):
-            for i in xrange(self.LOOPS_PER_FLUSH):
-                for j in xrange(self.METRIC_COUNT):
+        for _ in range(self.FLUSH_COUNT):
+            for i in range(self.LOOPS_PER_FLUSH):
+                for j in range(self.METRIC_COUNT):
 
                     # metrics
                     ma.submit_packets('counter.%s:%s|c' % (j, i))
@@ -41,10 +41,10 @@ class TestAggregatorPerf(object):
     def test_checksd_aggregation_perf(self):
         ma = MetricsAggregator('my.host')
 
-        for _ in xrange(self.FLUSH_COUNT):
-            for i in xrange(self.LOOPS_PER_FLUSH):
+        for _ in range(self.FLUSH_COUNT):
+            for i in range(self.LOOPS_PER_FLUSH):
                 # Counters
-                for j in xrange(self.METRIC_COUNT):
+                for j in range(self.METRIC_COUNT):
                     ma.increment('counter.%s' % j, i)
                     ma.gauge('gauge.%s' % j, i)
                     ma.histogram('histogram.%s' % j, i)
@@ -64,9 +64,9 @@ class TestAggregatorPerf(object):
     def test_sdstatsd_utf8_events(self):
         ma = MetricsBucketAggregator('my.host')
 
-        for _ in xrange(self.FLUSH_COUNT):
-            for i in xrange(self.LOOPS_PER_FLUSH):
-                for j in xrange(self.METRIC_COUNT):
+        for _ in range(self.FLUSH_COUNT):
+            for i in range(self.LOOPS_PER_FLUSH):
+                for j in range(self.METRIC_COUNT):
 
                     ma.submit_packets(self.create_event_packet(
                         'Τη γλώσσα μου έδωσαν ελληνική',
@@ -87,9 +87,9 @@ class TestAggregatorPerf(object):
     def test_sdstatsd_ascii_events(self):
         ma = MetricsBucketAggregator('my.host')
 
-        for _ in xrange(self.FLUSH_COUNT):
-            for i in xrange(self.LOOPS_PER_FLUSH):
-                for j in xrange(self.METRIC_COUNT):
+        for _ in range(self.FLUSH_COUNT):
+            for i in range(self.LOOPS_PER_FLUSH):
+                for j in range(self.METRIC_COUNT):
 
                     ma.submit_packets(self.create_event_packet(
                         'asldkfj fdsaljfas dflksjafs fasdfkjaldsfkjasldf',

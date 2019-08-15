@@ -63,7 +63,7 @@ class TestWatchdog(unittest.TestCase):
 
         with self.set_time(1):
             # Can be reset 3 times within the watchdog timeframe
-            for x in xrange(0, 3):
+            for x in range(0, 3):
                 ping_watchdog()
 
             # On the 4th attempt, the watchdog detects a suspicously high activity
@@ -159,7 +159,7 @@ class PseudoAgent(object):
         w = Watchdog(5)
         w.reset()
         x = url.urlopen("http://localhost:31834")
-        print "ERROR Net call returned", x
+        print("ERROR Net call returned", x)
         return True
 
     def normal_run(self):

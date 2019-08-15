@@ -2,7 +2,7 @@
 # std
 import logging
 import os
-from urlparse import urljoin
+from urllib.parse import urljoin
 
 # project
 from util import check_yaml

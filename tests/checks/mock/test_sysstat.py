@@ -147,8 +147,8 @@ sda               0.00     0.00  0.00  0.00     0.00     0.00     0.00     0.00 
 """
         checker = IO(logger)
         results = checker._parse_darwin(darwin_iostat_output)
-        self.assertTrue("disk0" in results.keys())
-        self.assertTrue("disk1" in results.keys())
+        self.assertTrue("disk0" in list(results.keys()))
+        self.assertTrue("disk1" in list(results.keys()))
 
         self.assertEqual(
             results["disk0"],

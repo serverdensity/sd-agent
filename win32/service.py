@@ -137,7 +137,7 @@ class AgentSvc(win32serviceutil.ServiceFramework):
         registry_conf = get_registry_conf(config)
         config.update(registry_conf)
         if registry_conf:
-            log.info('Updating conf file options: %s', registry_conf.keys())
+            log.info('Updating conf file options: %s', list(registry_conf.keys()))
             try:
                 update_conf_file(registry_conf, get_config_path())
                 log.info('update succeeded, deleting old values')
@@ -150,7 +150,7 @@ class AgentSvc(win32serviceutil.ServiceFramework):
         self.running = False
         log.info('Stopping service...')
         # Stop all services.
-        for proc in self.procs.values():
+        for proc in list(self.procs.values()):
             proc.terminate()
         AgentSvc.devnull.close()
         log.info("Agent processes stopped.")
@@ -174,7 +174,7 @@ class AgentSvc(win32serviceutil.ServiceFramework):
         self.start_ts = time.time()
 
         # Start all services.
-        for proc in self.procs.values():
+        for proc in list(self.procs.values()):
             proc.start()
 
         #
@@ -207,7 +207,7 @@ class AgentSvc(win32serviceutil.ServiceFramework):
         self.running = True
         while self.running:
             # Restart any processes that might have died.
-            for name, proc in self.procs.iteritems():
+            for name, proc in self.procs.items():
                 if not proc.is_alive() and proc.is_enabled():
                     log.warning("%s has died. Restarting...", name)
                     proc.restart()

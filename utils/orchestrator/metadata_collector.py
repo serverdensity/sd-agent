@@ -10,14 +10,13 @@ from .kubeutilproxy import KubeUtilProxy
 from utils.singleton import Singleton
 
 
-class MetadataCollector():
+class MetadataCollector(metaclass=Singleton):
     """
     Wraps several BaseUtil classes with autodetection and allows to query
     them through the same interface as BaseUtil classes
 
     See BaseUtil for apidoc
     """
-    __metaclass__ = Singleton
 
     def __init__(self):
         self._utils = []  # [BaseUtil object]

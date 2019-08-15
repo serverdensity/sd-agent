@@ -1,5 +1,5 @@
 # stdlib
-from cStringIO import StringIO
+from io import StringIO
 import logging
 import subprocess
 import time
@@ -27,4 +27,4 @@ class TestGanglia(unittest.TestCase):
         x1 = tree.parse(parsed)
         x2 = tree.parse(original)
         # Cursory test
-        self.assertEquals([c.tag for c in x1.getroot()], [c.tag for c in x2.getroot()])
+        self.assertEqual([c.tag for c in x1.getroot()], [c.tag for c in x2.getroot()])

@@ -97,7 +97,7 @@ class TestKubePodServiceMapper(KubeTestCase):
         exception403 = requests.exceptions.HTTPError()
         exception403.response = Mock()
         exception403.response.status_code = 403
-        self.assertEquals(403, exception403.response.status_code)
+        self.assertEqual(403, exception403.response.status_code)
         self.assertTrue(isinstance(exception403, requests.exceptions.HTTPError))
 
         with patch.object(self.kube, 'retrieve_json_auth', side_effect=exception403) as request_mock:

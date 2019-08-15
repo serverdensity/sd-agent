@@ -8,8 +8,8 @@ import logging
 import os
 import simplejson as json
 import time
-from urllib import urlencode
-from urlparse import urljoin
+from urllib.parse import urlencode
+from urllib.parse import urljoin
 
 # project
 from util import check_yaml
@@ -62,9 +62,7 @@ def detect_is_k8s():
             return False
 
 
-class KubeUtil:
-    __metaclass__ = Singleton
-
+class KubeUtil(metaclass=Singleton):
     DEFAULT_METHOD = 'http'
     KUBELET_HEALTH_PATH = '/healthz'
     MACHINE_INFO_PATH = '/api/v1.3/machine/'
@@ -339,13 +337,13 @@ class KubeUtil:
                 if self.collect_service_tag:
                     for service in self.match_services_for_pod(metadata):
                         if service is not None:
-                            podtags.append(u'kube_service:%s' % service)
+                            podtags.append('kube_service:%s' % service)
 
                 # Extract labels
-                for k, v in labels.iteritems():
+                for k, v in labels.items():
                     if k in excluded_keys:
                         continue
-                    podtags.append(u"%s%s:%s" % (label_prefix, k, v))
+                    podtags.append("%s%s:%s" % (label_prefix, k, v))
 
                 kube_labels[key] = podtags
 
@@ -521,7 +519,7 @@ class KubeUtil:
             node_info = self.retrieve_json_auth(request_url).json()
             node_labels = node_info.get('metadata', {}).get('labels', {})
 
-            for l_name, t_name in self.kube_node_labels.iteritems():
+            for l_name, t_name in self.kube_node_labels.items():
                 if l_name in node_labels:
                     tags.append('%s:%s' % (t_name, node_labels[l_name]))
 

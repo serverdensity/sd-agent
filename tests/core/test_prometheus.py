@@ -169,11 +169,11 @@ class TestPrometheusProcessor(unittest.TestCase):
             _h = _histo.metric.add()
             _h.histogram.sample_count = _data['ct']
             _h.histogram.sample_sum = _data['sum']
-            for k, v in _data['lbl'].items():
+            for k, v in list(_data['lbl'].items()):
                 _lh = _h.label.add()
                 _lh.name = k
                 _lh.value = v
-            for _b in sorted(_data['buckets'].iterkeys()):
+            for _b in sorted(_data['buckets'].keys()):
                 _subh = _h.histogram.bucket.add()
                 _subh.upper_bound = _b
                 _subh.cumulative_count = _data['buckets'][_b]

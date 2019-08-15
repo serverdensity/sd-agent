@@ -202,10 +202,10 @@ class PrometheusScraper(object):
         :return: value of the metric_name matched by the labels
         """
         metric_name = '{}_{}'.format(_m, metric_suffix)
-        expected_labels = set([(k, v) for k, v in _metric["labels"].iteritems()
+        expected_labels = set([(k, v) for k, v in _metric["labels"].items()
                                if k not in PrometheusScraper.UNWANTED_LABELS])
         for elt in messages[metric_name]:
-            current_labels = set([(k, v) for k, v in elt["labels"].iteritems()
+            current_labels = set([(k, v) for k, v in elt["labels"].items()
                                   if k not in PrometheusScraper.UNWANTED_LABELS])
             # As we have two hashable objects we can compare them without any side effects
             if current_labels == expected_labels:
@@ -232,7 +232,7 @@ class PrometheusScraper(object):
             # in the case of quantiles and buckets, they need to be grouped by labels
             if obj_map[_m] in ['summary', 'histogram'] and len(_obj.metric) > 0:
                 _label_exists = False
-                _metric_minus = {k:v for k,v in _metric['labels'].items() if k not in ['quantile', 'le']}
+                _metric_minus = {k:v for k,v in list(_metric['labels'].items()) if k not in ['quantile', 'le']}
                 _metric_idx = 0
                 for mls in _obj.metric:
                     _tmp_lbl = {idx.name:idx.value for idx in mls.label}
@@ -252,13 +252,13 @@ class PrometheusScraper(object):
                 _g.gauge.value = float(_metric['value'])
             elif obj_map[_m] == 'summary':
                 if '{}_count'.format(_m) in messages:
-                    _g.summary.sample_count = long(self.get_metric_value_by_labels(messages, _metric, _m, 'count'))
+                    _g.summary.sample_count = int(self.get_metric_value_by_labels(messages, _metric, _m, 'count'))
                 if '{}_sum'.format(_m) in messages:
                     _g.summary.sample_sum = self.get_metric_value_by_labels(messages, _metric, _m, 'sum')
             # TODO: see what can be done with the untyped metrics
             elif obj_map[_m] == 'histogram':
                 if '{}_count'.format(_m) in messages:
-                    _g.histogram.sample_count = long(self.get_metric_value_by_labels(messages, _metric, _m, 'count'))
+                    _g.histogram.sample_count = int(self.get_metric_value_by_labels(messages, _metric, _m, 'count'))
                 if '{}_sum'.format(_m) in messages:
                     _g.histogram.sample_sum = self.get_metric_value_by_labels(messages, _metric, _m, 'sum')
             # last_metric = len(_obj.metric) - 1
@@ -275,7 +275,7 @@ class PrometheusScraper(object):
                     # _q = _obj.metric[last_metric].histogram.bucket.add()
                     _q = _g.histogram.bucket.add()
                     _q.upper_bound = float(_metric['labels'][lbl])
-                    _q.cumulative_count = long(float(_metric['value']))
+                    _q.cumulative_count = int(float(_metric['value']))
                 else:
                     # labels deduplication
                     is_in_labels = False
@@ -299,7 +299,7 @@ class PrometheusScraper(object):
                 self._dry_run = False
             elif not self._watched_labels:
                 # build the _watched_labels set
-                for metric, val in self.label_joins.iteritems():
+                for metric, val in self.label_joins.items():
                     self._watched_labels.add(val['label_to_match'])
 
             for metric in self.parse_metric_family(response):
@@ -308,8 +308,8 @@ class PrometheusScraper(object):
             # Set dry run off
             self._dry_run = False
             # Garbage collect unused mapping and reset active labels
-            for metric, mapping in self._label_mapping.items():
-                for key, val in mapping.items():
+            for metric, mapping in list(self._label_mapping.items()):
+                for key, val in list(mapping.items()):
                     if key not in self._active_label_mapping[metric]:
                         del self._label_mapping[metric][key]
             self._active_label_mapping = {}
@@ -400,7 +400,7 @@ class PrometheusScraper(object):
                     else:
                         # build the wildcard list if first pass
                         if self._metrics_wildcards is None:
-                            self._metrics_wildcards = [x for x in self.metrics_mapper.keys() if '*' in x]
+                            self._metrics_wildcards = [x for x in list(self.metrics_mapper.keys()) if '*' in x]
                         # try matching wildcard (generic check)
                         for wildcard in self._metrics_wildcards:
                             if fnmatchcase(message.name, wildcard):
@@ -435,12 +435,12 @@ class PrometheusScraper(object):
                                 'proto=io.prometheus.client.MetricFamily; ' \
                                 'encoding=delimited'
         cert = None
-        if isinstance(self.ssl_cert, basestring):
+        if isinstance(self.ssl_cert, str):
             cert = self.ssl_cert
-            if isinstance(self.ssl_private_key, basestring):
+            if isinstance(self.ssl_private_key, str):
                 cert = (self.ssl_cert, self.ssl_private_key)
         verify = True
-        if isinstance(self.ssl_ca_cert, basestring):
+        if isinstance(self.ssl_ca_cert, str):
             verify = self.ssl_ca_cert
         try:
             response = requests.get(endpoint, headers=headers, stream=True, timeout=1, cert=cert, verify=verify)

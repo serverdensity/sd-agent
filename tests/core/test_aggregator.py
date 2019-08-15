@@ -360,10 +360,10 @@ class TestMetricsAggregator(unittest.TestCase):
 
         # Sample all numbers between 1-100 many times. This
         # means our percentiles should be relatively close to themselves.
-        percentiles = range(100)
+        percentiles = list(range(100))
         random.shuffle(percentiles)  # in place
         for i in percentiles:
-            for j in xrange(20):
+            for j in range(20):
                 for type_ in ['h', 'ms']:
                     m = 'my.p:%s|%s' % (i, type_)
                     stats.submit_packets(m)
@@ -576,7 +576,7 @@ class TestMetricsAggregator(unittest.TestCase):
 
     def test_diagnostic_stats(self):
         stats = MetricsAggregator('myhost')
-        for i in xrange(10):
+        for i in range(10):
             stats.submit_packets('metric:10|c')
         stats.send_packet_count('datadog.dogstatsd.packet.count')
         metrics = self.sort_metrics(stats.flush())
@@ -593,7 +593,7 @@ class TestMetricsAggregator(unittest.TestCase):
         cnt = 100000
         for run in [1, 2]:
             stats = MetricsAggregator('myhost')
-            for i in xrange(cnt):
+            for i in range(cnt):
                 if run == 2:
                     stats.submit_packets('test.counter:1|c|@0.5')
                     stats.submit_packets('test.hist:1|ms|@0.5')
@@ -654,7 +654,7 @@ class TestMetricsAggregator(unittest.TestCase):
     def test_event_title(self):
         stats = MetricsAggregator('myhost', utf8_decoding=True)
         stats.submit_packets('_e{0,4}:|text')
-        stats.submit_packets(u'_e{9,4}:2intitulé|text'.encode('utf-8'))  # comes from socket
+        stats.submit_packets('_e{9,4}:2intitulé|text'.encode('utf-8'))  # comes from socket
         stats.submit_packets('_e{14,4}:3title content|text')
         stats.submit_packets('_e{14,4}:4title|content|text')
         stats.submit_packets('_e{13,4}:5title\\ntitle|text')  # \n stays escaped
@@ -664,7 +664,7 @@ class TestMetricsAggregator(unittest.TestCase):
         assert len(events) == 5
 
         nt.assert_equal(events[0]['msg_title'], '')
-        nt.assert_equal(events[1]['msg_title'], u'2intitulé')
+        nt.assert_equal(events[1]['msg_title'], '2intitulé')
         nt.assert_equal(events[2]['msg_title'], '3title content')
         nt.assert_equal(events[3]['msg_title'], '4title|content')
         nt.assert_equal(events[4]['msg_title'], '5title\\ntitle')
@@ -687,8 +687,8 @@ class TestMetricsAggregator(unittest.TestCase):
         stats = MetricsAggregator('myhost', utf8_decoding=True)
         # Should raise because content is not encoded
 
-        self.assertRaises(Exception, stats.submit_packets, u'_e{2,19}:t4|♬ †øU †øU ¥ºu T0µ ♪')
-        stats.submit_packets(u'_e{2,19}:t4|♬ †øU †øU ¥ºu T0µ ♪'.encode('utf-8'))  # utf-8 compliant
+        self.assertRaises(Exception, stats.submit_packets, '_e{2,19}:t4|♬ †øU †øU ¥ºu T0µ ♪')
+        stats.submit_packets('_e{2,19}:t4|♬ †øU †øU ¥ºu T0µ ♪'.encode('utf-8'))  # utf-8 compliant
         # Normal packet
         stats.submit_packets('_e{2,23}:t3|First line\\nSecond line')  # \n is a newline
 
@@ -697,7 +697,7 @@ class TestMetricsAggregator(unittest.TestCase):
         assert len(events) == 2
 
         nt.assert_equal(events[0]['msg_text'], 'First line\nSecond line')
-        nt.assert_equal(events[1]['msg_text'], u'♬ †øU †øU ¥ºu T0µ ♪')
+        nt.assert_equal(events[1]['msg_text'], '♬ †øU †øU ¥ºu T0µ ♪')
 
     def test_service_check_basic(self):
         stats = MetricsAggregator('myhost')
@@ -721,7 +721,7 @@ class TestMetricsAggregator(unittest.TestCase):
         stats = MetricsAggregator('myhost')
         stats.submit_packets('_sc|check.1|0|m:testing')
         stats.submit_packets('_sc|check.2|0|m:First line\\nSecond line')
-        stats.submit_packets(u'_sc|check.3|0|m:♬ †øU †øU ¥ºu T0µ ♪')
+        stats.submit_packets('_sc|check.3|0|m:♬ †øU †øU ¥ºu T0µ ♪')
         stats.submit_packets('_sc|check.4|0|m:|t:|m\:|d:')
 
         service_checks = self.sort_service_checks(stats.flush_service_checks())
@@ -734,7 +734,7 @@ class TestMetricsAggregator(unittest.TestCase):
         nt.assert_equal(second['check'], 'check.2')
         nt.assert_equal(second['message'], 'First line\nSecond line')
         nt.assert_equal(third['check'], 'check.3')
-        nt.assert_equal(third['message'], u'♬ †øU †øU ¥ºu T0µ ♪')
+        nt.assert_equal(third['message'], '♬ †øU †øU ¥ºu T0µ ♪')
         nt.assert_equal(fourth['check'], 'check.4')
         nt.assert_equal(fourth['message'], '|t:|m:|d:')
 

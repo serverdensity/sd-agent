@@ -3,7 +3,7 @@
 # Licensed under Simplified BSD License (see LICENSE)
 
 # stdlib
-from cStringIO import StringIO
+from io import StringIO
 import socket
 
 # project

@@ -12,9 +12,8 @@ from utils.singleton import Singleton
 log = logging.getLogger(__name__)
 
 
-class AbstractSDBackend(object):
+class AbstractSDBackend(object, metaclass=Singleton):
     """Singleton for service discovery backends"""
-    __metaclass__ = Singleton
 
     PLACEHOLDER_REGEX = re.compile(r'%%.+?%%')
 

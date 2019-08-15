@@ -16,15 +16,15 @@ import copy
 from datetime import timedelta
 import logging
 import os
-from Queue import Full, Queue
+from queue import Full, Queue
 from socket import error as socket_error, gaierror
 import sys
 import threading
-from urlparse import urlparse
+from urllib.parse import urlparse
 import zlib
 
 # For pickle & PID files, see issue 293
-os.umask(022)
+os.umask(0o22)
 
 # 3p
 import simplejson as json
@@ -217,7 +217,7 @@ class AgentTransaction(Transaction):
             return "{0}/intake/{1}?agent_key={2}".format(
                 endpoint_base_url, self._msg_type, agent_key)
         else:
-            log.error(u"No agent key was found.")
+            log.error("No agent key was found.")
             return
 
     def flush(self):
@@ -274,7 +274,7 @@ class AgentTransaction(Transaction):
 
         url = self.get_url(self._endpoint, self._agent_key)
         log.debug(
-            u"Sending %s to endpoint %s at %s",
+            "Sending %s to endpoint %s at %s",
             self._type, self._endpoint, url
         )
         req = tornado.httpclient.HTTPRequest(url=url, **tornado_client_params)
@@ -414,7 +414,7 @@ class Application(tornado.web.Application):
         AgentTransaction.set_application(self)
         AgentTransaction.set_endpoints(agentConfig['endpoints'])
         if agentConfig['endpoints'] == {}:
-            log.warning(u"No valid endpoint found. Forwarder will drop all incoming payloads.")
+            log.warning("No valid endpoint found. Forwarder will drop all incoming payloads.")
         AgentTransaction.set_request_timeout(agentConfig['forwarder_timeout'])
 
         max_parallelism = self.NO_PARALLELISM
@@ -468,7 +468,7 @@ class Application(tornado.web.Application):
 
         request_time = 1000.0 * handler.request.request_time()
         log_method(
-            u"%d %s %.2fms",
+            "%d %s %.2fms",
             handler.get_status(),
             handler._request_summary(), request_time
         )
@@ -610,10 +610,10 @@ def main():
     skip_ssl_validation = False
     use_simple_http_client = False
 
-    if unicode(options.sslcheck) == u"0":
+    if str(options.sslcheck) == "0":
         skip_ssl_validation = True
 
-    if unicode(options.use_simple_http_client) == u"1":
+    if str(options.use_simple_http_client) == "1":
         use_simple_http_client = True
 
     # If we don't have any arguments, run the server.
@@ -633,10 +633,10 @@ def main():
             logging.getLogger().setLevel(logging.ERROR)
             return ForwarderStatus.print_latest_status()
         elif command == 'help':
-            print usage
+            print(usage)
         else:
-            print "Unknown command: %s" % command
-            print usage
+            print("Unknown command: %s" % command)
+            print(usage)
             return -1
     return 0
 

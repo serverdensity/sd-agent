@@ -53,9 +53,9 @@ class TestEmitter(unittest.TestCase):
 
     def test_remove_control_chars(self):
         messages = [
-            (u'#és9df\x7fELF\x02\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00>\x00\x01\x00\x00\x00\x06@\x00\x00\x00\x00\x00@\x00\x00\x00\x00\x00\x00´wer0sf®ré', u'#és9dfELF>@@´wer0sf®ré'),
+            ('#és9df\x7fELF\x02\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00>\x00\x01\x00\x00\x00\x06@\x00\x00\x00\x00\x00@\x00\x00\x00\x00\x00\x00´wer0sf®ré', '#és9dfELF>@@´wer0sf®ré'),
             ('AAAAAA', 'AAAAAA'),
-            (u'_e{2,19}:t4|♬ †øU †øU ¥ºu T0µ ♪', u'_e{2,19}:t4|♬ †øU †øU ¥ºu T0µ ♪')
+            ('_e{2,19}:t4|♬ †øU †øU ¥ºu T0µ ♪', '_e{2,19}:t4|♬ †øU †øU ¥ºu T0µ ♪')
         ]
 
         log = mock.Mock()
@@ -65,16 +65,16 @@ class TestEmitter(unittest.TestCase):
     def test_remove_control_chars_from_payload(self):
         bad_messages = [
             (
-                {"processes":[1234,[[u'☢cd≤Ω≈ç√∫˜µ≤\r\n', 0, 2.2,12,34,'compiz\r\n',1]]]},
-                {"processes":[1234,[[u'☢cd≤Ω≈ç√∫˜µ≤', 0, 2.2,12,34,'compiz',1]]]}
+                {"processes":[1234,[['☢cd≤Ω≈ç√∫˜µ≤\r\n', 0, 2.2,12,34,'compiz\r\n',1]]]},
+                {"processes":[1234,[['☢cd≤Ω≈ç√∫˜µ≤', 0, 2.2,12,34,'compiz',1]]]}
             ),
             (
-                (u'☢cd≤Ω≈ç√∫˜µ≤\r', ),
-                (u'☢cd≤Ω≈ç√∫˜µ≤', )
+                ('☢cd≤Ω≈ç√∫˜µ≤\r', ),
+                ('☢cd≤Ω≈ç√∫˜µ≤', )
             )
         ]
         good_messages = [
-            {"processes":[1234,[[u'db🖫', 0, 2.2,12,34,u'☢compiz☢',1]]]}
+            {"processes":[1234,[['db🖫', 0, 2.2,12,34,'☢compiz☢',1]]]}
         ]
 
         log = mock.Mock()
@@ -94,8 +94,8 @@ class TestEmitter(unittest.TestCase):
 
     def test_remove_undecodable_characters(self):
         messages = [
-            ('\xc3\xa9 \xe9 \xc3\xa7', u'é  ç', True),
-            (u'_e{2,19}:t4|♬ †øU †øU ¥ºu T0µ ♪', u'_e{2,19}:t4|♬ †øU †øU ¥ºu T0µ ♪', False), # left unchanged
+            ('\xc3\xa9 \xe9 \xc3\xa7', 'é  ç', True),
+            ('_e{2,19}:t4|♬ †øU †øU ¥ºu T0µ ♪', '_e{2,19}:t4|♬ †øU †øU ¥ºu T0µ ♪', False), # left unchanged
         ]
 
         for bad, good, log_called in messages:
@@ -115,7 +115,7 @@ class TestEmitter(unittest.TestCase):
                 "metric": "%d" % i,  # use an integer so that it's easy to find the metric afterwards
                 "points": [(i, i)],
                 "source_type_name": "System",
-            } for i in xrange(nb_series)
+            } for i in range(nb_series)
         ]}
 
         compressed_payloads = serialize_and_compress_metrics_payload(metrics_payload, max_compressed_size, 0, log)

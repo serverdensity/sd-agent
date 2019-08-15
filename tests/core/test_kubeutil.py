@@ -33,7 +33,7 @@ class KubeTestCase(unittest.TestCase):
     @classmethod
     def _load_resp_array(cls, names):
         json_array = cls._load_json_array(names)
-        return map(lambda x: MockResponse(x, 200), json_array)
+        return [MockResponse(x, 200) for x in json_array]
 
 
 class TestKubeUtilInit(KubeTestCase):

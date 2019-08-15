@@ -54,7 +54,7 @@ def log_subprocess(func):
     def wrapper(*params, **kwargs):
         fc = "%s(%s)" % (func.__name__, ', '.join(
             [a.__repr__() for a in params] +
-            ["%s = %s" % (a, b) for a, b in kwargs.items()]
+            ["%s = %s" % (a, b) for a, b in list(kwargs.items())]
         ))
         log.debug("%s called" % fc)
         return func(*params, **kwargs)

@@ -477,7 +477,7 @@ class Collector(object):
                 meta = {'tags': ["check:%s" % check.name]}
                 metrics.append((metric, time.time(), check_run_time, meta))
 
-        for check_name, info in self.init_failed_checks_d.iteritems():
+        for check_name, info in self.init_failed_checks_d.items():
             if not self.continue_running:
                 return
             check_status = CheckStatus(check_name, None, None, None, None,
@@ -580,10 +580,10 @@ class Collector(object):
             event_count = len(current_check_events)
             service_check_count = len(current_service_checks)
 
-            print "Metrics: \n{0}".format(pprint.pformat(current_check_metrics))
-            print "Events: \n{0}".format(pprint.pformat(current_check_events))
-            print "Service Checks: \n{0}".format(pprint.pformat(current_service_checks))
-            print "Service Metadata: \n{0}".format(pprint.pformat(current_service_metadata))
+            print("Metrics: \n{0}".format(pprint.pformat(current_check_metrics)))
+            print("Events: \n{0}".format(pprint.pformat(current_check_events)))
+            print("Service Checks: \n{0}".format(pprint.pformat(current_service_checks)))
+            print("Service Metadata: \n{0}".format(pprint.pformat(current_service_metadata)))
 
         except Exception:
             log.exception("Error running check %s" % check.name)
@@ -678,7 +678,7 @@ class Collector(object):
             # Add static tags from the configuration file
             host_tags = []
             if self.agentConfig['tags'] is not None:
-                host_tags.extend([unicode(tag.strip())
+                host_tags.extend([str(tag.strip())
                                  for tag in self.agentConfig['tags'].split(",")])
 
             if self.agentConfig['collect_ec2_tags']:
@@ -845,7 +845,7 @@ class Collector(object):
         """
         if Platform.is_windows():
             try:
-                decoded_tzname = map(lambda tz: tz.decode(locale.getpreferredencoding()), tzname)
+                decoded_tzname = [tz.decode(locale.getpreferredencoding()) for tz in tzname]
             except Exception:
                 log.exception("Failed decoding timezone with encoding %s", locale.getpreferredencoding())
                 return ('', '')

@@ -51,7 +51,7 @@ class KubeEventRetriever:
             else:
                 # Client-side filtering
                 self.namespace_filter = set(namespaces)
-        if isinstance(namespaces, basestring):
+        if isinstance(namespaces, str):
             self.request_url = "%s/namespaces/%s/events" % (self.kubeutil.kubernetes_api_url, namespaces)
 
     def set_kinds(self, kinds):
@@ -63,7 +63,7 @@ class KubeEventRetriever:
             else:
                 # Client-side filtering
                 self.kind_filter = set(kinds)
-        if isinstance(kinds, basestring):
+        if isinstance(kinds, str):
             self.request_params['fieldSelector'] = 'involvedObject.kind=' + kinds
 
     def set_delay(self, delay):

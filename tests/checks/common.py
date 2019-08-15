@@ -90,7 +90,7 @@ def load_class(check_name, class_name):
         if name == class_name:
             return clsmember
 
-    raise Exception(u"Unable to import class {0} from the check module.".format(class_name))
+    raise Exception("Unable to import class {0} from the check module.".format(class_name))
 
 
 def load_check(name, config, agentConfig):
@@ -224,7 +224,7 @@ class AgentCheckTest(unittest.TestCase):
 
     def run_check_n(self, config, agent_config=None, mocks=None,
                     force_reload=False, repeat=1, sleep=1):
-        for i in xrange(repeat):
+        for i in range(repeat):
             if not i:
                 self.run_check(config, agent_config, mocks, force_reload)
             else:
@@ -236,7 +236,7 @@ class AgentCheckTest(unittest.TestCase):
         if self.check is None or force_reload:
             self.load_check(config, agent_config=agent_config)
         if mocks is not None:
-            for func_name, mock in mocks.iteritems():
+            for func_name, mock in mocks.items():
                 if not hasattr(self.check, func_name):
                     continue
                 else:
@@ -253,8 +253,8 @@ class AgentCheckTest(unittest.TestCase):
                 self.check._roll_up_instance_metadata()
             except Exception as e:
                 # Catch error before re-raising it to be able to get service_checks
-                print "Exception {0} during check".format(e)
-                print traceback.format_exc()
+                print("Exception {0} during check".format(e))
+                print(traceback.format_exc())
                 error = e
         self.metrics = self.check.get_metrics()
         self.events = self.check.get_events()
@@ -358,7 +358,7 @@ WARNINGS
         ))
 
         if not os.getenv('NO_COVERAGE'):
-            self.assertEquals(coverage_metrics, 100.0)
+            self.assertEqual(coverage_metrics, 100.0)
             #self.assertEquals(coverage_events, 100.0)
             #self.assertEquals(coverage_sc, 100.0)
             #self.assertEquals(coverage_sm, 100.0)
@@ -368,7 +368,7 @@ WARNINGS
     def _candidates_size_assert(self, candidates, count=None, at_least=1):
         try:
             if count is not None:
-                self.assertEquals(
+                self.assertEqual(
                     len(candidates), count,
                     "Needed exactly %d candidates, got %d" % (count, len(candidates))
                 )
@@ -600,7 +600,7 @@ WARNINGS
         log.debug("Looking for event {0}".format(msg_text))
         if tags is not None:
             log.debug(" * tagged with {0}".format(tags))
-        for name, value in kwargs.iteritems():
+        for name, value in kwargs.items():
             if value is not None:
                 log.debug(" * with {0} {1}".format(name, value))
         if count is not None:
@@ -615,7 +615,7 @@ WARNINGS
                 continue
             if tags and set(tags) != set(e['tags']):
                 continue
-            for name, value in kwargs.iteritems():
+            for name, value in kwargs.items():
                 if e[name] != value:
                     break
             else:

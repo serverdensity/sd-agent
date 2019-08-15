@@ -4,7 +4,7 @@ from unittest import TestCase
 import os
 import socket
 import threading
-import Queue
+import queue
 from collections import defaultdict
 
 # 3p
@@ -120,7 +120,7 @@ class TestServer(TestCase):
         self.assertEqual(s2.socket.family, socket.AF_INET6)
 
         if ipv6_test:
-            self.assertNotEquals(original_so_rcvbuf, s2.socket.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF))
+            self.assertNotEqual(original_so_rcvbuf, s2.socket.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF))
 
         s2 = Server(mock.MagicMock(), 'foo', '80')
         s2.start()
@@ -132,7 +132,7 @@ class TestServer(TestCase):
     def test_connection_v4(self):
         # start the server with a v4 mapped address
         sock = self._get_socket('::ffff:127.0.0.1', 12345)
-        results = Queue.Queue()
+        results = queue.Queue()
 
         def listen():
             while True:
@@ -153,7 +153,7 @@ class TestServer(TestCase):
             # send packets with a v6 client
             client_sock = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
             client_sock.sendto('msg6', ('::1', 12345))
-            self.assertRaises(Queue.Empty, results.get, True, 1)
+            self.assertRaises(queue.Empty, results.get, True, 1)
 
     @unittest.skipIf(not _ipv6_available('::1', 12345),
                      "ipv6 required for this test")
@@ -161,7 +161,7 @@ class TestServer(TestCase):
         raise SkipTest("Travis doesn't support ipv6")
         # start the server with a v6 address
         sock = self._get_socket('::1', 12345)
-        results = Queue.Queue()
+        results = queue.Queue()
 
         def listen():
             while True:
@@ -175,7 +175,7 @@ class TestServer(TestCase):
         # send packets with a v4 client
         client_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         client_sock.sendto('msg4', ('127.0.0.1', 12345))
-        self.assertRaises(Queue.Empty, results.get, True, 1)
+        self.assertRaises(queue.Empty, results.get, True, 1)
 
         # send packets with a v6 client
         client_sock = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)

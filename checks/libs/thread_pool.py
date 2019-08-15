@@ -20,7 +20,7 @@
 # The methods of a Pool object use all these concepts and expose
 # them to their caller in a very simple way.
 # stdlib
-import Queue
+import queue
 import sys
 import threading
 import traceback
@@ -77,10 +77,10 @@ class Pool(object):
         \param nworkers (integer) number of worker threads to start
         \param name (string) prefix for the worker threads' name
         """
-        self._workq = Queue.Queue()
+        self._workq = queue.Queue()
         self._closed = False
         self._workers = []
-        for idx in xrange(nworkers):
+        for idx in range(nworkers):
             thr = PoolWorker(self._workq, name="Worker-%s-%d" % (name, idx))
             try:
                 thr.start()
@@ -213,7 +213,7 @@ class Pool(object):
         try:
             while 1:
                 self._workq.get_nowait()
-        except Queue.Empty:
+        except queue.Empty:
             pass
 
         # Send one sentinel for each worker thread: each thread will die
@@ -245,9 +245,9 @@ class Pool(object):
         exit_loop = False
         while not exit_loop:
             seq = []
-            for i in xrange(chunksize or 1):
+            for i in range(chunksize or 1):
                 try:
-                    arg = it_.next()
+                    arg = next(it_)
                 except StopIteration:
                     exit_loop = True
                     break
@@ -352,7 +352,7 @@ class ApplyResult(object):
             raise TimeoutError("Result not available within %fs" % timeout)
         if self._success:
             return self._data
-        raise self._data[0], self._data[1], self._data[2]
+        raise self._data[0](self._data[1]).with_traceback(self._data[2])
 
     def wait(self, timeout=None):
         """Waits until the result is available or until timeout
@@ -630,123 +630,123 @@ class OrderedResultCollector(AbstractResultCollector):
 
 def _test():
     """Some tests"""
-    import thread
+    import _thread
     import time
 
     def f(x):
         return x*x
 
     def work(seconds):
-        print "[%d] Start to work for %fs..." % (thread.get_ident(), seconds)
+        print("[%d] Start to work for %fs..." % (_thread.get_ident(), seconds))
         time.sleep(seconds)
-        print "[%d] Work done (%fs)." % (thread.get_ident(), seconds)
-        return "%d slept %fs" % (thread.get_ident(), seconds)
+        print("[%d] Work done (%fs)." % (_thread.get_ident(), seconds))
+        return "%d slept %fs" % (_thread.get_ident(), seconds)
 
     ### Test copy/pasted from multiprocessing
     pool = Pool(9)                # start 4 worker threads
 
     result = pool.apply_async(f, (10,))   # evaluate "f(10)" asynchronously
-    print result.get(timeout=1)           # prints "100" unless slow computer
+    print(result.get(timeout=1))           # prints "100" unless slow computer
 
-    print pool.map(f, range(10))          # prints "[0, 1, 4,..., 81]"
+    print(pool.map(f, list(range(10))))          # prints "[0, 1, 4,..., 81]"
 
-    it = pool.imap(f, range(10))
-    print it.next()                       # prints "0"
-    print it.next()                       # prints "1"
-    print it.next(timeout=1)              # prints "4" unless slow computer
+    it = pool.imap(f, list(range(10)))
+    print(next(it))                       # prints "0"
+    print(next(it))                       # prints "1"
+    print(it.next(timeout=1))              # prints "4" unless slow computer
 
     # Test apply_sync exceptions
     result = pool.apply_async(time.sleep, (3,))
     try:
-        print result.get(timeout=1)           # raises `TimeoutError`
+        print(result.get(timeout=1))           # raises `TimeoutError`
     except TimeoutError:
-        print "Good. Got expected timeout exception."
+        print("Good. Got expected timeout exception.")
     else:
         assert False, "Expected exception !"
-    print result.get()
+    print(result.get())
 
     def cb(s):
-        print "Result ready: %s" % s
+        print("Result ready: %s" % s)
 
     # Test imap()
-    for res in pool.imap(work, xrange(10, 3, -1), chunksize=4):
-        print "Item:", res
+    for res in pool.imap(work, range(10, 3, -1), chunksize=4):
+        print("Item:", res)
 
     # Test imap_unordered()
-    for res in pool.imap_unordered(work, xrange(10, 3, -1)):
-        print "Item:", res
+    for res in pool.imap_unordered(work, range(10, 3, -1)):
+        print("Item:", res)
 
     # Test map_async()
-    result = pool.map_async(work, xrange(10), callback=cb)
+    result = pool.map_async(work, range(10), callback=cb)
     try:
-        print result.get(timeout=1)           # raises `TimeoutError`
+        print(result.get(timeout=1))           # raises `TimeoutError`
     except TimeoutError:
-        print "Good. Got expected timeout exception."
+        print("Good. Got expected timeout exception.")
     else:
         assert False, "Expected exception !"
-    print result.get()
+    print(result.get())
 
     # Test imap_async()
-    result = pool.imap_async(work, xrange(3, 10), callback=cb)
+    result = pool.imap_async(work, range(3, 10), callback=cb)
     try:
-        print result.get(timeout=1)           # raises `TimeoutError`
+        print(result.get(timeout=1))           # raises `TimeoutError`
     except TimeoutError:
-        print "Good. Got expected timeout exception."
+        print("Good. Got expected timeout exception.")
     else:
         assert False, "Expected exception !"
     for i in result.get():
-        print "Item:", i
-    print "### Loop again:"
+        print("Item:", i)
+    print("### Loop again:")
     for i in result.get():
-        print "Item2:", i
+        print("Item2:", i)
 
     # Test imap_unordered_async()
-    result = pool.imap_unordered_async(work, xrange(10, 3, -1), callback=cb)
+    result = pool.imap_unordered_async(work, range(10, 3, -1), callback=cb)
     try:
-        print result.get(timeout=1)           # raises `TimeoutError`
+        print(result.get(timeout=1))           # raises `TimeoutError`
     except TimeoutError:
-        print "Good. Got expected timeout exception."
+        print("Good. Got expected timeout exception.")
     else:
         assert False, "Expected exception !"
     for i in result.get():
-        print "Item1:", i
+        print("Item1:", i)
     for i in result.get():
-        print "Item2:", i
+        print("Item2:", i)
     r = result.get()
     for i in r:
-        print "Item3:", i
+        print("Item3:", i)
     for i in r:
-        print "Item4:", i
+        print("Item4:", i)
     for i in r:
-        print "Item5:", i
+        print("Item5:", i)
 
     #
     # The case for the exceptions
     #
 
     # Exceptions in imap_unordered_async()
-    result = pool.imap_unordered_async(work, xrange(2, -10, -1), callback=cb)
+    result = pool.imap_unordered_async(work, range(2, -10, -1), callback=cb)
     time.sleep(3)
     try:
         for i in result.get():
-            print "Got item:", i
+            print("Got item:", i)
     except IOError:
-        print "Good. Got expected exception:"
+        print("Good. Got expected exception:")
         traceback.print_exc()
 
     # Exceptions in imap_async()
-    result = pool.imap_async(work, xrange(2, -10, -1), callback=cb)
+    result = pool.imap_async(work, range(2, -10, -1), callback=cb)
     time.sleep(3)
     try:
         for i in result.get():
-            print "Got item:", i
+            print("Got item:", i)
     except IOError:
-        print "Good. Got expected exception:"
+        print("Good. Got expected exception:")
         traceback.print_exc()
 
     # Stop the test: need to stop the pool !!!
     pool.terminate()
-    print "End of tests"
+    print("End of tests")
 
 if __name__ == "__main__":
     _test()

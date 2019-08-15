@@ -8,7 +8,7 @@ of checks.
 """
 # stdlib
 from collections import defaultdict
-import cPickle as pickle
+import pickle as pickle
 import datetime
 import logging
 import os
@@ -102,7 +102,7 @@ def logger_info():
                 except AttributeError:
                     loggers.append("unnamed stream")
             if isinstance(handler, logging.handlers.SysLogHandler):
-                if isinstance(handler.address, basestring):
+                if isinstance(handler.address, str):
                     loggers.append('syslog:%s' % handler.address)
                 else:
                     loggers.append('syslog:(%s, %s)' % handler.address)
@@ -417,7 +417,7 @@ class CollectorStatus(AgentStatus):
                 line = "    - instance #%s [%s]" % (
                     s.instance_id, style(s.status, c))
                 if s.has_error():
-                    line += u": %s" % s.error
+                    line += ": %s" % s.error
                 if s.metric_count is not None:
                     line += " collected %s metrics" % s.metric_count
                 if s.instance_check_stats is not None:
@@ -430,9 +430,9 @@ class CollectorStatus(AgentStatus):
                         warn = warning.split('\n')
                         if not len(warn):
                             continue
-                        check_lines.append(u"        %s: %s" %
+                        check_lines.append("        %s: %s" %
                                            (style("Warning", 'yellow'), warn[0]))
-                        check_lines.extend(u"        %s" % l for l in
+                        check_lines.extend("        %s" % l for l in
                                            warn[1:])
                 if s.traceback is not None:
                     check_lines.extend('      ' + line for line in
@@ -453,7 +453,7 @@ class CollectorStatus(AgentStatus):
             if cs.library_versions is not None:
                 check_lines += [
                     "    - Dependencies:"]
-                for library, version in cs.library_versions.iteritems():
+                for library, version in cs.library_versions.items():
                     check_lines += ["        - %s: %s" % (library, version)]
 
             check_lines += [""]
@@ -522,7 +522,7 @@ class CollectorStatus(AgentStatus):
         if not self.host_metadata:
             lines.append("  No host information available yet.")
         else:
-            for key, host in self.host_metadata.iteritems():
+            for key, host in self.host_metadata.items():
                 for whitelist_item in metadata_whitelist:
                     if whitelist_item in key:
                         lines.append("  " + key + ": " + host)
@@ -562,7 +562,7 @@ class CollectorStatus(AgentStatus):
                         line = "    - instance #%s [%s]" % (
                             s.instance_id, style(s.status, c))
                         if s.has_error():
-                            line += u": %s" % s.error
+                            line += ": %s" % s.error
                         if s.metric_count is not None:
                             line += " collected %s metrics" % s.metric_count
                         if s.instance_check_stats is not None:
@@ -575,9 +575,9 @@ class CollectorStatus(AgentStatus):
                                 warn = warning.split('\n')
                                 if not len(warn):
                                     continue
-                                check_lines.append(u"        %s: %s" %
+                                check_lines.append("        %s: %s" %
                                                    (style("Warning", 'yellow'), warn[0]))
-                                check_lines.extend(u"        %s" % l for l in
+                                check_lines.extend("        %s" % l for l in
                                                    warn[1:])
                         if self.verbose and s.traceback is not None:
                             check_lines.extend('      ' + line for line in
@@ -598,7 +598,7 @@ class CollectorStatus(AgentStatus):
                     if cs.library_versions is not None:
                         check_lines += [
                             "    - Dependencies:"]
-                        for library, version in cs.library_versions.iteritems():
+                        for library, version in cs.library_versions.items():
                             check_lines += [
                                 "        - %s: %s" % (library, version)]
 
@@ -631,7 +631,7 @@ class CollectorStatus(AgentStatus):
                         if not meta:
                             continue
                         instance_lines += ["    - instance #%s:" % i]
-                        for k, v in meta.iteritems():
+                        for k, v in meta.items():
                             instance_lines += ["        - %s: %s" % (k, v)]
                     if instance_lines:
                         check_line += instance_lines
@@ -674,7 +674,7 @@ class CollectorStatus(AgentStatus):
             'instance-id'
         ]
         if self.host_metadata:
-            for key, host in self.host_metadata.iteritems():
+            for key, host in self.host_metadata.items():
                 for whitelist_item in metadata_whitelist:
                     if whitelist_item in key:
                         status_info['hostnames'][key] = host
@@ -895,7 +895,7 @@ def get_jmx_status():
     check_data = defaultdict(lambda: defaultdict(list))
     try:
         if os.path.exists(java_status_path):
-            java_jmx_stats = yaml.safe_load(file(java_status_path))
+            java_jmx_stats = yaml.safe_load(open(java_status_path))
 
             status_age = time.time() - java_jmx_stats.get('timestamp')/1000  # JMX timestamp is saved in milliseconds
             jmx_checks = java_jmx_stats.get('checks', {})
@@ -911,7 +911,7 @@ def get_jmx_status():
                     ])
                 )
             else:
-                for check_name, instances in jmx_checks.get('failed_checks', {}).iteritems():
+                for check_name, instances in jmx_checks.get('failed_checks', {}).items():
                     for info in instances:
                         message = info.get('message', None)
                         metric_count = info.get('metric_count', 0)
@@ -922,7 +922,7 @@ def get_jmx_status():
                         check_data[check_name]['metric_count'].append(metric_count)
                         check_data[check_name]['service_check_count'].append(service_check_count)
 
-                for check_name, instances in jmx_checks.get('initialized_checks', {}).iteritems():
+                for check_name, instances in jmx_checks.get('initialized_checks', {}).items():
                     for info in instances:
                         message = info.get('message', None)
                         metric_count = info.get('metric_count', 0)
@@ -933,16 +933,16 @@ def get_jmx_status():
                         check_data[check_name]['metric_count'].append(metric_count)
                         check_data[check_name]['service_check_count'].append(service_check_count)
 
-                for check_name, data in check_data.iteritems():
+                for check_name, data in check_data.items():
                     check_status = CheckStatus(check_name, data['statuses'],
                                                metric_count=sum(data['metric_count']),
                                                service_check_count=sum(data['service_check_count']))
                     check_statuses.append(check_status)
 
         if os.path.exists(python_status_path):
-            python_jmx_stats = yaml.safe_load(file(python_status_path))
+            python_jmx_stats = yaml.safe_load(open(python_status_path))
             jmx_checks = python_jmx_stats.get('invalid_checks', {})
-            for check_name, excep in jmx_checks.iteritems():
+            for check_name, excep in jmx_checks.items():
                 check_statuses.append(CheckStatus(check_name, [], init_failed_error=excep))
 
         return check_statuses

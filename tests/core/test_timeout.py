@@ -53,24 +53,24 @@ class TestTimeout(unittest.TestCase):
         """
         Wait for all threads to end to avoid contamination between each tests.
         """
-        for key, worker in _thread_by_func.iteritems():
+        for key, worker in _thread_by_func.items():
             while worker.is_alive():
                 time.sleep(0.2)
-        for key in _thread_by_func.keys():
+        for key in list(_thread_by_func.keys()):
             del _thread_by_func[key]
 
     def test_preserve(self):
         """
         Preserve function name and docstring.
         """
-        self.assertEquals(make_sum.__name__, "make_sum")
-        self.assertEquals(make_sum.__doc__, "Sleep, sum and return `a` with `b`")
+        self.assertEqual(make_sum.__name__, "make_sum")
+        self.assertEqual(make_sum.__doc__, "Sleep, sum and return `a` with `b`")
 
     def test_no_timeout(self):
         """
         Return the result when the method runtime does not exceed the limit set.
         """
-        self.assertEquals(make_sum(1, 2), 3)
+        self.assertEqual(make_sum(1, 2), 3)
 
     def test_exception_propagation(self):
         """
@@ -90,17 +90,17 @@ class TestTimeout(unittest.TestCase):
         """
         #  This should create a thread
         self.assertRaises(TimeoutException, make_sum, 1, 2, sleep=0.5)
-        self.assertEquals(count, 1)
+        self.assertEqual(count, 1)
 
         time.sleep(0.5)
 
         # This should refetch the existing thread
-        self.assertEquals(make_sum(1, 2, sleep=0.5), 3)
-        self.assertEquals(count, 1)
+        self.assertEqual(make_sum(1, 2, sleep=0.5), 3)
+        self.assertEqual(count, 1)
 
         # This should create a new thread
         self.assertRaises(TimeoutException, make_sum, 1, 2, sleep=0.5)
-        self.assertEquals(count, 2)
+        self.assertEqual(count, 2)
 
     def test_multiple_threads(self):
         """
@@ -112,7 +112,7 @@ class TestTimeout(unittest.TestCase):
         #  ... and a second one
         self.assertRaises(TimeoutException, make_sum, 2, 3, sleep=0.5)
 
-        self.assertEquals(count, 2)
+        self.assertEqual(count, 2)
 
     def test_multiple_instances(self):
         """
@@ -123,4 +123,4 @@ class TestTimeout(unittest.TestCase):
 
         # Different instance = new thread
         self.assertRaises(TimeoutException, MyClass().make_sum, 1, 2, sleep=0.5)
-        self.assertEquals(count, 2)
+        self.assertEqual(count, 2)

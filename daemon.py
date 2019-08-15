@@ -221,9 +221,9 @@ class Daemon(object):
             # Redirect standard file descriptors
             sys.stdout.flush()
             sys.stderr.flush()
-            si = file(self.stdin, 'r')
-            so = file(self.stdout, 'a+')
-            se = file(self.stderr, 'a+', 0)
+            si = open(self.stdin, 'r')
+            so = open(self.stdout, 'a+')
+            se = open(self.stderr, 'a+', 0)
             os.dup2(si.fileno(), sys.stdin.fileno())
             os.dup2(so.fileno(), sys.stdout.fileno())
             os.dup2(se.fileno(), sys.stderr.fileno())
@@ -363,7 +363,7 @@ class Daemon(object):
             fp = open(self.pidfile, 'w+')
             fp.write(str(pid))
             fp.close()
-            os.chmod(self.pidfile, 0644)
+            os.chmod(self.pidfile, 0o644)
         except Exception:
             msg = "Unable to write pidfile: %s" % self.pidfile
             log.exception(msg)

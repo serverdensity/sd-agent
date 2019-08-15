@@ -6,7 +6,7 @@ import os
 import shutil
 import tempfile
 try:
-    import _winreg
+    import winreg
 except ImportError:
     pass
 
@@ -21,11 +21,11 @@ config_attributes = ['api_key', 'tags', 'hostname', 'proxy_host', 'proxy_port', 
 
 def remove_registry_conf():
     try:
-        with _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE,
-                             WINDOWS_REG_PATH, 0, _winreg.KEY_WRITE) as reg_key:
+        with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,
+                            WINDOWS_REG_PATH, 0, winreg.KEY_WRITE) as reg_key:
             for attribute in config_attributes:
                 try:
-                    _winreg.DeleteValue(reg_key, attribute)
+                    winreg.DeleteValue(reg_key, attribute)
                 except Exception as e:
                     log.error("Failed to delete value %s %s", attribute, str(e))
                     # it's ok if it's not there.
@@ -37,10 +37,10 @@ def remove_registry_conf():
 def get_registry_conf(agentConfig):
     registry_conf = {}
     try:
-        with _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE,
-                             WINDOWS_REG_PATH) as reg_key:
+        with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,
+                            WINDOWS_REG_PATH) as reg_key:
             for attribute in config_attributes:
-                option = _winreg.QueryValueEx(reg_key, attribute)[0]
+                option = winreg.QueryValueEx(reg_key, attribute)[0]
                 if option != '':
                     registry_conf[attribute] = option
     except (ImportError, WindowsError) as e:
@@ -54,15 +54,15 @@ def get_registry_conf(agentConfig):
     return registry_conf
 
 def get_sdk_integration_path(hkey, reg_path):
-    with _winreg.OpenKey(hkey, reg_path) as reg_key:
-        directory = _winreg.QueryValueEx(reg_key, "InstallPath")[0]
+    with winreg.OpenKey(hkey, reg_path) as reg_key:
+        directory = winreg.QueryValueEx(reg_key, "InstallPath")[0]
 
     return directory
 
 def get_windows_sdk_check(name):
     sdk_reg_path = SDK_REG_PATH + name
     try:
-        directory = get_sdk_integration_path(_winreg.HKEY_LOCAL_MACHINE, sdk_reg_path)
+        directory = get_sdk_integration_path(winreg.HKEY_LOCAL_MACHINE, sdk_reg_path)
         return (os.path.join(directory, 'check.py'),
                 os.path.join(directory, 'manifest.json'))
     except WindowsError:
@@ -74,7 +74,7 @@ def subkeys(key):
     i = 0
     while True:
         try:
-            subkey = _winreg.EnumKey(key, i)
+            subkey = winreg.EnumKey(key, i)
             yield subkey
             i += 1
         except WindowsError:
@@ -83,7 +83,7 @@ def subkeys(key):
 def get_sdk_integration_paths():
     integrations = {}
     try:
-        with _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, SDK_REG_PATH) as reg_key:
+        with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, SDK_REG_PATH) as reg_key:
             for integration_subkey in subkeys(reg_key):
                 integration_name = integration_subkey.split('\\')[-1]
                 try:
@@ -112,7 +112,7 @@ def update_conf_file(registry_conf, config_path):
     log.debug('Temporary conf path: %s', temp_config_path)
     with open(config_path, 'r') as f:
         for line in f:
-            for k, v in registry_conf.iteritems():
+            for k, v in registry_conf.items():
                 if k + ":" in line:
                     line = '{}: {}\n'.format(k, v)
             temp_config.write(line)

@@ -2,7 +2,7 @@
 from unittest import TestCase
 from mock import MagicMock, patch
 import socket
-from urlparse import urlparse
+from urllib.parse import urlparse
 from time import sleep
 
 # 3p

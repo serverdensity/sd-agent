@@ -6,7 +6,6 @@
 from hashlib import md5
 import logging
 import re
-import string
 import zlib
 import unicodedata
 
@@ -26,7 +25,7 @@ requests_log.setLevel(logging.WARN)
 requests_log.propagate = True
 
 # From http://stackoverflow.com/questions/92438/stripping-non-printable-characters-from-a-string-in-python
-control_chars = ''.join(map(unichr, range(0, 32) + range(127, 160)))
+control_chars = ''.join(map(chr, list(range(0, 32)) + list(range(127, 160))))
 control_char_re = re.compile('[%s]' % re.escape(control_chars))
 
 
@@ -40,9 +39,9 @@ MAX_SPLIT_DEPTH = 2
 def remove_control_chars(s, log):
     if isinstance(s, str):
         sanitized = control_char_re.sub('', s)
-    elif isinstance(s, unicode):
+    elif isinstance(s, str):
         sanitized = ''.join(['' if unicodedata.category(c) in ['Cc','Cf'] else c
-                            for c in u'{}'.format(s)])
+                            for c in '{}'.format(s)])
     if sanitized != s:
         log.warning('Removed control chars from string: ' + s)
     return sanitized
@@ -54,13 +53,13 @@ def remove_undecodable_chars(s, log):
             s.decode('utf8')
         except UnicodeDecodeError:
             sanitized = s.decode('utf8', errors='ignore')
-            log.warning(u'Removed undecodable chars from string: ' + s.decode('utf8', errors='replace'))
+            log.warning('Removed undecodable chars from string: ' + s.decode('utf8', errors='replace'))
     return sanitized
 
 def sanitize_payload(item, log, sanitize_func):
     if isinstance(item, dict):
         newdict = {}
-        for k, v in item.iteritems():
+        for k, v in item.items():
             newval = sanitize_payload(v, log, sanitize_func)
             newkey = sanitize_func(k, log)
             newdict[newkey] = newval
@@ -75,7 +74,7 @@ def sanitize_payload(item, log, sanitize_func):
         for listitem in item:
             newlist.append(sanitize_payload(listitem, log, sanitize_func))
         return tuple(newlist)
-    if isinstance(item, basestring):
+    if isinstance(item, str):
         return sanitize_func(item, log)
 
     return item

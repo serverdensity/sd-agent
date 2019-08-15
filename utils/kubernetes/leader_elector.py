@@ -2,7 +2,7 @@
 import datetime
 import logging
 from copy import deepcopy
-from urlparse import urljoin
+from urllib.parse import urljoin
 
 
 log = logging.getLogger('collector')

@@ -14,6 +14,7 @@ import time
 
 # 3rd party
 import uptime
+from functools import reduce
 try:
     import psutil
 except ImportError:
@@ -93,7 +94,7 @@ class IO(Check):
         lastline = lines[-1]
         io = {}
         for idx, disk in enumerate(disks):
-            kb_t, tps, mb_s = map(float, lastline[(3 * idx):(3 * idx) + 3])  # 3 cols at a time
+            kb_t, tps, mb_s = list(map(float, lastline[(3 * idx):(3 * idx) + 3]))  # 3 cols at a time
             io[disk] = {
                 'system.io.bytes_per_s': mb_s * 2**20,
             }
@@ -227,7 +228,7 @@ class IO(Check):
             device_blacklist_re = agentConfig.get('device_blacklist_re', None)
             if device_blacklist_re:
                 filtered_io = {}
-                for device, stats in io.iteritems():
+                for device, stats in io.items():
                     if not device_blacklist_re.match(device):
                         filtered_io[device] = stats
             else:
@@ -581,7 +582,7 @@ class Memory(Check):
                 kv = [l.strip().split() for l in kmem if len(l) > 0]
                 entries = dict([(k.split(":")[-1], v) for (k, v) in kv])
                 # extract rss, physcap, swap, swapcap, turn into MB
-                convert = lambda v: int(long(v))/2**20
+                convert = lambda v: int(int(v))/2**20
                 memData["physTotal"] = convert(entries["physcap"])
                 memData["physUsed"] = convert(entries["rss"])
                 memData["physFree"] = memData["physTotal"] - memData["physUsed"]
@@ -621,7 +622,7 @@ class Processes(Check):
 
         for line in processLines:
             line = line.split(None, 10)
-            processes.append(map(lambda s: s.strip(), line))
+            processes.append([s.strip() for s in line])
 
         return {'processes':   processes,
                 'agentKey':    agentConfig['agent_key'],
@@ -636,7 +637,7 @@ class Cpu(Check):
         """
         def format_results(us, sy, wa, idle, st, guest=None):
             data = {'cpuUser': us, 'cpuSystem': sy, 'cpuWait': wa, 'cpuIdle': idle, 'cpuStolen': st, 'cpuGuest': guest}
-            return dict((k, v) for k, v in data.iteritems() if v is not None)
+            return dict((k, v) for k, v in data.items() if v is not None)
 
         def get_value(legend, data, name, filter_value=None):
             "Using the legend and a metric name, get the value or None from the data line"
@@ -692,7 +693,7 @@ class Cpu(Check):
                     for cpu_m in cpu_metrics:
                         cpu_metrics[cpu_m] = get_value(headers, data, cpu_m, filter_value=110)
 
-                    if any([v is None for v in cpu_metrics.values()]):
+                    if any([v is None for v in list(cpu_metrics.values())]):
                         self.logger.warning("Invalid mpstat data: %s" % data)
 
                     cpu_user = cpu_metrics["%usr"] + cpu_metrics["%user"] + cpu_metrics["%nice"]
@@ -785,7 +786,7 @@ class Cpu(Check):
                         size = [get_value(headers, l.split(), "sze") for l in d_lines]
                         count = sum(size)
                         rel_size = [s/count for s in size]
-                        dot = lambda v1, v2: reduce(operator.add, map(operator.mul, v1, v2))
+                        dot = lambda v1, v2: reduce(operator.add, list(map(operator.mul, v1, v2)))
                         return format_results(dot(user, rel_size),
                                               dot(kern, rel_size),
                                               dot(wait, rel_size),
@@ -821,19 +822,19 @@ def main():
 
     config = {"agent_key": "666", "device_blacklist_re": re.compile('.*disk0.*')}
     while True:
-        print("=" * 10)
+        print(("=" * 10))
         print("--- IO ---")
-        print(io.check(config))
+        print((io.check(config)))
         print("--- CPU ---")
-        print(cpu.check(config))
+        print((cpu.check(config)))
         print("--- Load ---")
-        print(load.check(config))
+        print((load.check(config)))
         print("--- Memory ---")
-        print(mem.check(config))
+        print((mem.check(config)))
         print("--- System ---")
-        print(system.check(config))
+        print((system.check(config)))
         print("--- File Handles ---")
-        print(fh.check(config))
+        print((fh.check(config)))
         print("\n\n\n")
         # print("--- Processes ---")
         # print(proc.check(config))

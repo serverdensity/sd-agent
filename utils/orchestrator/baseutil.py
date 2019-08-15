@@ -11,7 +11,7 @@ from utils.dockerutil import DockerUtil
 from utils.singleton import Singleton
 
 
-class BaseUtil:
+class BaseUtil(metaclass=Singleton):
     """
     Base class for orchestrator utils. Handles container tags and host metadata.
     Users should go through the orchestrator.Tagger class to simplify the code
@@ -25,7 +25,6 @@ class BaseUtil:
       - get_host_tags: list of tags that are applied to the host in Datadog (typically node labels)
       - get_host_metadata: dict of container-related host metadata
     """
-    __metaclass__ = Singleton
 
     def __init__(self):
         # Whether your get___tags methods need the Config section inspect data

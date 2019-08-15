@@ -5,7 +5,6 @@
 # stdlib
 import threading
 import time
-from types import ListType
 import unittest
 import os
 import mock
@@ -94,7 +93,7 @@ class JMXTestCase(unittest.TestCase):
 
         metrics = self.reporter.metrics
 
-        self.assertTrue(isinstance(metrics, ListType))
+        self.assertTrue(isinstance(metrics, list))
         self.assertTrue(len(metrics) > 0)
         log.info([t for t in metrics if "cassandra." in t['metric'] and "instance:cassandra_instance" in t['tags']])
         log.info(metrics)

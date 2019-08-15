@@ -25,7 +25,7 @@ class TestWin32(unittest.TestCase):
             start = len(gc.garbage)
             func()
             end = len(gc.garbage)
-            self.assertEquals(end - start, 0, gc.garbage)
+            self.assertEqual(end - start, 0, gc.garbage)
         finally:
             gc.set_debug(0)
 
@@ -43,7 +43,7 @@ class TestWin32(unittest.TestCase):
         func(*args, **kwargs)
         end = proc.num_handles()
 
-        self.assertEquals(end - middle, 0)
+        self.assertEqual(end - middle, 0)
 
     def testIO(self):
         io = w32.IO(log)

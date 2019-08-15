@@ -25,7 +25,7 @@ class TestNoProfiling(AgentCheckTest):
         self.assertFalse(check.allow_profiling)
         self.assertTrue(check.in_developer_mode)
 
-        for func_name, mock1 in mocks.iteritems():
+        for func_name, mock1 in mocks.items():
             if not hasattr(check, func_name):
                 continue
             else:

@@ -3,7 +3,7 @@
 # Licensed under Simplified BSD License (see LICENSE)
 
 # stdlib
-import cPickle as pickle
+import pickle as pickle
 import logging
 import struct
 

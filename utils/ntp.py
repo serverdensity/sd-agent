@@ -12,9 +12,7 @@ from util import check_yaml
 from utils.singleton import Singleton
 
 
-class NTPUtil():
-    __metaclass__ = Singleton
-
+class NTPUtil(metaclass=Singleton):
     DEFAULT_VERSION = 3
     DEFAULT_TIMEOUT = 1  # in seconds
     DEFAULT_PORT = "ntp"

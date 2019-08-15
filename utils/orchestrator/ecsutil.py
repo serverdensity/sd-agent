@@ -48,7 +48,7 @@ class ECSUtil(BaseUtil):
         ip = ecs_config.get('NetworkSettings', {}).get('Networks', {}).get('bridge', {}).get('IPAddress')
         if ip:
             ports = ecs_config.get('NetworkSettings', {}).get('Ports')
-            port = ports.keys()[0].split('/')[0] if ports else str(ECS_AGENT_DEFAULT_PORT)
+            port = list(ports.keys())[0].split('/')[0] if ports else str(ECS_AGENT_DEFAULT_PORT)
             urls.append("http://%s:%s/" % (ip, port))
 
         # Try the default gateway (ecs-agent in net=host mode)

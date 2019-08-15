@@ -1,4 +1,4 @@
-import ConfigParser
+import configparser
 import os
 import platform
 import sys
@@ -27,7 +27,7 @@ class Plugins(Check):
 
         try:
 
-            config = ConfigParser.ConfigParser()
+            config = configparser.ConfigParser()
 
             config_path = os.path.dirname(get_config_path())
             if os.path.exists(os.path.join(config_path, 'plugins.d')):
@@ -53,7 +53,7 @@ class Plugins(Check):
                 for option in config.options(section):
                     raw_config[section][option] = config.get(section, option)
 
-        except ConfigParser.ParsingError:
+        except configparser.ParsingError:
             self.logger.error(
                 "v1 Plugins config file not found or incorrectly formatted.")
 

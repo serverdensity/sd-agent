@@ -19,23 +19,23 @@ class TestAgentPayload(unittest.TestCase):
         agent_payload = AgentPayload()
 
         # Is initially empty
-        self.assertEquals(len(agent_payload), 0)
+        self.assertEqual(len(agent_payload), 0)
 
         # Set a new value
         agent_payload['something'] = "value"
-        self.assertEquals(len(agent_payload), 1)
+        self.assertEqual(len(agent_payload), 1)
 
         # Can access it
-        self.assertEquals(agent_payload['something'], "value")
+        self.assertEqual(agent_payload['something'], "value")
 
         # Can update it
         agent_payload['something'] = "other value"
-        self.assertEquals(len(agent_payload), 1)
-        self.assertEquals(agent_payload['something'], "other value")
+        self.assertEqual(len(agent_payload), 1)
+        self.assertEqual(agent_payload['something'], "other value")
 
         # Delete it
         del agent_payload['something']
-        self.assertEquals(len(agent_payload), 0)
+        self.assertEqual(len(agent_payload), 0)
 
     def test_payload_property(self):
         """
@@ -54,7 +54,7 @@ class TestAgentPayload(unittest.TestCase):
             agent_payload[k] = "value"
             payload[k] = "value"
 
-        self.assertEquals(agent_payload.payload, payload, agent_payload)
+        self.assertEqual(agent_payload.payload, payload, agent_payload)
 
     def test_split_metrics_and_meta(self):
         """
@@ -69,27 +69,27 @@ class TestAgentPayload(unittest.TestCase):
         for key in AgentPayload.METADATA_KEYS:
             agent_payload[key] = "value"
         len_payload1 = len(agent_payload)
-        self.assertEquals(len_payload1, len(AgentPayload.METADATA_KEYS))
-        self.assertEquals(len_payload1, len(agent_payload.meta_payload))
-        self.assertEquals(len(agent_payload.data_payload), 0)
+        self.assertEqual(len_payload1, len(AgentPayload.METADATA_KEYS))
+        self.assertEqual(len_payload1, len(agent_payload.meta_payload))
+        self.assertEqual(len(agent_payload.data_payload), 0)
 
         # Adding data values
         for key in DATA_KEYS:
             agent_payload[key] = "value"
         len_payload2 = len(agent_payload)
-        self.assertEquals(len_payload2, len_payload1 + len(DATA_KEYS))
-        self.assertEquals(len_payload2 - len_payload1, len(agent_payload.data_payload))
-        self.assertEquals(len(agent_payload.meta_payload), len_payload1)
+        self.assertEqual(len_payload2, len_payload1 + len(DATA_KEYS))
+        self.assertEqual(len_payload2 - len_payload1, len(agent_payload.data_payload))
+        self.assertEqual(len(agent_payload.meta_payload), len_payload1)
 
         # Adding common values
         for key in AgentPayload.DUPLICATE_KEYS:
             agent_payload[key] = "value"
         len_payload3 = len(agent_payload)
-        self.assertEquals(len_payload3, len_payload2 + 2 * len(AgentPayload.DUPLICATE_KEYS))
-        self.assertEquals(len_payload1 + len(AgentPayload.DUPLICATE_KEYS),
-                          len(agent_payload.meta_payload))
-        self.assertEquals(len_payload2 - len_payload1 + len(AgentPayload.DUPLICATE_KEYS),
-                          len(agent_payload.data_payload))
+        self.assertEqual(len_payload3, len_payload2 + 2 * len(AgentPayload.DUPLICATE_KEYS))
+        self.assertEqual(len_payload1 + len(AgentPayload.DUPLICATE_KEYS),
+                         len(agent_payload.meta_payload))
+        self.assertEqual(len_payload2 - len_payload1 + len(AgentPayload.DUPLICATE_KEYS),
+                         len(agent_payload.data_payload))
 
     def test_emit_payload(self):
         """

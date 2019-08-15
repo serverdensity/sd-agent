@@ -33,14 +33,14 @@ class TestKubeEventRetriever(KubeTestCase):
             retr = KubeEventRetriever(self.kube)
 
             events = retr.get_event_array()
-            self.assertEquals(3, len(events))
-            self.assertEquals(1491471904, retr.lastTimestamp)
+            self.assertEqual(3, len(events))
+            self.assertEqual(1491471904, retr.lastTimestamp)
             events = retr.get_event_array()
-            self.assertEquals(2, len(events))   # 5 events total
-            self.assertEquals(1491471953, retr.lastTimestamp)
+            self.assertEqual(2, len(events))   # 5 events total
+            self.assertEqual(1491471953, retr.lastTimestamp)
             events = retr.get_event_array()
-            self.assertEquals(0, len(events))   # No new event
-            self.assertEquals(1491471953, retr.lastTimestamp)
+            self.assertEqual(0, len(events))   # No new event
+            self.assertEqual(1491471953, retr.lastTimestamp)
 
     @patch('time.time')
     def test_events_delay(self, mock_time):
@@ -51,20 +51,20 @@ class TestKubeEventRetriever(KubeTestCase):
 
             mock_time.return_value = 10000
             events = retr.get_event_array()
-            self.assertEquals(3, len(events))
-            self.assertEquals(1491471904, retr.lastTimestamp)
+            self.assertEqual(3, len(events))
+            self.assertEqual(1491471904, retr.lastTimestamp)
 
             # Must skip request
             mock_time.return_value = 10400
             events = retr.get_event_array()
-            self.assertEquals(0, len(events))
-            self.assertEquals(1491471904, retr.lastTimestamp)
+            self.assertEqual(0, len(events))
+            self.assertEqual(1491471904, retr.lastTimestamp)
 
             # Must retrieve events
             mock_time.return_value = 10600
             events = retr.get_event_array()
-            self.assertEquals(2, len(events))
-            self.assertEquals(1491471953, retr.lastTimestamp)
+            self.assertEqual(2, len(events))
+            self.assertEqual(1491471953, retr.lastTimestamp)
 
     def test_namespace_serverside_filtering(self):
         with patch.object(self.kube, 'retrieve_json_auth', return_value=MockResponse({}, 200)) as mock_method:
@@ -77,7 +77,7 @@ class TestKubeEventRetriever(KubeTestCase):
         with patch.object(self.kube, 'retrieve_json_auth', return_value=MockResponse(val, 200)) as mock_method:
             retr = KubeEventRetriever(self.kube, namespaces=['testns', 'ns2'])
             events = retr.get_event_array()
-            self.assertEquals(2, len(events))
+            self.assertEqual(2, len(events))
         mock_method.assert_called_once_with('https://kubernetes:443/api/v1/events', params={})
 
     def test_kind_serverside_filtering(self):
@@ -92,5 +92,5 @@ class TestKubeEventRetriever(KubeTestCase):
         with patch.object(self.kube, 'retrieve_json_auth', return_value=MockResponse(val, 200)) as mock_method:
             retr = KubeEventRetriever(self.kube, kinds=['k1', 'k2'])
             events = retr.get_event_array()
-            self.assertEquals(3, len(events))
+            self.assertEqual(3, len(events))
         mock_method.assert_called_once_with('https://kubernetes:443/api/v1/events', params={})
