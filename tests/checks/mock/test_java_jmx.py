@@ -51,7 +51,7 @@ class JMXInitTest(AgentCheckTest):
         tmp_dir = tempfile.mkdtemp()
         filename = "jmx.yaml"
         with open(os.path.join(tmp_dir, filename), 'wb') as temp_file:
-            temp_file.write(yaml.dump(yaml_jmx_conf))
+            temp_file.write(yaml.dump(yaml_jmx_conf).encode())
 
         jmx = JMXFetch(tmp_dir, {})
         jmx.run(reporter="console")
