@@ -17,7 +17,6 @@ import re
 import time
 import timeit
 import traceback
-from types import ListType, TupleType
 import unicodedata
 
 # 3p
@@ -211,7 +210,7 @@ class Check(object):
         "Get (timestamp-epoch-style, value)"
 
         # Get the proper tags
-        if tags is not None and isinstance(tags, ListType):
+        if tags is not None and isinstance(tags, List):
             tags.sort()
             tags = tuple(tags)
         key = (tags, device_name)
@@ -239,7 +238,7 @@ class Check(object):
     def get_sample(self, metric, tags=None, device_name=None, expire=True):
         "Return the last value for that metric"
         x = self.get_sample_with_timestamp(metric, tags, device_name, expire)
-        assert isinstance(x, TupleType) and len(x) == 4, x
+        assert isinstance(x, Tuple) and len(x) == 4, x
         return x[1]
 
     def get_samples_with_timestamps(self, expire=True):
