@@ -34,7 +34,7 @@ pyyaml>=4.2b1
 requests==2.20.0
 # note: simplejson is used in many checks to inteface APIs
 simplejson==3.6.5
-supervisor==3.3.3
+supervisor==4.0.4
 tornado==3.2.2
 uptime==3.0.1
 prometheus-client==0.1.0
