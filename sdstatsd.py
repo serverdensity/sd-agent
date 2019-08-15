@@ -346,7 +346,7 @@ class Reporter(threading.Thread):
 
     def submit_http(self, url, data, headers):
         headers["SD-Sdstatsd-Version"] = get_version()
-        headers["Content-MD5"] = str(md5(data).hexdigest())
+        headers["Content-MD5"] = str(md5(data.encode()).hexdigest())
         log.debug("Posting payload to %s" % url)
         try:
             start_time = time()
