@@ -38,7 +38,7 @@ def subprocess_output(command, raise_on_empty_output, env):
         stderr_f.seek(0)
         err = stderr_f.read()
         stdout_f.seek(0)
-        output = stdout_f.read()
+        output = stdout_f.read().decode('utf-8')
 
     if not output and raise_on_empty_output:
         raise SubprocessOutputEmptyError("get_subprocess_output expected output but had none.")
