@@ -345,7 +345,7 @@ class Daemon(object):
     def pid(self):
         # Get the pid from the pidfile
         try:
-            pf = file(self.pidfile, 'r')
+            pf = open(self.pidfile, 'r')
             pid = int(pf.read().strip())
             pf.close()
             return pid
