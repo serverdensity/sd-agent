@@ -20,6 +20,8 @@ MAX_HOSTNAME_LEN = 255
 log = logging.getLogger(__name__)
 
 def is_valid_hostname(hostname):
+    if isinstance(hostname, bytes):
+        hostname = hostname.decode('utf-8')
     if hostname.lower() in set([
         'localhost',
         'localhost.localdomain',
