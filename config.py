@@ -161,7 +161,7 @@ def get_url_endpoint(default_url, endpoint_type='app', cfg_path=None):
 
 def skip_leading_wsp(f):
     "Works on a file, returns a file-like object"
-    return StringIO("\n".join(map(string.strip, f.readlines())))
+    return StringIO("\n".join(map(str.strip, f.readlines())))
 
 
 def _windows_commondata_path():
