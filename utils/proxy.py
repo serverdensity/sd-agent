@@ -4,7 +4,7 @@
 
 import logging
 import os
-from urllib import getproxies
+from urllib.request import getproxies
 from urllib.parse import urlparse
 
 log = logging.getLogger(__name__)
