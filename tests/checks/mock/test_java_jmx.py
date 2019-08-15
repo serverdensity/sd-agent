@@ -3,7 +3,6 @@ import os
 import tempfile
 import threading
 import time
-from types import ListType
 import unittest
 
 # 3p
@@ -125,7 +124,7 @@ class JMXTestCase(unittest.TestCase):
 
         metrics = self.reporter.metrics
 
-        self.assertTrue(isinstance(metrics, ListType))
+        self.assertTrue(isinstance(metrics, list))
         self.assertTrue(len(metrics) > 0)
         self.assertEqual(len([t for t in metrics if t['metric'] == "my.metric.buf" and "instance:jmx_instance1" in t['tags']]), 2, metrics)
         self.assertTrue(len([t for t in metrics if 'type:ThreadPool' in t['tags'] and "instance:jmx_instance1" in t['tags'] and "jmx.catalina" in t['metric']]) > 8, metrics)
