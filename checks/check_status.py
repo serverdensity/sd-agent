@@ -161,7 +161,7 @@ class AgentStatus(object):
         try:
             path = self._get_pickle_path()
             log.debug("Persisting status to %s" % path)
-            f = open(path, 'w')
+            f = open(path, 'wb')
             try:
                 pickle.dump(self, f)
             finally:
