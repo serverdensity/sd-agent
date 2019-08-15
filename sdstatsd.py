@@ -358,7 +358,7 @@ class Reporter(threading.Thread):
 
             status = r.status_code
             duration = round((time() - start_time) * 1000.0, 4)
-            log.debug("%s POST %s (%sms)" % (status, string.split(url, "api_key=")[0], duration))
+            log.debug("%s POST %s (%sms)" % (status, str.split(url, "api_key=")[0], duration))
         except Exception as e:
             log.error("Unable to post payload: %s" % e.message)
             try:
