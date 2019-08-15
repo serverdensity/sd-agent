@@ -601,8 +601,8 @@ class Aggregator(object):
         # So we let the user decide if we wants utf8 by default
         # Keep a very conservative approach anyhow
         # Clients MUST always send UTF-8 encoded content
-        if self.utf8_decoding:
-            packets = str(packets, 'utf-8', errors='replace')
+        if isinstance(packets, bytes):
+            packets = packets.decode('utf-8')
 
         for packet in packets.splitlines():
             if not packet.strip():
