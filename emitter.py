@@ -85,7 +85,7 @@ def post_payload(url, message, serialize_func, agentConfig, log):
     if not agentKey:
         raise Exception("The http emitter requires an agent key")
     url = "{0}/intake/{1}?agent_key={2}".format(url, "", agentKey)
-    log.debug('http_emitter: attempting postback to ' + string.split(url, "agent_key=")[0])
+    log.debug('http_emitter: attempting postback to ' + str.split(url, "agent_key=")[0])
     try:
         payloads = serialize_func(message, MAX_COMPRESSED_SIZE, 0, log)
     except UnicodeDecodeError:
