@@ -172,7 +172,7 @@ def serialize_and_compress_metrics_payload(metrics_payload, max_compressed_size,
             return compressed_payloads
 
         # Try to account for the compression when estimating the number of chunks needed to get small-enough chunks
-        n_chunks = len(zipped)/max_compressed_size + 1 + int(compression_ratio/2)
+        n_chunks = len(zipped)//max_compressed_size + 1 + int(compression_ratio/2)
         log.debug("payload is too big (%d bytes), splitting it in %d chunks", len(zipped), n_chunks)
 
         series_per_chunk = len(series)/n_chunks + 1
@@ -182,7 +182,7 @@ def serialize_and_compress_metrics_payload(metrics_payload, max_compressed_size,
             compressed_payloads.extend(
                 serialize_and_compress_metrics_payload(
                     {
-                        "series": series[i*series_per_chunk:(i+1)*series_per_chunk]
+                        "series": series[int(i*series_per_chunk):int((i+1)*series_per_chunk)]
                     },
                     max_compressed_size,
                     depth+1,
