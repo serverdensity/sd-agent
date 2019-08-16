@@ -954,7 +954,7 @@ class MetricsAggregator(Aggregator):
         # while iterating so don't use an iterator.
         metrics = []
         for context, metric in list(self.metrics.items()):
-            if metric.last_sample_time < expiry_timestamp:
+            if metric.last_sample_time and metric.last_sample_time < expiry_timestamp:
                 log.debug("%s hasn't been submitted in %ss. Expiring." % (context, self.expiry_seconds))
                 del self.metrics[context]
             else:
