@@ -81,7 +81,7 @@ class TestCore(unittest.TestCase):
         # This is a different combination of tags
         self.c.save_sample("test-metric", 3.0, now, tags = ["tag5", "tag3"])
         results = self.c.get_metrics()
-        results.sort()
+        results.sort(key=lambda x: x[0], reverse=False)
         self.assertEqual(results,
                        [("test-counter", 2.0, 1.0, {"tags": ["tag1", "tag2"]}),
                         ("test-metric", now, 3.0, {"tags": ["tag3", "tag4"]}),
