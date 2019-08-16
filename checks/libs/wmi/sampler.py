@@ -378,7 +378,7 @@ class WMISampler(object):
                 if isinstance(value, tuple):
                     oper = value[0]
                     value = value[1]
-                elif isinstance(value, basestring) and '%' in value:
+                elif isinstance(value, str) and '%' in value:
                     oper = 'LIKE'
                 else:
                     oper = '='
