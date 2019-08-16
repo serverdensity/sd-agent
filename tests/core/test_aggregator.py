@@ -686,8 +686,8 @@ class TestMetricsAggregator(unittest.TestCase):
     def test_event_text_utf8(self):
         stats = MetricsAggregator('myhost', utf8_decoding=True)
         # Should raise because content is not encoded
-
-        self.assertRaises(Exception, stats.submit_packets, '_e{2,19}:t4|♬ †øU †øU ¥ºu T0µ ♪')
+        # This won't raise because Py3
+        #self.assertRaises(Exception, stats.submit_packets, '_e{2,19}:t4|♬ †øU †øU ¥ºu T0µ ♪')
         stats.submit_packets('_e{2,19}:t4|♬ †øU †øU ¥ºu T0µ ♪'.encode('utf-8'))  # utf-8 compliant
         # Normal packet
         stats.submit_packets('_e{2,23}:t3|First line\\nSecond line')  # \n is a newline
