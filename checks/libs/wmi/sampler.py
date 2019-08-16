@@ -20,7 +20,6 @@ Credits to @TheCloudlessSky (https://github.com/TheCloudlessSky)
 
 # stdlib
 from copy import deepcopy
-from itertools import izip
 import pywintypes
 
 # 3p
@@ -246,7 +245,7 @@ class WMISampler(object):
         if self.is_raw_perf_class:
             # Format required
             for previous_wmi_object, current_wmi_object in \
-                    izip(self._previous_sample, self._current_sample):
+                    zip(self._previous_sample, self._current_sample):
                 formatted_wmi_object = self._format_property_values(
                     previous_wmi_object,
                     current_wmi_object
