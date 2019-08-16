@@ -898,7 +898,7 @@ class AgentCheck(object):
         :param fix_case A boolean, indicating whether to make sure that
                         the metric name returned is in underscore_case
         """
-        if isinstance(metric, str):
+        if isinstance(metric, bytes):
             metric_name = unicodedata.normalize('NFKD', metric).encode('ascii','ignore')
         else:
             metric_name = metric
