@@ -465,7 +465,7 @@ class TestUnitWMISampler(TestCommonWMI):
 
         # Check `_format_filter` logic
         no_filters = []
-        filters = [{'Name': "SomeName", 'Id': "SomeId"}]
+        filters = [{ 'Id': "SomeId", 'Name': "SomeName"}]
 
         self.assertEqual("", format_filter(no_filters))
         self.assertEqual(" WHERE ( Name = 'SomeName' AND Id = 'SomeId' )",
@@ -516,7 +516,7 @@ class TestUnitWMISampler(TestCommonWMI):
         format_filter = sampler.WMISampler._format_filter
 
         # Check `_format_filter` logic
-        filters = [{'Name': "Foo%"}, {'Name': "Bar%", 'Id': ('>=', "SomeId")}, {'Name': "Zulu"}]
+        filters = [{'Name': "Foo%"}, {'Id': ('>=', "SomeId"), 'Name': "Bar%" }, {'Name': "Zulu"}]
         self.assertEqual(" WHERE ( Name = 'Zulu' ) OR ( Name LIKE 'Bar%' AND Id >= 'SomeId' ) OR ( Name LIKE 'Foo%' )",
                           format_filter(filters))
 
@@ -572,10 +572,13 @@ class TestUnitWMISampler(TestCommonWMI):
 
         filters.append(query)
 
-        self.assertEqual(" WHERE ( NOT Message LIKE 'foo' AND ( EventCode = '302' OR EventCode = '404' OR EventCode = '501' ) "
-                          "AND ( SourceName = 'MSSQLSERVER' OR SourceName = 'IIS' ) AND TimeGenerated >= '2016-01-01 15:08:24.078915**********.******+' "
-                          "AND User = 'luser' AND Message LIKE '%bar%' AND Message LIKE '%zen%' AND ( LogFile = 'System' OR LogFile = 'Security' ) "
-                          "AND ( Type = 'Error' OR Type = 'Warning' ) )",
+        self.assertEqual(" WHERE ( Message LIKE '%bar%' AND Message LIKE '%zen%' "
+                         "AND NOT Message LIKE 'foo' AND ( EventCode = '302' "
+                         "OR EventCode = '404' OR EventCode = '501' ) "
+                         "AND ( LogFile = 'System' OR LogFile = 'Security' ) "
+                         "AND ( SourceName = 'MSSQLSERVER' OR SourceName = 'IIS' ) "
+                         "AND User = 'luser' AND ( Type = 'Error' OR Type = 'Warning' ) "
+                         "AND TimeGenerated >= '2016-01-01 15:08:24.078915**********.******+' )",
                           format_filter(filters, and_props))
 
     def test_wql_filtering_inclusive(self):
