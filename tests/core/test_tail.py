@@ -14,13 +14,13 @@ class TestTail(unittest.TestCase):
     def setUp(self):
         self.log_file = tempfile.NamedTemporaryFile()
         self.logrotate_config = tempfile.NamedTemporaryFile()
-        self.logrotate_config.write("""%s {
+        self.logrotate_config.write(b""" {
             copytruncate
             notifempty
             missingok
             rotate 1
             weekly
-        }""" % self.log_file.name)
+        }""" )
         self.logrotate_config.flush()
         self.logrotate_state_file = tempfile.NamedTemporaryFile()
         self.last_line = None
@@ -46,7 +46,7 @@ class TestTail(unittest.TestCase):
 
         # Write some data to the log file
         init_string = "hey there, I am a log\n"
-        self.log_file.write(init_string)
+        self.log_file.write(init_string.encode())
         self.log_file.flush()
 
         # Consume from the tail

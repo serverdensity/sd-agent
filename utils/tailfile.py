@@ -38,7 +38,7 @@ class TailFile(object):
         if size >= self.CRC_SIZE:
             tmp_file = open(self._path, 'r')
             data = tmp_file.read(self.CRC_SIZE)
-            crc = binascii.crc32(data)
+            crc = binascii.crc32(data.encode())
 
         if already_open:
             # Check if file has been removed
