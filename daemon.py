@@ -131,7 +131,7 @@ class ProcessRunner(object):
 
     def execute(self, process_args, redirect_std_streams=None, env=None):
         try:
-            with nested(tempfile.TemporaryFile(), tempfile.TemporaryFile()) as (stdout_f, stderr_f):
+            with tempfile.TemporaryFile() as stdout_f, tempfile.TemporaryFile() as stderr_f:
                 process = subprocess.Popen(
                     process_args,
                     close_fds=not redirect_std_streams,  # only set to True when the streams are not redirected, for WIN compatibility
