@@ -238,7 +238,7 @@ class Check(object):
     def get_sample(self, metric, tags=None, device_name=None, expire=True):
         "Return the last value for that metric"
         x = self.get_sample_with_timestamp(metric, tags, device_name, expire)
-        assert isinstance(x, Tuple) and len(x) == 4, x
+        assert isinstance(x, tuple) and len(x) == 4, x
         return x[1]
 
     def get_samples_with_timestamps(self, expire=True):
