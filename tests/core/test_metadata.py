@@ -75,18 +75,18 @@ class TestMetadata(unittest.TestCase):
         # Korean systems
         with mock.patch('locale.getpreferredencoding', return_value='cp949'):
             self.assertEqual(
-                Collector._decode_tzname(('\xb4\xeb\xc7\xd1\xb9\xce\xb1\xb9 \xc7\xa5\xc1\xd8\xbd\xc3', '\xb4\xeb\xc7\xd1\xb9\xce\xb1\xb9 \xc0\xcf\xb1\xa4 \xc0\xfd\xbe\xe0 \xbd\xc3\xb0\xa3')),
+                Collector._decode_tzname((b'\xb4\xeb\xc7\xd1\xb9\xce\xb1\xb9 \xc7\xa5\xc1\xd8\xbd\xc3', b'\xb4\xeb\xc7\xd1\xb9\xce\xb1\xb9 \xc0\xcf\xb1\xa4 \xc0\xfd\xbe\xe0 \xbd\xc3\xb0\xa3')),
                 ('대한민국 표준시', '대한민국 일광 절약 시간')
             )
         # Japanese systems
         with mock.patch('locale.getpreferredencoding', return_value='cp932'):
             self.assertEqual(
-                Collector._decode_tzname(('\x93\x8c\x8b\x9e (\x95W\x8f\x80\x8e\x9e)', '\x93\x8c\x8b\x9e (\x89\xc4\x8e\x9e\x8a\xd4)')),
+                Collector._decode_tzname((b'\x93\x8c\x8b\x9e (\x95W\x8f\x80\x8e\x9e)', b'\x93\x8c\x8b\x9e (\x89\xc4\x8e\x9e\x8a\xd4)')),
                 ('東京 (標準時)', '東京 (夏時間)')
             )
         # if the preferred encoding were to be invalid, return empty timezone
         with mock.patch('locale.getpreferredencoding', return_value='invalidencoding'):
             self.assertEqual(
-                Collector._decode_tzname(('\x93\x8c\x8b\x9e (\x95W\x8f\x80\x8e\x9e)', '\x93\x8c\x8b\x9e (\x89\xc4\x8e\x9e\x8a\xd4)')),
+                Collector._decode_tzname((b'\x93\x8c\x8b\x9e (\x95W\x8f\x80\x8e\x9e)', b'\x93\x8c\x8b\x9e (\x89\xc4\x8e\x9e\x8a\xd4)')),
                 ('', '')
             )
