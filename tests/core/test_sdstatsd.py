@@ -145,14 +145,14 @@ class TestServer(TestCase):
 
         # send packets with a v4 client
         client_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        client_sock.sendto('msg4', ('127.0.0.1', 12345))
+        client_sock.sendto('msg4'.encode(), ('127.0.0.1', 12345))
         msg = results.get(True, 1)
-        self.assertEqual(msg[0], 'msg4')
+        self.assertEqual(msg[0], 'msg4'.encode())
 
         if _ipv6_available('::1', 12345):
             # send packets with a v6 client
             client_sock = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
-            client_sock.sendto('msg6', ('::1', 12345))
+            client_sock.sendto('msg6'.encode(), ('::1', 12345))
             self.assertRaises(queue.Empty, results.get, True, 1)
 
     @unittest.skipIf(not _ipv6_available('::1', 12345),
