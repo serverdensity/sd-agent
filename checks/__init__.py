@@ -210,7 +210,7 @@ class Check(object):
         "Get (timestamp-epoch-style, value)"
 
         # Get the proper tags
-        if tags is not None and isinstance(tags, List):
+        if tags is not None and isinstance(tags, list):
             tags.sort()
             tags = tuple(tags)
         key = (tags, device_name)
