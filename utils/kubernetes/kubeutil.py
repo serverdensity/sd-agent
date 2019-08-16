@@ -95,7 +95,7 @@ class KubeUtil(metaclass=Singleton):
                 instance = check_config['instances'][0] or {}
             # kubernetes.yaml was not found
             except IOError as ex:
-                log.error(ex.message)
+                log.error(str(ex))
                 init_config, instance = {}, {}
             except Exception:
                 log.error('Kubernetes configuration file is invalid. '
