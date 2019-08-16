@@ -18,7 +18,7 @@ class TestMetricsAggregator(unittest.TestCase):
     @staticmethod
     def sort_metrics(metrics):
         def sort_by(m):
-            return (m[0], m[3]['hostname'], m[3]['device_name'], ','.join(m[3]['tags'] or []))
+            return (m[0], m[3]['hostname'], ','.join(m[3]['tags'] or []))
         return sorted(metrics, key=sort_by)
 
     @staticmethod
