@@ -94,7 +94,7 @@ class TestEmitter(unittest.TestCase):
 
     def test_remove_undecodable_characters(self):
         messages = [
-            ('\xc3\xa9 \xe9 \xc3\xa7', 'é  ç', True),
+            (b'\xc3\xa9 \xe9 \xc3\xa7', 'é  ç', True),
             ('_e{2,19}:t4|♬ †øU †øU ¥ºu T0µ ♪', '_e{2,19}:t4|♬ †øU †øU ¥ºu T0µ ♪', False), # left unchanged
         ]
 

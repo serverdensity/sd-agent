@@ -48,7 +48,7 @@ def remove_control_chars(s, log):
 
 def remove_undecodable_chars(s, log):
     sanitized = s
-    if isinstance(s, str):
+    if isinstance(s, bytes):
         try:
             s.decode('utf8')
         except UnicodeDecodeError:
