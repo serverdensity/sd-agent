@@ -168,7 +168,7 @@ class IO(Check):
 
                 # discard the first half of the display (stats since boot)
                 lines = [l for l in iostat if len(l) > 0]
-                lines = lines[len(lines)/2:]
+                lines = lines[len(lines)//2:]
 
                 assert "extended device statistics" in lines[0]
                 headers = lines[1].split()
@@ -199,7 +199,7 @@ class IO(Check):
 
                 # discard the first half of the display (stats since boot)
                 lines = [l for l in iostat if len(l) > 0]
-                lines = lines[len(lines)/2:]
+                lines = lines[len(lines)//2:]
 
                 assert "extended device statistics" in lines[0]
                 headers = lines[1].split()
