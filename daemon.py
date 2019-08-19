@@ -11,7 +11,6 @@
 """
 
 # Core modules
-from contextlib import nested
 import atexit
 import errno
 import logging
