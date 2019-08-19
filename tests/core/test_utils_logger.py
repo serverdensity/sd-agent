@@ -53,12 +53,11 @@ class TestUtilsLogger(unittest.TestCase):
         """
         `RedactedLogRecord` custom LogRecord obfuscates API key logging.
         """
-        # Initialize a logger with `RedactedLogRecord` custom LogRecord
-        logging.LogRecord = RedactedLogRecord
+        # Initialize a logger with `RedactedLogRecord` Factory
 
         logger = logging.getLogger()
         handler = MockLoggingHandler()
-
+        logging.setLogRecordFactory(RedactedLogRecord)
         logger.setLevel(logging.DEBUG)
         logger.addHandler(handler)
 
@@ -68,8 +67,8 @@ class TestUtilsLogger(unittest.TestCase):
             Log things, including an API key.
             """
             mtype = "metrics"
-            endpoint = "dd_url"
-            url = "https://x-x-x-app.agent.datadog.com/intake/?api_key=foobar"
+            endpoint = "sd_url"
+            url = "https://test.agent.serverdensity.io/intake/?agent_key=foobar"
 
             logger.info(
                 "Sending %s to endpoint %s at %s",
@@ -80,7 +79,7 @@ class TestUtilsLogger(unittest.TestCase):
 
         # API key is obfuscated
         result = handler.pop()
-        expected_result = "Sending metrics to endpoint dd_url at "\
-            "https://x-x-x-app.agent.datadog.com/intake/?api_key=*************************oobar"
+        expected_result = "Sending metrics to endpoint sd_url at "\
+            "https://test.agent.serverdensity.io/intake/?agent_key=*************************oobar"
 
         self.assertEqual(result, expected_result)
