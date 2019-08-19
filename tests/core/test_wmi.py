@@ -628,7 +628,7 @@ class TestUnitWMISampler(TestCommonWMI):
         self.assertWMIQuery(
             "Select AvgDiskBytesPerWrite,FreeMegabytes"
             " from Win32_PerfFormattedData_PerfDisk_LogicalDisk"
-            " WHERE ( Name = 'C:' AND Id = '123' )"
+            " WHERE ( Id = '123' AND Name = 'C:' )"
         )
 
     def test_wmi_parser(self):
