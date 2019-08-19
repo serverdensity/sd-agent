@@ -469,7 +469,7 @@ class TestUnitWMISampler(TestCommonWMI):
 
         self.assertEqual("", format_filter(no_filters))
         self.assertEqual(" WHERE ( Name = 'SomeName' AND Id = 'SomeId' )",
-                          format_filter(filters))
+                         format_filter(filters))
 
     def test_wql_multiquery_filtering(self):
         """
@@ -484,8 +484,8 @@ class TestUnitWMISampler(TestCommonWMI):
 
         self.assertEqual("", format_filter(no_filters))
         self.assertEqual(" WHERE ( Property1 = 'bar' AND Name = 'OtherName' ) OR"
-                          " ( Property1 = 'foo' AND Name = 'SomeName' )",
-                          format_filter(filters))
+                         " ( Property1 = 'foo' AND Name = 'SomeName' )",
+                         format_filter(filters))
 
     def test_wql_empty_list(self):
         """
@@ -506,7 +506,7 @@ class TestUnitWMISampler(TestCommonWMI):
         filters.append(query)
 
         self.assertEqual(" WHERE ( SourceName = 'MSSQL' AND User = 'luser' )",
-                          format_filter(filters))
+                         format_filter(filters))
 
     def test_wql_filtering_op_adv(self):
         """
@@ -518,7 +518,7 @@ class TestUnitWMISampler(TestCommonWMI):
         # Check `_format_filter` logic
         filters = [{'Name': "Foo%"}, {'Id': ('>=', "SomeId"), 'Name': "Bar%"}, {'Name': "Zulu"}]
         self.assertEqual(" WHERE ( Name = 'Zulu' ) OR ( Name LIKE 'Bar%' AND Id >= 'SomeId' ) OR ( Name LIKE 'Foo%' )",
-                          format_filter(filters))
+                         format_filter(filters))
 
     def test_wql_eventlog_filtering(self):
         """
@@ -579,7 +579,7 @@ class TestUnitWMISampler(TestCommonWMI):
                          "AND ( SourceName = 'MSSQLSERVER' OR SourceName = 'IIS' ) "
                          "AND User = 'luser' AND ( Type = 'Error' OR Type = 'Warning' ) "
                          "AND TimeGenerated >= '2016-01-01 15:08:24.078915**********.******+' )",
-                          format_filter(filters, and_props))
+                         format_filter(filters, and_props))
 
     def test_wql_filtering_inclusive(self):
         """
@@ -591,7 +591,7 @@ class TestUnitWMISampler(TestCommonWMI):
         # Check `_format_filter` logic
         filters = [{'Name': "SomeName"}, {'Id': "SomeId"}]
         self.assertEqual(" WHERE ( Id = 'SomeId' ) OR ( Name = 'SomeName' )",
-                          format_filter(filters, True))
+                         format_filter(filters, True))
 
     def test_wmi_query(self):
         """
