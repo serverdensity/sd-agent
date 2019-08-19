@@ -20,7 +20,7 @@ class TestTail(unittest.TestCase):
             missingok
             rotate 1
             weekly
-        }""" )
+        }""")
         self.logrotate_config.flush()
         self.logrotate_state_file = tempfile.NamedTemporaryFile()
         self.last_line = None

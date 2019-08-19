@@ -465,7 +465,7 @@ class TestUnitWMISampler(TestCommonWMI):
 
         # Check `_format_filter` logic
         no_filters = []
-        filters = [{ 'Id': "SomeId", 'Name': "SomeName"}]
+        filters = [{'Id': "SomeId", 'Name': "SomeName"}]
 
         self.assertEqual("", format_filter(no_filters))
         self.assertEqual(" WHERE ( Name = 'SomeName' AND Id = 'SomeId' )",
@@ -516,7 +516,7 @@ class TestUnitWMISampler(TestCommonWMI):
         format_filter = sampler.WMISampler._format_filter
 
         # Check `_format_filter` logic
-        filters = [{'Name': "Foo%"}, {'Id': ('>=', "SomeId"), 'Name': "Bar%" }, {'Name': "Zulu"}]
+        filters = [{'Name': "Foo%"}, {'Id': ('>=', "SomeId"), 'Name': "Bar%"}, {'Name': "Zulu"}]
         self.assertEqual(" WHERE ( Name = 'Zulu' ) OR ( Name LIKE 'Bar%' AND Id >= 'SomeId' ) OR ( Name LIKE 'Foo%' )",
                           format_filter(filters))
 
