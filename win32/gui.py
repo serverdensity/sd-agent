@@ -814,7 +814,7 @@ def agent_status():
         return osx_manager_status()
 
 
-def agent_manager(action, async=True):
+def agent_manager(action, async=True): # noqa E999
     if Platform.is_windows():
         manager = service_manager
     else:
