@@ -67,7 +67,7 @@ class TestPrometheusProcessor(unittest.TestCase):
         # Loading test text data
         f_name = os.path.join(os.path.dirname(__file__), 'fixtures', 'prometheus', 'metrics.txt')
         with open(f_name, 'rb') as f:
-            self.text_data = f.read()
+            self.text_data = f.read().decode('utf-8')
             self.assertEqual(len(self.text_data), 14494)
 
     def tearDown(self):
