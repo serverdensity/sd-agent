@@ -66,7 +66,7 @@ from utils.logger import RedactedLogRecord
 requests_log = logging.getLogger("requests.packages.urllib3")
 requests_log.setLevel(logging.WARN)
 requests_log.propagate = True
-logging.LogRecord = RedactedLogRecord
+logging.setLogRecordFactory(RedactedLogRecord)
 log = logging.getLogger('sdstatsd')
 
 PID_NAME = "sdstatsd"

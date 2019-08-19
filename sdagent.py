@@ -60,7 +60,7 @@ from utils.hostname import get_hostname
 from utils.logger import RedactedLogRecord
 from utils.watchdog import Watchdog
 
-logging.LogRecord = RedactedLogRecord
+logging.setLogRecordFactory(RedactedLogRecord)
 log = logging.getLogger('forwarder')
 log.setLevel(get_logging_config()['log_level'] or logging.INFO)
 

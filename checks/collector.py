@@ -43,7 +43,7 @@ from utils.subprocess_output import get_subprocess_output
 from utils.timer import Timer
 from utils.orchestrator import MetadataCollector
 
-logging.LogRecord = RedactedLogRecord
+logging.setLogRecordFactory(RedactedLogRecord)
 log = logging.getLogger(__name__)
 
 

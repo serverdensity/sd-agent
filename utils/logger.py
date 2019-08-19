@@ -47,8 +47,8 @@ class RedactedLogRecord(LogRecord, object):
     """
     Custom LogRecord that obfuscates API key logging.
     """
-    API_KEY_PATTERN = re.compile('api_key=*\w+(\w{5})')
-    API_KEY_REPLACEMENT = r'api_key=*************************\1'
+    API_KEY_PATTERN = re.compile('agent_key=*\w+(\w{5})')
+    API_KEY_REPLACEMENT = r'agent_key=*************************\1'
 
     def getMessage(self):
         message = super(RedactedLogRecord, self).getMessage()
