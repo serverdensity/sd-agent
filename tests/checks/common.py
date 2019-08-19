@@ -158,9 +158,10 @@ class Fixtures(object):
     def read_file(file_name, string_escape=True, sdk_dir=None):
         with open(Fixtures.file(file_name, sdk_dir)) as f:
             contents = f.read()
-            if string_escape:
-                contents = contents.decode('string-escape')
-            return contents.decode("utf-8")
+            if isinstance(contents, bytes):
+                if string_escape:
+                    contents = contents.decode('string-escape')
+            return contents
 
     @staticmethod
     def read_json_file(file_name, string_escape=True, sdk_dir=None):
