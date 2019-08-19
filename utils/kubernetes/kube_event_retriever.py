@@ -83,7 +83,7 @@ class KubeEventRetriever:
             else:
                 self._last_lookup_timestamp = time.time()
 
-        latest_timestamp = None
+        latest_timestamp = 0
         filtered_events = []
 
         events = self.kubeutil.retrieve_json_auth(self.request_url, params=self.request_params).json()
