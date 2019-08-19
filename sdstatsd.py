@@ -447,7 +447,6 @@ class Server(object):
         sock = [self.socket]
         socket_recv = self.socket.recv
         select_select = select.select
-        select_error = select.error
         timeout = UDP_SOCKET_TIMEOUT
         should_forward = self.should_forward
         forward_udp_sock = self.forward_udp_sock
@@ -464,7 +463,7 @@ class Server(object):
 
                     if should_forward:
                         forward_udp_sock.send(message)
-            except select_error as se:
+            except OSError as se:
                 # Ignore interrupted system calls from sigterm.
                 errno = se[0]
                 if errno != 4:
