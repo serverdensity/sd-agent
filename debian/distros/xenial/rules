@@ -13,8 +13,8 @@ JMX_ARTIFACT=jmxfetch-${JMX_VERSION}-jar-with-dependencies.jar
 
 override_dh_auto_build:
 	$(create_venv)
-	$(BUILD_DIR)/bin/python $(BUILD_DIR)/bin/pip install -r requirements.txt
-	$(BUILD_DIR)/bin/python $(BUILD_DIR)/bin/pip install -r requirements-opt.txt
+	$(BUILD_DIR)/bin/python3 $(BUILD_DIR)/bin/pip install -r requirements.txt
+	$(BUILD_DIR)/bin/python3 $(BUILD_DIR)/bin/pip install -r requirements-opt.txt
 	$(fix_activate_path)
 	$(fix_shebangs)
 	$(fix_local_symlinks)
@@ -30,13 +30,13 @@ override_dh_auto_install:
 	mkdir -p $(BUILD_DIR)/etc/sd-agent/
 	cp config.cfg.example $(BUILD_DIR)/etc/sd-agent/config.cfg
 	cp plugins.cfg.example $(BUILD_DIR)/etc/sd-agent/plugins.cfg
-	pyclean $(BUILD_DIR)
+	py3clean $(BUILD_DIR)
 
 #override_dh_install-arch:
 
 define create_venv
 	curl -LO https://raw.github.com/pypa/virtualenv/1.11.6/virtualenv.py
-	python virtualenv.py -p python2 --no-site-packages --no-pip --no-setuptools $(BUILD_DIR)
+	python3 virtualenv.py -p python3 --no-site-packages --no-pip --no-setuptools $(BUILD_DIR)
 	curl -LO https://bootstrap.pypa.io/ez_setup.py
 	$(BUILD_DIR)/bin/python ez_setup.py --version="44.1.1"
 	curl -LO https://bootstrap.pypa.io/get-pip.py
