@@ -465,7 +465,7 @@ class Server(object):
                         forward_udp_sock.send(message)
             except OSError as se:
                 # Ignore interrupted system calls from sigterm.
-                errno = se[0]
+                errno = se[0] # pylint: disable=unsubscriptable-object
                 if errno != 4:
                     raise
             except (KeyboardInterrupt, SystemExit):

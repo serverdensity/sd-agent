@@ -444,7 +444,7 @@ class AbstractResultCollector(object):
         """
         raise NotImplementedError("Children classes must implement it")
 
-    def __iter__(self):
+    def __iter__(self):  # pylint: disable=non-iterator-returned
         """Return a new CollectorIterator object for this collector"""
         return CollectorIterator(self)
 
@@ -459,7 +459,7 @@ class CollectorIterator(object):
         self._collector = collector
         self._idx = 0
 
-    def __iter__(self):
+    def __iter__(self): # pylint: disable=non-iterator-returned
         return self
 
     def next(self, timeout=None):

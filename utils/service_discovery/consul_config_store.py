@@ -3,7 +3,7 @@
 # Licensed under Simplified BSD License (see LICENSE)
 
 # project
-from consul import Consul
+from consul import Consul  # pylint: disable=no-name-in-module
 from utils.service_discovery.abstract_config_store import AbstractConfigStore, KeyNotFound
 
 

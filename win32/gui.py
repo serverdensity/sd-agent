@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# pylint: disable=E0401
+# pylint: disable=E0401,E1135,E0602
 #
 # Copyright © 2009-2010 CEA
 # Pierre Raybaut
@@ -814,12 +814,12 @@ def agent_status():
         return osx_manager_status()
 
 
-def agent_manager(action, async=True): # noqa E999
+def agent_manager(action, asyncs=True): # noqa
     if Platform.is_windows():
         manager = service_manager
     else:
         manager = osx_manager
-    if not async:
+    if not asyncs:
         manager(action)
     else:
         _thread.start_new_thread(manager, (action,))
@@ -842,7 +842,7 @@ def kill_old_process():
 
     old_pid = None
     try:
-        pf = file(pidfile, 'r')
+        pf = open(pidfile, 'r')
         old_pid = int(pf.read().strip())
         pf.close()
     except (IOError, ValueError):

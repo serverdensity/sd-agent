@@ -29,7 +29,7 @@ plist = None
 
 if sys.platform == 'win32':
     # noqa for flake8, these imports are probably here to force packaging of these modules
-    import py2exe  # noqa
+    import py2exe  # noqa pylint: disable=import-error
 
     # windows-specific deps
     install_requires.append('pywin32==217')

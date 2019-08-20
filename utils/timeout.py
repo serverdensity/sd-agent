@@ -66,7 +66,7 @@ def timeout(timeout):
             del _thread_by_func[key]
 
             if worker.exception:
-                raise worker.exception
+                raise worker.exception # pylint: disable=raising-bad-type
             else:
                 return worker.result
 

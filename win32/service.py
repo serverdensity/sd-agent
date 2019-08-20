@@ -22,9 +22,9 @@ import psutil
 import time
 
 # win32
-import win32serviceutil
-import servicemanager
-import win32service
+import win32serviceutil # pylint: disable=import-error
+import servicemanager # pylint: disable=import-error
+import win32service # pylint: disable=import-error
 
 # project
 from config import get_config, get_config_path, get_confd_path
