@@ -13,9 +13,7 @@ RUN yum -y install \
     tar \
     symlinks \
     epel-release
-RUN wget https://repo.ius.io/ius-release-el6.rpm && \
-    rpm -Uvh ius-release*.rpm && \
-    yum -y install python27 python27-devel  --enablerepo=ius-archive --disablerepo=ius
+RUN yum -y install python34 python34-devel
 RUN ( grep -q :20: /etc/group || groupadd -g 20 osx_staff ) && \
     ( grep -q :501: /etc/passwd || useradd -u 501 -g 20 osx_user ) && \
     ( grep -q :1000: /etc/group || groupadd -g 1000 ubuntu_group ) && \

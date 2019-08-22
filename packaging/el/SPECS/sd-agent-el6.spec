@@ -9,14 +9,14 @@
 %define        __os_install_post %{_dbpath}/brp-compress
 %global        __venv %{_tmppath}/venv
 %global          longdescription %include description
-%global        __sd_python_version 2.7
+%global        __sd_python_version 3.4
 
 Summary: Server Density Monitoring Agent
 Name: sd-agent
 BuildArch: x86_64 i386
 %include %{_topdir}/inc/version
 %include %{_topdir}/inc/release
-Requires: python27, sysstat, libyaml, %{name}-forwarder, %{name}-sd-cpu-stats, %{name}-network, %{name}-disk
+Requires: python34, sysstat, libyaml, %{name}-forwarder, %{name}-sd-cpu-stats, %{name}-network, %{name}-disk
 Conflicts: %{name}-ssh-check <= 2.3.0
 BuildRequires: symlinks
 License: Simplified BSD
@@ -32,7 +32,7 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 
 %prep
 curl -LO https://raw.github.com/pypa/virtualenv/1.11.6/virtualenv.py
-python2.7 virtualenv.py --no-site-packages --no-pip --no-setuptools %{__venv}
+python3.4 virtualenv.py -p python3 --no-site-packages --no-pip --no-setuptools %{__venv}
 curl -LO https://bootstrap.pypa.io/ez_setup.py
 %{__venv}/bin/python ez_setup.py --version="44.1.1"
 curl -LO https://bootstrap.pypa.io/get-pip.py

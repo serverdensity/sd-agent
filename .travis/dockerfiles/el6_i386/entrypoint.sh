@@ -19,7 +19,7 @@ cd /root/el
 chown -R `id -u`:`id -g` /root/el
 function build {
     rpmdir=/root/build/result/$1
-    yum-builddep -y SPECS/sd-agent-$1.spec --enablerepo=ius-archive --disablerepo=ius
+    yum-builddep -y SPECS/sd-agent-$1.spec
     linux32 rpmbuild -ba SPECS/sd-agent-$1.spec && \
     (test -d $rpmdir || mkdir -p $rpmdir) && cp -a /root/el/RPMS/* $rpmdir
 }

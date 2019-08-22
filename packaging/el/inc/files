@@ -27,7 +27,6 @@
 /usr/share/python/sd-agent/lib/python%{__sd_python_version}/lib-dynload
 /usr/share/python/sd-agent/lib/python%{__sd_python_version}/no-global-site-packages.txt
 /usr/share/python/sd-agent/lib/python%{__sd_python_version}/orig-prefix.txt
-/usr/share/python/sd-agent/lib/python%{__sd_python_version}/site-packages/backports*
 /usr/share/python/sd-agent/lib/python%{__sd_python_version}/site-packages/boto*
 /usr/share/python/sd-agent/lib/python%{__sd_python_version}/site-packages/*consul*
 /usr/share/python/sd-agent/lib/python%{__sd_python_version}/site-packages/dns*
@@ -35,7 +34,6 @@
 /usr/share/python/sd-agent/lib/python%{__sd_python_version}/site-packages/easy-install*
 /usr/share/python/sd-agent/lib/python%{__sd_python_version}/site-packages/*etcd*
 /usr/share/python/sd-agent/lib/python%{__sd_python_version}/site-packages/google
-/usr/share/python/sd-agent/lib/python%{__sd_python_version}/site-packages/ipaddress.py*
 /usr/share/python/sd-agent/lib/python%{__sd_python_version}/site-packages/kazoo
 /usr/share/python/sd-agent/lib/python%{__sd_python_version}/site-packages/kazoo-*-info
 /usr/share/python/sd-agent/lib/python%{__sd_python_version}/site-packages/meld3*

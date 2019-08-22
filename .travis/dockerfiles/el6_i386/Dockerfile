@@ -17,10 +17,9 @@ RUN linux32 yum -y  --enablerepo=city-fan.org install yum-utils \
     tar \
     symlinks \
     git \
-    ca-certificates
-RUN yum install -y https://dl.iuscommunity.org/pub/ius/archive/CentOS/6/i386/ius-release-1.0-11.ius.centos6.noarch.rpm
-RUN rpm --import https://dl.iuscommunity.org/pub/ius/IUS-COMMUNITY-GPG-KEY
-RUN linux32 yum -y install python27 python27-devel --enablerepo=ius-archive --disablerepo=ius
+    ca-certificates \
+    python34 \
+    python34-devel
 RUN ( grep -q :20: /etc/group || groupadd -g 20 osx_staff ) && \
     ( grep -q :501: /etc/passwd || useradd -u 501 -g 20 osx_user ) && \
     ( grep -q :1000: /etc/group || groupadd -g 1000 ubuntu_group ) && \
