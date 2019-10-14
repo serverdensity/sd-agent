@@ -919,10 +919,10 @@ class TestPrometheusTextParsing(unittest.TestCase):
 
         # Label for prometheus handler
         summary_label = summary_metric_from_internet.label.add()
-        summary_label.name, summary_label.value = "handler", "prometheus"
+        summary_label.name, summary_label.value = "from", "internet"
 
         summary_label = summary_metric_from_internet.label.add()
-        summary_label.name, summary_label.value = "from", "internet"
+        summary_label.name, summary_label.value = "handler", "prometheus"
 
         # Root summary sample
         summary_metric_from_internet.summary.sample_count = 5
@@ -946,10 +946,10 @@ class TestPrometheusTextParsing(unittest.TestCase):
 
         # Label for prometheus handler
         summary_label = summary_metric_from_cluster.label.add()
-        summary_label.name, summary_label.value = "handler", "prometheus"
+        summary_label.name, summary_label.value = "from", "cluster"
 
         summary_label = summary_metric_from_cluster.label.add()
-        summary_label.name, summary_label.value = "from", "cluster"
+        summary_label.name, summary_label.value = "handler", "prometheus"
 
         # Root summary sample
         summary_metric_from_cluster.summary.sample_count = 4
