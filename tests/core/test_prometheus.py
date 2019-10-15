@@ -1061,29 +1061,27 @@ class TestPrometheusTextParsing(unittest.TestCase):
 
         # check a bunch of metrics
         self.check.gauge.assert_has_calls([
-            call('ksm.pod.ready', 1.0, ['pod:event-exporter-v0.1.7-958884745-qgnbw', 'namespace:kube-system', 'condition:true', 'node:gke-foobar-test-kube-default-pool-9b4ff111-0kch', 'pod_ip:11.32.3.14'], hostname=None),
-            call('ksm.pod.ready', 1.0, ['pod:fluentd-gcp-v2.0.9-6dj58', 'namespace:kube-system', 'condition:true', 'node:gke-foobar-test-kube-default-pool-9b4ff111-0kch', 'pod_ip:11.132.0.7'], hostname=None),
-            call('ksm.pod.ready', 1.0, ['pod:fluentd-gcp-v2.0.9-z348z', 'namespace:kube-system', 'condition:true', 'node:gke-foobar-test-kube-default-pool-9b4ff111-j75z', 'pod_ip:11.132.0.14'], hostname=None),
-            call('ksm.pod.ready', 1.0, ['pod:heapster-v1.4.3-2027615481-lmjm5', 'namespace:kube-system', 'condition:true', 'node:gke-foobar-test-kube-default-pool-9b4ff111-j75z', 'pod_ip:11.32.5.7'], hostname=None),
-            call('ksm.pod.ready', 1.0, ['pod:kube-dns-3092422022-lvrmx', 'namespace:kube-system', 'condition:true', 'node:gke-foobar-test-kube-default-pool-9b4ff111-0kch', 'pod_ip:11.32.3.10'], hostname=None),
-            call('ksm.pod.ready', 1.0, ['pod:kube-dns-3092422022-x0tjx', 'namespace:kube-system', 'condition:true', 'node:gke-foobar-test-kube-default-pool-9b4ff111-0kch', 'pod_ip:11.32.3.9'], hostname=None),
-            call('ksm.pod.ready', 1.0, ['pod:kube-dns-autoscaler-97162954-mf6d3', 'namespace:kube-system', 'condition:true', 'node:gke-foobar-test-kube-default-pool-9b4ff111-j75z', 'pod_ip:11.32.5.6'], hostname=None),
-            call('ksm.pod.ready', 1.0, ['pod:kube-proxy-gke-foobar-test-kube-default-pool-9b4ff111-0kch', 'namespace:kube-system', 'condition:true', 'node:gke-foobar-test-kube-default-pool-9b4ff111-0kch', 'pod_ip:11.132.0.7'], hostname=None),
-            call('ksm.pod.scheduled', 1.0, ['pod:ungaged-panther-kube-state-metrics-3918010230-64xwc', 'namespace:default', 'condition:true', 'node:gke-foobar-test-kube-default-pool-9b4ff111-j75z', 'pod_ip:11.32.5.45'], hostname=None),
-            call('ksm.pod.scheduled', 1.0, ['pod:event-exporter-v0.1.7-958884745-qgnbw', 'namespace:kube-system', 'condition:true', 'node:gke-foobar-test-kube-default-pool-9b4ff111-0kch', 'pod_ip:11.32.3.14'], hostname=None),
-            call('ksm.pod.scheduled', 1.0, ['pod:fluentd-gcp-v2.0.9-6dj58', 'namespace:kube-system', 'condition:true', 'node:gke-foobar-test-kube-default-pool-9b4ff111-0kch', 'pod_ip:11.132.0.7'], hostname=None),
-            call('ksm.pod.scheduled', 1.0, ['pod:fluentd-gcp-v2.0.9-z348z', 'namespace:kube-system', 'condition:true', 'node:gke-foobar-test-kube-default-pool-9b4ff111-j75z', 'pod_ip:11.132.0.14'], hostname=None),
-            call('ksm.pod.scheduled', 1.0, ['pod:heapster-v1.4.3-2027615481-lmjm5', 'namespace:kube-system', 'condition:true', 'node:gke-foobar-test-kube-default-pool-9b4ff111-j75z', 'pod_ip:11.32.5.7'], hostname=None),
-            call('ksm.pod.scheduled', 1.0, ['pod:kube-dns-3092422022-lvrmx', 'namespace:kube-system', 'condition:true', 'node:gke-foobar-test-kube-default-pool-9b4ff111-0kch', 'pod_ip:11.32.3.10'], hostname=None),
-            call('ksm.pod.scheduled', 1.0, ['pod:kube-dns-3092422022-x0tjx', 'namespace:kube-system', 'condition:true', 'node:gke-foobar-test-kube-default-pool-9b4ff111-0kch', 'pod_ip:11.32.3.9'], hostname=None),
-            call('ksm.deploy.replicas.available', 1.0, ['namespace:kube-system', 'deployment:event-exporter-v0.1.7', 'label_k8s_app:event-exporter', 'label_addonmanager_kubernetes_io_mode:Reconcile', 'label_kubernetes_io_cluster_service:true'], hostname=None),
-            call('ksm.deploy.replicas.available', 1.0, ['namespace:kube-system', 'deployment:heapster-v1.4.3', 'label_k8s_app:heapster', 'label_addonmanager_kubernetes_io_mode:Reconcile', 'label_kubernetes_io_cluster_service:true'], hostname=None),
-            call('ksm.deploy.replicas.available', 2.0, ['namespace:kube-system', 'deployment:kube-dns', 'label_kubernetes_io_cluster_service:true', 'label_addonmanager_kubernetes_io_mode:Reconcile', 'label_k8s_app:kube-dns'], hostname=None),
-            call('ksm.deploy.replicas.available', 1.0, ['namespace:kube-system', 'deployment:kube-dns-autoscaler', 'label_kubernetes_io_cluster_service:true', 'label_addonmanager_kubernetes_io_mode:Reconcile', 'label_k8s_app:kube-dns-autoscaler'], hostname=None),
-            call('ksm.deploy.replicas.available', 1.0, ['namespace:kube-system', 'deployment:kubernetes-dashboard', 'label_kubernetes_io_cluster_service:true', 'label_addonmanager_kubernetes_io_mode:Reconcile', 'label_k8s_app:kubernetes-dashboard'], hostname=None),
-            call('ksm.deploy.replicas.available', 1.0, ['namespace:kube-system', 'deployment:l7-default-backend', 'label_k8s_app:glbc', 'label_addonmanager_kubernetes_io_mode:Reconcile', 'label_kubernetes_io_cluster_service:true'], hostname=None),
-            call('ksm.deploy.replicas.available', 1.0, ['namespace:kube-system', 'deployment:tiller-deploy'], hostname=None),
-            call('ksm.deploy.replicas.available', 1.0, ['namespace:default', 'deployment:ungaged-panther-kube-state-metrics'], hostname=None)
+            call('ksm.pod.ready', 1.0, ['condition:true', 'namespace:kube-system', 'pod:event-exporter-v0.1.7-958884745-qgnbw', 'node:gke-foobar-test-kube-default-pool-9b4ff111-0kch', 'pod_ip:11.32.3.14'], hostname=None),
+            call('ksm.pod.ready', 1.0, ['condition:true', 'namespace:kube-system', 'pod:fluentd-gcp-v2.0.9-6dj58', 'node:gke-foobar-test-kube-default-pool-9b4ff111-0kch', 'pod_ip:11.132.0.7'], hostname=None),
+            call('ksm.pod.ready', 1.0, ['condition:true', 'namespace:kube-system', 'pod:fluentd-gcp-v2.0.9-z348z', 'node:gke-foobar-test-kube-default-pool-9b4ff111-j75z', 'pod_ip:11.132.0.14'], hostname=None),
+            call('ksm.pod.ready', 1.0, ['condition:true', 'namespace:kube-system', 'pod:heapster-v1.4.3-2027615481-lmjm5', 'node:gke-foobar-test-kube-default-pool-9b4ff111-j75z', 'pod_ip:11.32.5.7'], hostname=None),
+            call('ksm.pod.ready', 1.0, ['condition:true', 'namespace:kube-system', 'pod:kube-dns-3092422022-lvrmx', 'node:gke-foobar-test-kube-default-pool-9b4ff111-0kch', 'pod_ip:11.32.3.10'], hostname=None),
+            call('ksm.pod.ready', 1.0, ['condition:true', 'namespace:kube-system', 'pod:kube-dns-3092422022-x0tjx', 'node:gke-foobar-test-kube-default-pool-9b4ff111-0kch', 'pod_ip:11.32.3.9'], hostname=None),
+            call('ksm.pod.ready', 1.0, ['condition:true', 'namespace:kube-system', 'pod:kube-dns-autoscaler-97162954-mf6d3', 'node:gke-foobar-test-kube-default-pool-9b4ff111-j75z', 'pod_ip:11.32.5.6'], hostname=None),
+            call('ksm.pod.ready', 1.0, ['condition:true', 'namespace:kube-system', 'pod:kube-proxy-gke-foobar-test-kube-default-pool-9b4ff111-0kch', 'node:gke-foobar-test-kube-default-pool-9b4ff111-0kch', 'pod_ip:11.132.0.7'], hostname=None),
+            call('ksm.pod.scheduled', 1.0, ['condition:true', 'namespace:default', 'pod:ungaged-panther-kube-state-metrics-3918010230-64xwc', 'node:gke-foobar-test-kube-default-pool-9b4ff111-j75z', 'pod_ip:11.32.5.45'], hostname=None),
+            call('ksm.pod.scheduled', 1.0, ['condition:true', 'namespace:kube-system', 'pod:event-exporter-v0.1.7-958884745-qgnbw', 'node:gke-foobar-test-kube-default-pool-9b4ff111-0kch', 'pod_ip:11.32.3.14'], hostname=None),
+            call('ksm.pod.scheduled', 1.0, ['condition:true', 'namespace:kube-system', 'pod:fluentd-gcp-v2.0.9-6dj58', 'node:gke-foobar-test-kube-default-pool-9b4ff111-0kch', 'pod_ip:11.132.0.7'], hostname=None),
+            call('ksm.pod.scheduled', 1.0, ['condition:true', 'namespace:kube-system', 'pod:fluentd-gcp-v2.0.9-z348z', 'node:gke-foobar-test-kube-default-pool-9b4ff111-j75z', 'pod_ip:11.132.0.14'], hostname=None),
+            call('ksm.pod.scheduled', 1.0, ['condition:true', 'namespace:kube-system', 'pod:heapster-v1.4.3-2027615481-lmjm5', 'node:gke-foobar-test-kube-default-pool-9b4ff111-j75z', 'pod_ip:11.32.5.7'], hostname=None),
+            call('ksm.pod.scheduled', 1.0, ['condition:true', 'namespace:kube-system', 'pod:kube-dns-3092422022-lvrmx', 'node:gke-foobar-test-kube-default-pool-9b4ff111-0kch', 'pod_ip:11.32.3.10'], hostname=None),
+            call('ksm.pod.scheduled', 1.0, ['condition:true', 'namespace:kube-system', 'pod:kube-dns-3092422022-x0tjx', 'node:gke-foobar-test-kube-default-pool-9b4ff111-0kch', 'pod_ip:11.32.3.9'], hostname=None),
+            call('ksm.deploy.replicas.available', 1.0, ['deployment:heapster-v1.4.3', 'namespace:kube-system', 'label_addonmanager_kubernetes_io_mode:Reconcile', 'label_k8s_app:heapster', 'label_kubernetes_io_cluster_service:true'], hostname=None),
+            call('ksm.deploy.replicas.available', 2.0, ['deployment:kube-dns', 'namespace:kube-system', 'label_addonmanager_kubernetes_io_mode:Reconcile', 'label_k8s_app:kube-dns', 'label_kubernetes_io_cluster_service:true'], hostname=None),
+            call('ksm.deploy.replicas.available', 1.0, ['deployment:kube-dns-autoscaler', 'namespace:kube-system', 'label_addonmanager_kubernetes_io_mode:Reconcile', 'label_k8s_app:kube-dns-autoscaler', 'label_kubernetes_io_cluster_service:true'], hostname=None),
+            call('ksm.deploy.replicas.available', 1.0, ['deployment:kubernetes-dashboard', 'namespace:kube-system', 'label_addonmanager_kubernetes_io_mode:Reconcile', 'label_k8s_app:kubernetes-dashboard', 'label_kubernetes_io_cluster_service:true'], hostname=None),
+            call('ksm.deploy.replicas.available', 1.0, ['deployment:l7-default-backend', 'namespace:kube-system', 'label_addonmanager_kubernetes_io_mode:Reconcile', 'label_k8s_app:glbc', 'label_kubernetes_io_cluster_service:true'], hostname=None),
+            call('ksm.deploy.replicas.available', 1.0, ['deployment:tiller-deploy', 'namespace:kube-system'], hostname=None),
         ], any_order=True)
 
     @patch('requests.get')
@@ -1112,8 +1110,8 @@ class TestPrometheusTextParsing(unittest.TestCase):
         self.check.process("http://fake.endpoint:10055/metrics")
         # check a bunch of metrics
         self.check.gauge.assert_has_calls([
-            call('ksm.pod.ready', 1.0, ['pod:fluentd-gcp-v2.0.9-6dj58', 'namespace:kube-system', 'condition:true', 'node:gke-foobar-test-kube-default-pool-9b4ff111-0kch', 'pod_ip:11.132.0.7'], hostname=None),
-            call('ksm.pod.ready', 1.0, ['pod:fluentd-gcp-v2.0.9-z348z', 'namespace:kube-system', 'condition:true', 'node:gke-foobar-test-kube-default-pool-9b4ff111-j75z', 'pod_ip:11.132.0.14'], hostname=None),
+            call('ksm.pod.ready', 1.0, ['condition:true', 'namespace:kube-system', 'pod:fluentd-gcp-v2.0.9-6dj58', 'node:gke-foobar-test-kube-default-pool-9b4ff111-0kch', 'pod_ip:11.132.0.7'], hostname=None),
+            call('ksm.pod.ready', 1.0, ['condition:true', 'namespace:kube-system', 'pod:fluentd-gcp-v2.0.9-z348z', 'node:gke-foobar-test-kube-default-pool-9b4ff111-j75z', 'pod_ip:11.132.0.14'], hostname=None),
         ], any_order=True)
         self.assertEqual(15, len(self.check._label_mapping['pod']))
         text_data = text_data.replace('dd-agent-62bgh', 'dd-agent-1337')
@@ -1152,8 +1150,8 @@ class TestPrometheusTextParsing(unittest.TestCase):
         self.check.process("http://fake.endpoint:10055/metrics")
         # check a bunch of metrics
         self.check.gauge.assert_has_calls([
-            call('ksm.pod.ready', 1.0, ['pod:fluentd-gcp-v2.0.9-6dj58', 'namespace:kube-system', 'condition:true', 'node:gke-foobar-test-kube-default-pool-9b4ff111-0kch'], hostname=None),
-            call('ksm.pod.ready', 1.0, ['pod:fluentd-gcp-v2.0.9-z348z', 'namespace:kube-system', 'condition:true', 'node:gke-foobar-test-kube-default-pool-9b4ff111-j75z'], hostname=None),
+            call('ksm.pod.ready', 1.0, ['condition:true', 'namespace:kube-system', 'pod:fluentd-gcp-v2.0.9-6dj58', 'node:gke-foobar-test-kube-default-pool-9b4ff111-0kch'], hostname=None),
+            call('ksm.pod.ready', 1.0, ['condition:true', 'namespace:kube-system', 'pod:fluentd-gcp-v2.0.9-z348z', 'node:gke-foobar-test-kube-default-pool-9b4ff111-j75z'], hostname=None),
         ], any_order=True)
 
     @patch('requests.get')
@@ -1182,8 +1180,8 @@ class TestPrometheusTextParsing(unittest.TestCase):
         self.check.process("http://fake.endpoint:10055/metrics")
         # check a bunch of metrics
         self.check.gauge.assert_has_calls([
-            call('ksm.pod.ready', 1.0, ['pod:fluentd-gcp-v2.0.9-6dj58', 'namespace:kube-system', 'condition:true'], hostname=None),
-            call('ksm.pod.ready', 1.0, ['pod:fluentd-gcp-v2.0.9-z348z', 'namespace:kube-system', 'condition:true'], hostname=None),
+            call('ksm.pod.ready', 1.0, ['condition:true', 'namespace:kube-system', 'pod:fluentd-gcp-v2.0.9-6dj58'], hostname=None),
+            call('ksm.pod.ready', 1.0, ['condition:true', 'namespace:kube-system', 'pod:fluentd-gcp-v2.0.9-z348z'], hostname=None),
         ], any_order=True)
 
     @patch('requests.get')
@@ -1212,8 +1210,8 @@ class TestPrometheusTextParsing(unittest.TestCase):
         self.check.process("http://fake.endpoint:10055/metrics")
         # check a bunch of metrics
         self.check.gauge.assert_has_calls([
-            call('ksm.pod.ready', 1.0, ['pod:fluentd-gcp-v2.0.9-6dj58', 'namespace:kube-system', 'condition:true'], hostname=None),
-            call('ksm.pod.ready', 1.0, ['pod:fluentd-gcp-v2.0.9-z348z', 'namespace:kube-system', 'condition:true'], hostname=None),
+            call('ksm.pod.ready', 1.0, ['condition:true', 'namespace:kube-system', 'pod:fluentd-gcp-v2.0.9-6dj58'], hostname=None),
+            call('ksm.pod.ready', 1.0, ['condition:true', 'namespace:kube-system', 'pod:fluentd-gcp-v2.0.9-z348z'], hostname=None),
         ], any_order=True)
 
     @patch('requests.get')
@@ -1243,6 +1241,6 @@ class TestPrometheusTextParsing(unittest.TestCase):
         self.check.process("http://fake.endpoint:10055/metrics")
         # check a bunch of metrics
         self.check.gauge.assert_has_calls([
-            call('ksm.pod.ready', 1.0, ['pod:fluentd-gcp-v2.0.9-6dj58', 'namespace:kube-system', 'condition:true', 'node:gke-foobar-test-kube-default-pool-9b4ff111-0kch'], hostname='gke-foobar-test-kube-default-pool-9b4ff111-0kch'),
-            call('ksm.pod.ready', 1.0, ['pod:fluentd-gcp-v2.0.9-z348z', 'namespace:kube-system', 'condition:true', 'node:gke-foobar-test-kube-default-pool-9b4ff111-j75z'], hostname='gke-foobar-test-kube-default-pool-9b4ff111-j75z'),
+            call('ksm.pod.ready', 1.0, ['condition:true', 'namespace:kube-system', 'pod:fluentd-gcp-v2.0.9-6dj58', 'node:gke-foobar-test-kube-default-pool-9b4ff111-0kch'], hostname='gke-foobar-test-kube-default-pool-9b4ff111-0kch'),
+            call('ksm.pod.ready', 1.0, ['condition:true', 'namespace:kube-system', 'pod:fluentd-gcp-v2.0.9-z348z', 'node:gke-foobar-test-kube-default-pool-9b4ff111-j75z'], hostname='gke-foobar-test-kube-default-pool-9b4ff111-j75z'),
         ], any_order=True)
