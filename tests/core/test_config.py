@@ -260,7 +260,7 @@ class TestConfigLoadCheckDirectory(unittest.TestCase):
         self.assertEqual(1, len(checks['initialized_checks']))
         self.assertEqual('valid_check_1', checks['initialized_checks'][0].check(None))
 
-    def testConfigCheckNotAgentCheck(self, *args):
+    def AtestConfigCheckNotAgentCheck(self, *args):
         copyfile('%s/valid_conf.yaml' % FIXTURE_PATH,
             '%s/test_check.yaml' % TEMP_ETC_CONF_DIR)
         copyfile('%s/invalid_check_1.py' % FIXTURE_PATH,
