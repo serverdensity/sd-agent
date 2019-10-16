@@ -35,7 +35,7 @@ desc 'Setup a development environment for the Agent'
 task 'setup_env' do
   `mkdir -p venv`
   `wget -O venv/virtualenv.py https://raw.github.com/pypa/virtualenv/1.11.6/virtualenv.py`
-  `python venv/virtualenv.py -p python2 --no-site-packages --no-pip --no-setuptools venv/`
+  `python venv/virtualenv.py -p python3 --no-site-packages --no-pip --no-setuptools venv/`
   `wget -O venv/ez_setup.py https://bootstrap.pypa.io/ez_setup.py`
   `venv/bin/python venv/ez_setup.py --version="44.1.1"`
   `wget -O venv/get-pip.py https://bootstrap.pypa.io/get-pip.py`
