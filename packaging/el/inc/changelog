@@ -1,4 +1,6 @@
 %changelog
+* Mon Nov 4 2020 Server Density <hello@serverdensity.com> 3.0.0-1
+- Use Python3
 * Tue May 5 2020 Server Density <hello@serverdensity.com> 2.2.8-1
 - Updates ntplib python dependency
 * Tue Mar 17 2020 Server Density <hello@serverdensity.com> 2.2.7-1

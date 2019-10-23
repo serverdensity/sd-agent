@@ -1,3 +1,9 @@
+sd-agent (3.0.0-1trusty0) trusty; urgency=medium
+
+  * Use Python3
+
+ -- Server Density <hello@serverdensity.com>  Mon, 4 Nov 2020 10:30:00 +0100
+
 sd-agent (2.2.8-1trusty0) trusty; urgency=medium
 
   * Updates ntplib python dependency
