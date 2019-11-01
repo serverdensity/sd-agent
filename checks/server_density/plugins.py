@@ -44,9 +44,9 @@ class Plugins(Check):
 
             if os.path.isdir(config_path):
                 for config_file in glob(os.path.join(config_path, "*.cfg")):
-                    config.read(config_file)
+                    config.read(config_file, encoding='utf-8')
             else:
-                config.read(config_path)
+                config.read(config_path, encoding='utf-8')
 
             for section in config.sections():
                 raw_config[section] = {}
