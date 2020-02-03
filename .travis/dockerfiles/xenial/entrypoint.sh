@@ -9,7 +9,7 @@ else
     distro="debian"
 fi
 sudo cp -a /sd-agent/debian/distros/"$RELEASE"/. /sd-agent/debian
-for arch in amd64 i386; do
+for arch in amd64 i386 armhf arm64; do
     if [ ! -d /packages/"$distro"/"$RELEASE" ]; then
         sudo mkdir -p /packages/"$distro"/"$RELEASE"
     fi

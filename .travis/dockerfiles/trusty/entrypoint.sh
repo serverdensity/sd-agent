@@ -11,7 +11,7 @@ fi
 sudo rm -rf /sd-agent/debian/control
 sudo cp -a /sd-agent/debian/distros/"$RELEASE"/. /sd-agent/debian
 cat /sd-agent/debian/control
-for arch in amd64 i386; do
+for arch in amd64 i386 armhf arm64; do
     if [ ! -d /packages/"$distro"/"$RELEASE" ]; then
         sudo mkdir -p /packages/"$distro"/"$RELEASE"
     fi
