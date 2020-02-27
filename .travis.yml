@@ -117,7 +117,7 @@ jobs:
             secure: EyTxi3GZOlwGmYT0eld3copYEGLoymOo2ZO7jXkUa4bVmdbSpUHokYAVip6r+zf42tfKhzr1S2GWPDKhF/AozYX9ZOtvzojK92RGmwp6B1n1JIKWgqHE91LaIArp1i+sPk4ACe6dann1N7KKXcjyCNXXjjaw9RHogNHp2muc9vQ=
         bucket: "sd-agent-packages"
         acl: public-read
-        local-dir: /serverdensity
+        local_dir: /serverdensity
         on:
           all_branches: true
     - stage: build packages
@@ -131,7 +131,7 @@ jobs:
             secure: EyTxi3GZOlwGmYT0eld3copYEGLoymOo2ZO7jXkUa4bVmdbSpUHokYAVip6r+zf42tfKhzr1S2GWPDKhF/AozYX9ZOtvzojK92RGmwp6B1n1JIKWgqHE91LaIArp1i+sPk4ACe6dann1N7KKXcjyCNXXjjaw9RHogNHp2muc9vQ=
         bucket: "sd-agent-packages"
         acl: public-read
-        local-dir: /serverdensity
+        local_dir: /serverdensity
         on:
           all_branches: true
     - stage: build packages
@@ -145,7 +145,7 @@ jobs:
             secure: EyTxi3GZOlwGmYT0eld3copYEGLoymOo2ZO7jXkUa4bVmdbSpUHokYAVip6r+zf42tfKhzr1S2GWPDKhF/AozYX9ZOtvzojK92RGmwp6B1n1JIKWgqHE91LaIArp1i+sPk4ACe6dann1N7KKXcjyCNXXjjaw9RHogNHp2muc9vQ=
         bucket: "sd-agent-packages"
         acl: public-read
-        local-dir: /serverdensity
+        local_dir: /serverdensity
         on:
           all_branches: true
     - stage: build packages
@@ -159,7 +159,7 @@ jobs:
             secure: EyTxi3GZOlwGmYT0eld3copYEGLoymOo2ZO7jXkUa4bVmdbSpUHokYAVip6r+zf42tfKhzr1S2GWPDKhF/AozYX9ZOtvzojK92RGmwp6B1n1JIKWgqHE91LaIArp1i+sPk4ACe6dann1N7KKXcjyCNXXjjaw9RHogNHp2muc9vQ=
         bucket: "sd-agent-packages"
         acl: public-read
-        local-dir: /serverdensity
+        local_dir: /serverdensity
         on:
           all_branches: true
     - stage: build packages
@@ -173,7 +173,7 @@ jobs:
             secure: EyTxi3GZOlwGmYT0eld3copYEGLoymOo2ZO7jXkUa4bVmdbSpUHokYAVip6r+zf42tfKhzr1S2GWPDKhF/AozYX9ZOtvzojK92RGmwp6B1n1JIKWgqHE91LaIArp1i+sPk4ACe6dann1N7KKXcjyCNXXjjaw9RHogNHp2muc9vQ=
         bucket: "sd-agent-packages"
         acl: public-read
-        local-dir: /serverdensity
+        local_dir: /serverdensity
         on:
           all_branches: true
     - stage: build packages
@@ -187,7 +187,7 @@ jobs:
             secure: EyTxi3GZOlwGmYT0eld3copYEGLoymOo2ZO7jXkUa4bVmdbSpUHokYAVip6r+zf42tfKhzr1S2GWPDKhF/AozYX9ZOtvzojK92RGmwp6B1n1JIKWgqHE91LaIArp1i+sPk4ACe6dann1N7KKXcjyCNXXjjaw9RHogNHp2muc9vQ=
         bucket: "sd-agent-packages"
         acl: public-read
-        local-dir: /serverdensity
+        local_dir: /serverdensity
         on:
           all_branches: true
     - stage: build packages
@@ -201,7 +201,7 @@ jobs:
             secure: EyTxi3GZOlwGmYT0eld3copYEGLoymOo2ZO7jXkUa4bVmdbSpUHokYAVip6r+zf42tfKhzr1S2GWPDKhF/AozYX9ZOtvzojK92RGmwp6B1n1JIKWgqHE91LaIArp1i+sPk4ACe6dann1N7KKXcjyCNXXjjaw9RHogNHp2muc9vQ=
         bucket: "sd-agent-packages"
         acl: public-read
-        local-dir: /serverdensity
+        local_dir: /serverdensity
         on:
           all_branches: true
     - stage: build packages
@@ -215,7 +215,7 @@ jobs:
             secure: EyTxi3GZOlwGmYT0eld3copYEGLoymOo2ZO7jXkUa4bVmdbSpUHokYAVip6r+zf42tfKhzr1S2GWPDKhF/AozYX9ZOtvzojK92RGmwp6B1n1JIKWgqHE91LaIArp1i+sPk4ACe6dann1N7KKXcjyCNXXjjaw9RHogNHp2muc9vQ=
         bucket: "sd-agent-packages"
         acl: public-read
-        local-dir: /serverdensity
+        local_dir: /serverdensity
         on:
           all_branches: true
     - stage: build packages
@@ -229,7 +229,7 @@ jobs:
             secure: EyTxi3GZOlwGmYT0eld3copYEGLoymOo2ZO7jXkUa4bVmdbSpUHokYAVip6r+zf42tfKhzr1S2GWPDKhF/AozYX9ZOtvzojK92RGmwp6B1n1JIKWgqHE91LaIArp1i+sPk4ACe6dann1N7KKXcjyCNXXjjaw9RHogNHp2muc9vQ=
         bucket: "sd-agent-packages"
         acl: public-read
-        local-dir: /serverdensity
+        local_dir: /serverdensity
         on:
           all_branches: true
     - stage: build packages
@@ -243,7 +243,7 @@ jobs:
             secure: EyTxi3GZOlwGmYT0eld3copYEGLoymOo2ZO7jXkUa4bVmdbSpUHokYAVip6r+zf42tfKhzr1S2GWPDKhF/AozYX9ZOtvzojK92RGmwp6B1n1JIKWgqHE91LaIArp1i+sPk4ACe6dann1N7KKXcjyCNXXjjaw9RHogNHp2muc9vQ=
         bucket: "sd-agent-packages"
         acl: public-read
-        local-dir: /serverdensity
+        local_dir: /serverdensity
         on:
           all_branches: true
     - os: osx
@@ -257,6 +257,6 @@ jobs:
             secure: EyTxi3GZOlwGmYT0eld3copYEGLoymOo2ZO7jXkUa4bVmdbSpUHokYAVip6r+zf42tfKhzr1S2GWPDKhF/AozYX9ZOtvzojK92RGmwp6B1n1JIKWgqHE91LaIArp1i+sPk4ACe6dann1N7KKXcjyCNXXjjaw9RHogNHp2muc9vQ=
         bucket: "sd-agent-packages"
         acl: public-read
-        local-dir: /serverdensity
+        local_dir: /serverdensity
         on:
           all_branches: true
