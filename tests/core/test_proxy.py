@@ -1,6 +1,7 @@
 # stdlib
 from unittest import TestCase
 import logging
+import os
 
 # 3p
 from requests.utils import get_environ_proxies
@@ -58,6 +59,9 @@ class TestNoProxy(TestCase):
             'no': '127.0.0.1,localhost,169.254.169.254'
         }
         environ_proxies = get_environ_proxies("https://www.google.com")
+        if os.environ.get('TRAVIS') and 'travis_apt' in environ_proxies:
+            # Travis CI adds a `travis_apt` proxy which breaks this test if it's not removed.
+            environ_proxies.pop("travis_apt", None)
         self.assertEquals(expected_proxies, environ_proxies, (expected_proxies, environ_proxies))
 
         # Clear the env variables set
