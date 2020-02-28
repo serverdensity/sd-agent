@@ -37,7 +37,7 @@ env:
 
 # Override travis defaults with empty jobs
 before_install:
-- rvm install 2.1.5
+- if [ "${TRAVIS_OS_NAME}" != "osx" ]; then rvm install 2.1.5; fi
 
 before_script:
   - if [ "${TRAVIS_OS_NAME}" != "osx" ]; then sudo apt-get --yes --no-install-recommends install binfmt-support qemu-user-static createrepo reprepro; fi
