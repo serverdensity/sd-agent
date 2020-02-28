@@ -1,9 +1,7 @@
-sudo: required
+os: linux
 language: python
 python:
   - 2.7
-
-conditions: v1
 
 cache:
   directories:
@@ -11,13 +9,6 @@ cache:
     - vendor/cache
     - $CACHE_DIR
   timeout: 1000
-matrix:
-  fast_finish: true
-  include:
-    - os: osx
-      language: generic
-      python:
-      env: TRAVIS_FLAVOR=default
 
 services:
   - docker
@@ -43,28 +34,11 @@ env:
     - CACHE_FILE_stretch=$CACHE_DIR/stretch.tar.gz
     - CACHE_FILE_trusty=$CACHE_DIR/trusty.tar.gz
     - CACHE_FILE_xenial=$CACHE_DIR/xenial.tar.gz
-  matrix:
-    - TRAVIS_FLAVOR=default
-    - TRAVIS_FLAVOR=checks_mock
-
-matrix:
-  include:
-    - python: 2.7
-      sudo: required
-      services: docker
-      env: TRAVIS_FLAVOR=core_integration
 
 # Override travis defaults with empty jobs
 before_install:
 - rvm install 2.1.5
 
-install: echo "OVERRIDING TRAVIS STEPS"
-before_script: echo "OVERRIDING TRAVIS STEPS"
-script:
-  - ./.travis/build_installer.sh
-
-before_install: echo "OVERRIDING TRAVIS STEPS"
-install: echo "OVERRIDING TRAVIS STEPS"
 before_script:
   - if [ "${TRAVIS_OS_NAME}" != "osx" ]; then sudo apt-get --yes --no-install-recommends install binfmt-support qemu-user-static createrepo reprepro; fi
   - if [ "${TRAVIS_OS_NAME}" != "osx" ]; then echo ':arm:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x28\x00:\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff\xff:/usr/bin/qemu-arm-static:' | sudo tee -a /proc/sys/fs/binfmt_misc/register; fi
@@ -79,6 +53,18 @@ notifications:
 
 jobs:
   include:
+    - stage: Tests
+      python: 2.7
+      services: docker
+      env: TRAVIS_FLAVOR=default
+    - stage: Tests
+      python: 2.7
+      services: docker
+      env: TRAVIS_FLAVOR=checks_mock
+    - stage: Tests
+      python: 2.7
+      services: docker
+      env: TRAVIS_FLAVOR=core_integration
     - stage: build containers
       script: travis_retry ./.travis/build_containers.sh
       python: 2.7
@@ -129,9 +115,8 @@ jobs:
         secret_access_key:
             secure: EyTxi3GZOlwGmYT0eld3copYEGLoymOo2ZO7jXkUa4bVmdbSpUHokYAVip6r+zf42tfKhzr1S2GWPDKhF/AozYX9ZOtvzojK92RGmwp6B1n1JIKWgqHE91LaIArp1i+sPk4ACe6dann1N7KKXcjyCNXXjjaw9RHogNHp2muc9vQ=
         bucket: "sd-agent-packages"
-        skip_cleanup: true
         acl: public-read
-        local-dir: /serverdensity
+        local_dir: /serverdensity
         on:
           all_branches: true
     - stage: build packages
@@ -144,9 +129,8 @@ jobs:
         secret_access_key:
             secure: EyTxi3GZOlwGmYT0eld3copYEGLoymOo2ZO7jXkUa4bVmdbSpUHokYAVip6r+zf42tfKhzr1S2GWPDKhF/AozYX9ZOtvzojK92RGmwp6B1n1JIKWgqHE91LaIArp1i+sPk4ACe6dann1N7KKXcjyCNXXjjaw9RHogNHp2muc9vQ=
         bucket: "sd-agent-packages"
-        skip_cleanup: true
         acl: public-read
-        local-dir: /serverdensity
+        local_dir: /serverdensity
         on:
           all_branches: true
     - stage: build packages
@@ -159,9 +143,8 @@ jobs:
         secret_access_key:
             secure: EyTxi3GZOlwGmYT0eld3copYEGLoymOo2ZO7jXkUa4bVmdbSpUHokYAVip6r+zf42tfKhzr1S2GWPDKhF/AozYX9ZOtvzojK92RGmwp6B1n1JIKWgqHE91LaIArp1i+sPk4ACe6dann1N7KKXcjyCNXXjjaw9RHogNHp2muc9vQ=
         bucket: "sd-agent-packages"
-        skip_cleanup: true
         acl: public-read
-        local-dir: /serverdensity
+        local_dir: /serverdensity
         on:
           all_branches: true
     - stage: build packages
@@ -174,9 +157,8 @@ jobs:
         secret_access_key:
             secure: EyTxi3GZOlwGmYT0eld3copYEGLoymOo2ZO7jXkUa4bVmdbSpUHokYAVip6r+zf42tfKhzr1S2GWPDKhF/AozYX9ZOtvzojK92RGmwp6B1n1JIKWgqHE91LaIArp1i+sPk4ACe6dann1N7KKXcjyCNXXjjaw9RHogNHp2muc9vQ=
         bucket: "sd-agent-packages"
-        skip_cleanup: true
         acl: public-read
-        local-dir: /serverdensity
+        local_dir: /serverdensity
         on:
           all_branches: true
     - stage: build packages
@@ -189,9 +171,8 @@ jobs:
         secret_access_key:
             secure: EyTxi3GZOlwGmYT0eld3copYEGLoymOo2ZO7jXkUa4bVmdbSpUHokYAVip6r+zf42tfKhzr1S2GWPDKhF/AozYX9ZOtvzojK92RGmwp6B1n1JIKWgqHE91LaIArp1i+sPk4ACe6dann1N7KKXcjyCNXXjjaw9RHogNHp2muc9vQ=
         bucket: "sd-agent-packages"
-        skip_cleanup: true
         acl: public-read
-        local-dir: /serverdensity
+        local_dir: /serverdensity
         on:
           all_branches: true
     - stage: build packages
@@ -204,9 +185,8 @@ jobs:
         secret_access_key:
             secure: EyTxi3GZOlwGmYT0eld3copYEGLoymOo2ZO7jXkUa4bVmdbSpUHokYAVip6r+zf42tfKhzr1S2GWPDKhF/AozYX9ZOtvzojK92RGmwp6B1n1JIKWgqHE91LaIArp1i+sPk4ACe6dann1N7KKXcjyCNXXjjaw9RHogNHp2muc9vQ=
         bucket: "sd-agent-packages"
-        skip_cleanup: true
         acl: public-read
-        local-dir: /serverdensity
+        local_dir: /serverdensity
         on:
           all_branches: true
     - stage: build packages
@@ -219,9 +199,8 @@ jobs:
         secret_access_key:
             secure: EyTxi3GZOlwGmYT0eld3copYEGLoymOo2ZO7jXkUa4bVmdbSpUHokYAVip6r+zf42tfKhzr1S2GWPDKhF/AozYX9ZOtvzojK92RGmwp6B1n1JIKWgqHE91LaIArp1i+sPk4ACe6dann1N7KKXcjyCNXXjjaw9RHogNHp2muc9vQ=
         bucket: "sd-agent-packages"
-        skip_cleanup: true
         acl: public-read
-        local-dir: /serverdensity
+        local_dir: /serverdensity
         on:
           all_branches: true
     - stage: build packages
@@ -234,9 +213,8 @@ jobs:
         secret_access_key:
             secure: EyTxi3GZOlwGmYT0eld3copYEGLoymOo2ZO7jXkUa4bVmdbSpUHokYAVip6r+zf42tfKhzr1S2GWPDKhF/AozYX9ZOtvzojK92RGmwp6B1n1JIKWgqHE91LaIArp1i+sPk4ACe6dann1N7KKXcjyCNXXjjaw9RHogNHp2muc9vQ=
         bucket: "sd-agent-packages"
-        skip_cleanup: true
         acl: public-read
-        local-dir: /serverdensity
+        local_dir: /serverdensity
         on:
           all_branches: true
     - stage: build packages
@@ -249,9 +227,8 @@ jobs:
         secret_access_key:
             secure: EyTxi3GZOlwGmYT0eld3copYEGLoymOo2ZO7jXkUa4bVmdbSpUHokYAVip6r+zf42tfKhzr1S2GWPDKhF/AozYX9ZOtvzojK92RGmwp6B1n1JIKWgqHE91LaIArp1i+sPk4ACe6dann1N7KKXcjyCNXXjjaw9RHogNHp2muc9vQ=
         bucket: "sd-agent-packages"
-        skip_cleanup: true
         acl: public-read
-        local-dir: /serverdensity
+        local_dir: /serverdensity
         on:
           all_branches: true
     - stage: build packages
@@ -264,9 +241,8 @@ jobs:
         secret_access_key:
             secure: EyTxi3GZOlwGmYT0eld3copYEGLoymOo2ZO7jXkUa4bVmdbSpUHokYAVip6r+zf42tfKhzr1S2GWPDKhF/AozYX9ZOtvzojK92RGmwp6B1n1JIKWgqHE91LaIArp1i+sPk4ACe6dann1N7KKXcjyCNXXjjaw9RHogNHp2muc9vQ=
         bucket: "sd-agent-packages"
-        skip_cleanup: true
         acl: public-read
-        local-dir: /serverdensity
+        local_dir: /serverdensity
         on:
           all_branches: true
     - os: osx
@@ -279,8 +255,7 @@ jobs:
         secret_access_key:
             secure: EyTxi3GZOlwGmYT0eld3copYEGLoymOo2ZO7jXkUa4bVmdbSpUHokYAVip6r+zf42tfKhzr1S2GWPDKhF/AozYX9ZOtvzojK92RGmwp6B1n1JIKWgqHE91LaIArp1i+sPk4ACe6dann1N7KKXcjyCNXXjjaw9RHogNHp2muc9vQ=
         bucket: "sd-agent-packages"
-        skip_cleanup: true
         acl: public-read
-        local-dir: /serverdensity
+        local_dir: /serverdensity
         on:
           all_branches: true
