@@ -1,7 +1,7 @@
 #!/bin/bash
 sudo sed -i "s|trusty|$RELEASE|" /sd-agent*/debian/changelog
 sudo dpkg-source -b /sd-agent
-ubuntu=(bionic xenial trusty)
+ubuntu=(bionic focal xenial trusty)
 if [[ ${ubuntu[*]} =~ "$RELEASE" ]]
 then
     distro="ubuntu"
