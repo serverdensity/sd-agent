@@ -1,4 +1,6 @@
 %changelog
+* Tue May 5 2020 Server Density <hello@serverdensity.com> 2.2.8-1
+- Updates ntplib python dependency
 * Tue Mar 17 2020 Server Density <hello@serverdensity.com> 2.2.7-1
 - Security Update: Updates python psutil library to address CVE-2019-18874.
 * Wed Jul 24 2019 Server Density <hello@serverdensity.com> 2.2.6-1

@@ -22,7 +22,7 @@ env:
     - PIP_CACHE=$HOME/.cache/pip
     - VOLATILE_DIR=/tmp
     - DD_CASHER_DIR=/tmp/casher
-    - AGENT_VERSION=2.2.7
+    - AGENT_VERSION=2.2.8
     - CACHE_DIR=$HOME/.cache
     - CACHE_FILE_el6=$CACHE_DIR/el6.tar.gz
     - CACHE_FILE_el6_i386=$CACHE_DIR/el6_i386.tar.gz

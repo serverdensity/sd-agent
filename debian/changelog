@@ -1,8 +1,14 @@
+sd-agent (2.2.8-1trusty0) trusty; urgency=medium
+
+  * Updates ntplib python dependency
+
+ -- Server Density <hello@serverdensity.com>  Tue, 5 may 2019 10:30:00 +0100
+
 sd-agent (2.2.7-1trusty0) trusty; urgency=medium
 
   * Security Update: Updates python psutil library to address CVE-2019-18874.
 
- -- Server Density <hello@serverdensity.com>  Wed, 24 Jul 2019 10:30:00 +0100
+ -- Server Density <hello@serverdensity.com>  Tue, 17 Mar 2019 10:30:00 +0100
 
 sd-agent (2.2.6-1trusty0) trusty; urgency=medium
 
