@@ -1,0 +1,17 @@
+[Unit]
+Description=ServerDensity Forwarder
+Requires=sd-agent.service
+After=sd-agent.service
+
+[Service]
+Type=simple
+ExecStart=/usr/share/python/sd-agent/bin/python /usr/share/python/sd-agent/sdagent.py
+User=sd-agent
+Restart=always
+RestartSec=5
+Environment="PYTHONPATH=/usr/share/python/sd-agent,LANG=POSIX"
+StandardOutput=null
+StandardError=null
+
+[Install]
+WantedBy=sd-agent.service

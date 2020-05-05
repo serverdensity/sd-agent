@@ -1,14 +1,15 @@
 #!/bin/bash
- sudo sed -i "s|trusty|$RELEASE|" /sd-agent*/debian/changelog
+sudo sed -i "s|trusty|$RELEASE|" /sd-agent*/debian/changelog
 sudo dpkg-source -b /sd-agent
- ubuntu=(bionic focal xenial trusty)
- if [[ ${ubuntu[*]} =~ "$RELEASE" ]]
+ubuntu=(bionic focal xenial trusty)
+if [[ ${ubuntu[*]} =~ "$RELEASE" ]]
 then
     distro="ubuntu"
 else
     distro="debian"
 fi
-for arch in amd64 i386; do
+sudo cp -a /sd-agent/debian/distros/"$RELEASE"/. /sd-agent/debian
+for arch in amd64 ; do
     if [ ! -d /packages/"$distro"/"$RELEASE" ]; then
         sudo mkdir -p /packages/"$distro"/"$RELEASE"
     fi
