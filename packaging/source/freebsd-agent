@@ -1,0 +1,28 @@
+#!/bin/sh
+#
+
+# PROVIDE: sdagent
+# REQUIRE: DAEMON
+# BEFORE: LOGIN
+# KEYWORD: shutdown
+
+. /etc/rc.subr
+
+name="sdagent"
+rcvar=`set_rcvar`
+
+: ${sdagent_enable="NO"}
+
+start_cmd="sd_start"
+stop_cmd="sd_stop"
+
+sd_start()
+{
+	/root/.sd-agent/bin/agent start
+}
+sd_stop()
+{
+	/root/.sd-agent/bin/agent stop
+}
+load_rc_config $name
+run_rc_command "$1"
