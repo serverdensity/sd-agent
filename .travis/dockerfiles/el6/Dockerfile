@@ -13,7 +13,7 @@ RUN yum -y install \
     tar \
     symlinks \
     epel-release
-RUN wget https://centos6.iuscommunity.org/ius-release.rpm && \
+RUN wget https://repo.ius.io/ius-release-el6.rpm && \
     rpm -Uvh ius-release*.rpm && \
     yum -y install python27 python27-devel
 RUN ( grep -q :20: /etc/group || groupadd -g 20 osx_staff ) && \

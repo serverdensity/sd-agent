@@ -18,7 +18,7 @@ RUN linux32 yum -y  --enablerepo=city-fan.org install yum-utils \
     symlinks \
     git \
     ca-certificates
-RUN wget https://centos6.iuscommunity.org/ius-release.rpm
+RUN wget https://repo.ius.io/ius-release-el6.rpm
 RUN rpm -Uvh ius-release*.rpm
 RUN sed -i "s|https://repo.ius.io/archive/6/\$basearch/|https://dl.iuscommunity.org/pub/ius/archive/CentOS/6/i386/|" /etc/yum.repos.d/ius-archive.repo
 RUN rpm --import https://dl.iuscommunity.org/pub/ius/IUS-COMMUNITY-GPG-KEY
