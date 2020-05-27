@@ -34,7 +34,7 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 curl -LO https://raw.github.com/pypa/virtualenv/1.11.6/virtualenv.py
 python2.7 virtualenv.py --no-site-packages --no-pip --no-setuptools %{__venv}
 curl -LO https://bootstrap.pypa.io/ez_setup.py
-%{__venv}/bin/python ez_setup.py --version="20.9.0"
+%{__venv}/bin/python ez_setup.py --version="44.1.1"
 curl -LO https://bootstrap.pypa.io/get-pip.py
 %{__venv}/bin/python get-pip.py
 
