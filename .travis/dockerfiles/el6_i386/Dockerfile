@@ -18,9 +18,7 @@ RUN linux32 yum -y  --enablerepo=city-fan.org install yum-utils \
     symlinks \
     git \
     ca-certificates
-RUN wget https://repo.ius.io/ius-release-el6.rpm
-RUN rpm -Uvh ius-release*.rpm
-RUN sed -i "s|https://repo.ius.io/archive/6/\$basearch/|https://dl.iuscommunity.org/pub/ius/archive/CentOS/6/i386/|" /etc/yum.repos.d/ius-archive.repo
+RUN yum install -y https://dl.iuscommunity.org/pub/ius/archive/CentOS/6/i386/ius-release-1.0-11.ius.centos6.noarch.rpm
 RUN rpm --import https://dl.iuscommunity.org/pub/ius/IUS-COMMUNITY-GPG-KEY
 RUN linux32 yum -y install python27 python27-devel --enablerepo=ius-archive --disablerepo=ius
 RUN ( grep -q :20: /etc/group || groupadd -g 20 osx_staff ) && \
