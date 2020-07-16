@@ -158,7 +158,7 @@ class PseudoAgent(object):
     def hanging_net(self):
         w = Watchdog(5)
         w.reset()
-        x = url.urlopen("http://localhost:31834")
+        x = url.request.urlopen("http://localhost:31834")
         print("ERROR Net call returned", x)
         return True
 
