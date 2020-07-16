@@ -254,7 +254,7 @@ class AgentStatus(object):
     @classmethod
     def load_latest_status(cls):
         try:
-            f = open(cls._get_pickle_path())
+            f = open(cls._get_pickle_path(), 'rb')
             try:
                 return pickle.load(f)
             finally:
