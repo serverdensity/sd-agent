@@ -24,16 +24,12 @@ env:
     - DD_CASHER_DIR=/tmp/casher
     - AGENT_VERSION=3.0.0
     - CACHE_DIR=$HOME/.cache
-    - CACHE_FILE_el6=$CACHE_DIR/el6.tar.gz
-    - CACHE_FILE_el6_i386=$CACHE_DIR/el6_i386.tar.gz
     - CACHE_FILE_el7=$CACHE_DIR/el7.tar.gz
     - CACHE_FILE_el8=$CACHE_DIR/el8.tar.gz
     - CACHE_FILE_bionic=$CACHE_DIR/bionic.tar.gz
     - CACHE_FILE_buster=$CACHE_DIR/buster.tar.gz
     - CACHE_FILE_focal=$CACHE_DIR/focal.tar.gz
-    - CACHE_FILE_jessie=$CACHE_DIR/jessie.tar.gz
     - CACHE_FILE_stretch=$CACHE_DIR/stretch.tar.gz
-    - CACHE_FILE_trusty=$CACHE_DIR/trusty.tar.gz
     - CACHE_FILE_xenial=$CACHE_DIR/xenial.tar.gz
 
 # Override travis defaults with empty jobs
@@ -81,27 +77,11 @@ jobs:
     - stage: build containers
       script: travis_retry ./.travis/build_containers.sh
       python: 3.7-dev
-      env: RELEASE=jessie
-    - stage: build containers
-      script: travis_retry ./.travis/build_containers.sh
-      python: 3.7-dev
       env: RELEASE=xenial
     - stage: build containers
       script: travis_retry ./.travis/build_containers.sh
       python: 3.7-dev
       env: RELEASE=stretch
-    - stage: build containers
-      script: travis_retry ./.travis/build_containers.sh
-      python: 3.7-dev
-      env: RELEASE=trusty
-    - stage: build containers
-      script: travis_retry ./.travis/build_containers.sh
-      python: 3.7-dev
-      env: RELEASE=el6
-    - stage: build containers
-      script: travis_retry ./.travis/build_containers.sh
-      python: 3.7-dev
-      env: RELEASE=el6_i386
     - stage: build containers
       script: travis_retry ./.travis/build_containers.sh
       python: 3.7-dev
@@ -154,20 +134,6 @@ jobs:
           all_branches: true
     - stage: build packages
       script: travis_retry ./.travis/build_packages.sh
-      env: RELEASE=jessie
-      python: 3.7-dev
-      deploy:
-      - provider: gcs
-        access_key_id: "GOOGQSTXHRV5ODGTXK2GT4U4"
-        secret_access_key:
-            secure: EyTxi3GZOlwGmYT0eld3copYEGLoymOo2ZO7jXkUa4bVmdbSpUHokYAVip6r+zf42tfKhzr1S2GWPDKhF/AozYX9ZOtvzojK92RGmwp6B1n1JIKWgqHE91LaIArp1i+sPk4ACe6dann1N7KKXcjyCNXXjjaw9RHogNHp2muc9vQ=
-        bucket: "sd-agent-packages"
-        acl: public-read
-        local_dir: /serverdensity
-        on:
-          all_branches: true
-    - stage: build packages
-      script: travis_retry ./.travis/build_packages.sh
       env: RELEASE=xenial
       python: 3.7-dev
       deploy:
@@ -183,48 +149,6 @@ jobs:
     - stage: build packages
       script: travis_retry ./.travis/build_packages.sh
       env: RELEASE=stretch
-      python: 3.7-dev
-      deploy:
-      - provider: gcs
-        access_key_id: "GOOGQSTXHRV5ODGTXK2GT4U4"
-        secret_access_key:
-            secure: EyTxi3GZOlwGmYT0eld3copYEGLoymOo2ZO7jXkUa4bVmdbSpUHokYAVip6r+zf42tfKhzr1S2GWPDKhF/AozYX9ZOtvzojK92RGmwp6B1n1JIKWgqHE91LaIArp1i+sPk4ACe6dann1N7KKXcjyCNXXjjaw9RHogNHp2muc9vQ=
-        bucket: "sd-agent-packages"
-        acl: public-read
-        local_dir: /serverdensity
-        on:
-          all_branches: true
-    - stage: build packages
-      script: travis_retry ./.travis/build_packages.sh
-      env: RELEASE=trusty
-      python: 3.7-dev
-      deploy:
-      - provider: gcs
-        access_key_id: "GOOGQSTXHRV5ODGTXK2GT4U4"
-        secret_access_key:
-            secure: EyTxi3GZOlwGmYT0eld3copYEGLoymOo2ZO7jXkUa4bVmdbSpUHokYAVip6r+zf42tfKhzr1S2GWPDKhF/AozYX9ZOtvzojK92RGmwp6B1n1JIKWgqHE91LaIArp1i+sPk4ACe6dann1N7KKXcjyCNXXjjaw9RHogNHp2muc9vQ=
-        bucket: "sd-agent-packages"
-        acl: public-read
-        local_dir: /serverdensity
-        on:
-          all_branches: true
-    - stage: build packages
-      script: travis_retry ./.travis/build_packages.sh
-      env: RELEASE=el6
-      python: 3.7-dev
-      deploy:
-      - provider: gcs
-        access_key_id: "GOOGQSTXHRV5ODGTXK2GT4U4"
-        secret_access_key:
-            secure: EyTxi3GZOlwGmYT0eld3copYEGLoymOo2ZO7jXkUa4bVmdbSpUHokYAVip6r+zf42tfKhzr1S2GWPDKhF/AozYX9ZOtvzojK92RGmwp6B1n1JIKWgqHE91LaIArp1i+sPk4ACe6dann1N7KKXcjyCNXXjjaw9RHogNHp2muc9vQ=
-        bucket: "sd-agent-packages"
-        acl: public-read
-        local_dir: /serverdensity
-        on:
-          all_branches: true
-    - stage: build packages
-      script: travis_retry ./.travis/build_packages.sh
-      env: RELEASE=el6_i386
       python: 3.7-dev
       deploy:
       - provider: gcs
