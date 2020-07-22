@@ -189,8 +189,8 @@ jobs:
         on:
           all_branches: true
     - os: osx
-      language: generic
-      python:
+      osx_image: xcode11.2  # Python 3.7.4 running on macOS 10.14.4
+      language: shell
       env: TRAVIS_FLAVOR=default
       deploy:
       - provider: gcs
