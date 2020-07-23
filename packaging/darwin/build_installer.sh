@@ -7,7 +7,7 @@ else
     PACKAGES_DIR="/${TRAVIS_REPO_SLUG}/${TRAVIS_BUILD_ID}/"
 fi
 # Build requisites
-PATH=~/Library/Python/2.7/bin:$PATH
+#PATH=~/Library/Python/2.7/bin:$PATH
 
 BUILD_DIR=/tmp/build
 INSTALL_DIR=/tmp/installation
@@ -26,7 +26,7 @@ VENV_PIP_CMD="${BUILD_DIR}/bin/pip"
 mkdir -p ${BUILD_DIR}
 curl -LO https://pypi.python.org/packages/source/v/virtualenv/virtualenv-15.2.0.tar.gz
 tar xzf virtualenv-15.2.0.tar.gz
-/usr/bin/python2.7 virtualenv-15.2.0/virtualenv.py --no-site-packages --no-pip --no-setuptools ${BUILD_DIR}
+/usr/bin/python3 virtualenv-15.2.0/virtualenv.py --no-site-packages --no-pip --no-setuptools ${BUILD_DIR}
 curl -LO https://bootstrap.pypa.io/ez_setup.py
 ${VENV_PYTHON_CMD} ez_setup.py
 curl -LO https://bootstrap.pypa.io/get-pip.py
@@ -76,7 +76,7 @@ cp plugins.cfg.example ${INSTALL_DIR}/etc/sd-agent/plugins.cfg
 
 # Copy main agent code.
 mkdir -p ${INSTALL_DIR}/sd-agent
-mkdir -p ${INSTALL_DIR}/sd-agent/lib/python2.7/site-packages
+mkdir -p ${INSTALL_DIR}/sd-agent/lib/python3/site-packages
 cp agent.py \
 aggregator.py \
 config.py \
@@ -98,41 +98,41 @@ cp -R checks ${INSTALL_DIR}/sd-agent/checks
 cp -a ${BUILD_DIR}/.Python ${INSTALL_DIR}/sd-agent/
 cp -a ${BUILD_DIR}/bin ${INSTALL_DIR}/sd-agent/
 cp -a ${BUILD_DIR}/include ${INSTALL_DIR}/sd-agent/
-cp -a ${BUILD_DIR}/lib/python2.7/*.py ${INSTALL_DIR}/sd-agent/lib/python2.7
-cp -a ${BUILD_DIR}/lib/python2.7/distutils ${INSTALL_DIR}/sd-agent/lib/python2.7
-cp -a ${BUILD_DIR}/lib/python2.7/encodings ${INSTALL_DIR}/sd-agent/lib/python2.7
-cp -a ${BUILD_DIR}/lib/python2.7/lib-dynload ${INSTALL_DIR}/sd-agent/lib/python2.7
-cp -a ${BUILD_DIR}/lib/python2.7/no-global-site-packages.txt ${INSTALL_DIR}/sd-agent/lib/python2.7
-cp -a ${BUILD_DIR}/lib/python2.7/orig-prefix.txt ${INSTALL_DIR}/sd-agent/lib/python2.7
-cp -a ${BUILD_DIR}/lib/python2.7/site-packages/* ${INSTALL_DIR}/sd-agent/lib/python2.7/site-packages
-#cp -a ${BUILD_DIR}/lib/python2.7/site-packages/backports* ${INSTALL_DIR}/sd-agent/lib/python2.7/site-packages
-#cp -a ${BUILD_DIR}/lib/python2.7/site-packages/boto* ${INSTALL_DIR}/sd-agent/lib/python2.7/site-packages
-#cp -a ${BUILD_DIR}/lib/python2.7/site-packages/*consul* ${INSTALL_DIR}/sd-agent/lib/python2.7/site-packages
-#cp -a ${BUILD_DIR}/lib/python2.7/site-packages/dns* ${INSTALL_DIR}/sd-agent/lib/python2.7/site-packages
-#cp -a ${BUILD_DIR}/lib/python2.7/site-packages/docker* ${INSTALL_DIR}/sd-agent/lib/python2.7/site-packages
-#cp -a ${BUILD_DIR}/lib/python2.7/site-packages/easy-install* ${INSTALL_DIR}/sd-agent/lib/python2.7/site-packages
-#cp -a ${BUILD_DIR}/lib/python2.7/site-packages/*etcd* ${INSTALL_DIR}/sd-agent/lib/python2.7/site-packages
-#cp -a ${BUILD_DIR}/lib/python2.7/site-packages/ipaddress.py* ${INSTALL_DIR}/sd-agent/lib/python2.7/site-packages
-#cp -a ${BUILD_DIR}/lib/python2.7/site-packages/_markerlib ${INSTALL_DIR}/sd-agent/lib/python2.7/site-packages
-#cp -a ${BUILD_DIR}/lib/python2.7/site-packages/meld3* ${INSTALL_DIR}/sd-agent/lib/python2.7/site-packages
-#cp -a ${BUILD_DIR}/lib/python2.7/site-packages/ntplib* ${INSTALL_DIR}/sd-agent/lib/python2.7/site-packages
-#cp -a ${BUILD_DIR}/lib/python2.7/site-packages/pip* ${INSTALL_DIR}/sd-agent/lib/python2.7/site-packages
-#cp -a ${BUILD_DIR}/lib/python2.7/site-packages/pkg_resources ${INSTALL_DIR}/sd-agent/lib/python2.7/site-packages
-#cp -a ${BUILD_DIR}/lib/python2.7/site-packages/psutil* ${INSTALL_DIR}/sd-agent/lib/python2.7/site-packages
-#cp -a ${BUILD_DIR}/lib/python2.7/site-packages/pycurl* ${INSTALL_DIR}/sd-agent/lib/python2.7/site-packages
-#cp -a ${BUILD_DIR}/lib/python2.7/site-packages/PyYAML* ${INSTALL_DIR}/sd-agent/lib/python2.7/site-packages
-#cp -a ${BUILD_DIR}/lib/python2.7/site-packages/requests* ${INSTALL_DIR}/sd-agent/lib/python2.7/site-packages
-#cp -a ${BUILD_DIR}/lib/python2.7/site-packages/*scandir* ${INSTALL_DIR}/sd-agent/lib/python2.7/site-packages
-#cp -a ${BUILD_DIR}/lib/python2.7/site-packages/sd_agent* ${INSTALL_DIR}/sd-agent/lib/python2.7/site-packages
-#cp -a ${BUILD_DIR}/lib/python2.7/site-packages/setuptools* ${INSTALL_DIR}/sd-agent/lib/python2.7/site-packages
-#cp -a ${BUILD_DIR}/lib/python2.7/site-packages/simplejson* ${INSTALL_DIR}/sd-agent/lib/python2.7/site-packages
-#cp -a ${BUILD_DIR}/lib/python2.7/site-packages/six.py ${INSTALL_DIR}/sd-agent/lib/python2.7/site-packages
-#cp -a ${BUILD_DIR}/lib/python2.7/site-packages/six-*-info ${INSTALL_DIR}/sd-agent/lib/python2.7/site-packages
-#cp -a ${BUILD_DIR}/lib/python2.7/site-packages/tornado* ${INSTALL_DIR}/sd-agent/lib/python2.7/site-packages
-#cp -a ${BUILD_DIR}/lib/python2.7/site-packages/uptime* ${INSTALL_DIR}/sd-agent/lib/python2.7/site-packages
-#cp -a ${BUILD_DIR}/lib/python2.7/site-packages/urllib3* ${INSTALL_DIR}/sd-agent/lib/python2.7/site-packages
-#cp -a ${BUILD_DIR}/lib/python2.7/site-packages/websocket* ${INSTALL_DIR}/sd-agent/lib/python2.7/site-packages
-#cp -a ${BUILD_DIR}/lib/python2.7/site-packages/yaml ${INSTALL_DIR}/sd-agent/lib/python2.7/site-packages
+cp -a ${BUILD_DIR}/lib/python3*/*.py ${INSTALL_DIR}/sd-agent/lib/python3
+cp -a ${BUILD_DIR}/lib/python3*/distutils ${INSTALL_DIR}/sd-agent/lib/python3
+cp -a ${BUILD_DIR}/lib/python3*/encodings ${INSTALL_DIR}/sd-agent/lib/python3
+cp -a ${BUILD_DIR}/lib/python3*/lib-dynload ${INSTALL_DIR}/sd-agent/lib/python3
+cp -a ${BUILD_DIR}/lib/python3*/no-global-site-packages.txt ${INSTALL_DIR}/sd-agent/lib/python3
+cp -a ${BUILD_DIR}/lib/python3*/orig-prefix.txt ${INSTALL_DIR}/sd-agent/lib/python3
+cp -a ${BUILD_DIR}/lib/python3*/site-packages/* ${INSTALL_DIR}/sd-agent/lib/python3/site-packages
+#cp -a ${BUILD_DIR}/lib/python3*/site-packages/backports* ${INSTALL_DIR}/sd-agent/lib/python3*/site-packages
+#cp -a ${BUILD_DIR}/lib/python3*/site-packages/boto* ${INSTALL_DIR}/sd-agent/lib/python3*/site-packages
+#cp -a ${BUILD_DIR}/lib/python3*/site-packages/*consul* ${INSTALL_DIR}/sd-agent/lib/python3*/site-packages
+#cp -a ${BUILD_DIR}/lib/python3*/site-packages/dns* ${INSTALL_DIR}/sd-agent/lib/python3*/site-packages
+#cp -a ${BUILD_DIR}/lib/python3*/site-packages/docker* ${INSTALL_DIR}/sd-agent/lib/python3*/site-packages
+#cp -a ${BUILD_DIR}/lib/python3*/site-packages/easy-install* ${INSTALL_DIR}/sd-agent/lib/python3*/site-packages
+#cp -a ${BUILD_DIR}/lib/python3*/site-packages/*etcd* ${INSTALL_DIR}/sd-agent/lib/python3*/site-packages
+#cp -a ${BUILD_DIR}/lib/python3*/site-packages/ipaddress.py* ${INSTALL_DIR}/sd-agent/lib/python3*/site-packages
+#cp -a ${BUILD_DIR}/lib/python3*/site-packages/_markerlib ${INSTALL_DIR}/sd-agent/lib/python3*/site-packages
+#cp -a ${BUILD_DIR}/lib/python3*/site-packages/meld3* ${INSTALL_DIR}/sd-agent/lib/python3*/site-packages
+#cp -a ${BUILD_DIR}/lib/python3*/site-packages/ntplib* ${INSTALL_DIR}/sd-agent/lib/python3*/site-packages
+#cp -a ${BUILD_DIR}/lib/python3*/site-packages/pip* ${INSTALL_DIR}/sd-agent/lib/python3*/site-packages
+#cp -a ${BUILD_DIR}/lib/python3*/site-packages/pkg_resources ${INSTALL_DIR}/sd-agent/lib/python3*/site-packages
+#cp -a ${BUILD_DIR}/lib/python3*/site-packages/psutil* ${INSTALL_DIR}/sd-agent/lib/python3*/site-packages
+#cp -a ${BUILD_DIR}/lib/python3*/site-packages/pycurl* ${INSTALL_DIR}/sd-agent/lib/python3*/site-packages
+#cp -a ${BUILD_DIR}/lib/python3*/site-packages/PyYAML* ${INSTALL_DIR}/sd-agent/lib/python3*/site-packages
+#cp -a ${BUILD_DIR}/lib/python3*/site-packages/requests* ${INSTALL_DIR}/sd-agent/lib/python3*/site-packages
+#cp -a ${BUILD_DIR}/lib/python3*/site-packages/*scandir* ${INSTALL_DIR}/sd-agent/lib/python3*/site-packages
+#cp -a ${BUILD_DIR}/lib/python3*/site-packages/sd_agent* ${INSTALL_DIR}/sd-agent/lib/python3*/site-packages
+#cp -a ${BUILD_DIR}/lib/python3*/site-packages/setuptools* ${INSTALL_DIR}/sd-agent/lib/python3*/site-packages
+#cp -a ${BUILD_DIR}/lib/python3*/site-packages/simplejson* ${INSTALL_DIR}/sd-agent/lib/python3*/site-packages
+#cp -a ${BUILD_DIR}/lib/python3*/site-packages/six.py ${INSTALL_DIR}/sd-agent/lib/python3*/site-packages
+#cp -a ${BUILD_DIR}/lib/python3*/site-packages/six-*-info ${INSTALL_DIR}/sd-agent/lib/python3*/site-packages
+#cp -a ${BUILD_DIR}/lib/python3*/site-packages/tornado* ${INSTALL_DIR}/sd-agent/lib/python3*/site-packages
+#cp -a ${BUILD_DIR}/lib/python3*/site-packages/uptime* ${INSTALL_DIR}/sd-agent/lib/python3*/site-packages
+#cp -a ${BUILD_DIR}/lib/python3*/site-packages/urllib3* ${INSTALL_DIR}/sd-agent/lib/python3*/site-packages
+#cp -a ${BUILD_DIR}/lib/python3*/site-packages/websocket* ${INSTALL_DIR}/sd-agent/lib/python3*/site-packages
+#cp -a ${BUILD_DIR}/lib/python3*/site-packages/yaml ${INSTALL_DIR}/sd-agent/lib/python3*/site-packages
 
 # Copy startup item
 cp ${DARWIN_SCRIPTS}/com.serverdensity.agent.plist ${INSTALL_DIR}/sd-agent
