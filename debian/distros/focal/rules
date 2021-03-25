@@ -39,7 +39,7 @@ define create_venv
 	python virtualenv.py -p python2 --no-site-packages --no-pip --no-setuptools $(BUILD_DIR)
 	curl -LO https://bootstrap.pypa.io/ez_setup.py
 	$(BUILD_DIR)/bin/python ez_setup.py --version="20.9.0"
-	curl -LO https://bootstrap.pypa.io/get-pip.py
+	curl -LO https://bootstrap.pypa.io/pip/2.7/get-pip.py
 	$(BUILD_DIR)/bin/python get-pip.py
 endef
 

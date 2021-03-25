@@ -35,7 +35,7 @@ curl -LO https://raw.github.com/pypa/virtualenv/1.11.6/virtualenv.py
 python2.7 virtualenv.py --no-site-packages --no-pip --no-setuptools %{__venv}
 curl -LO https://bootstrap.pypa.io/ez_setup.py
 %{__venv}/bin/python ez_setup.py --version="44.1.1"
-curl -LO https://bootstrap.pypa.io/get-pip.py
+curl -LO https://bootstrap.pypa.io/pip/2.7/get-pip.py
 %{__venv}/bin/python get-pip.py
 
 %setup -qn sd-agent

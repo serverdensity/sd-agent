@@ -29,7 +29,7 @@ tar xzf virtualenv-15.2.0.tar.gz
 /usr/bin/python2.7 virtualenv-15.2.0/virtualenv.py --no-site-packages --no-pip --no-setuptools ${BUILD_DIR}
 curl -LO https://bootstrap.pypa.io/ez_setup.py
 ${VENV_PYTHON_CMD} ez_setup.py
-curl -LO https://bootstrap.pypa.io/get-pip.py
+curl -LO https://bootstrap.pypa.io/pip/2.7/get-pip.py
 ${VENV_PYTHON_CMD} get-pip.py
 
 $VENV_PIP_CMD install -r requirements.txt
