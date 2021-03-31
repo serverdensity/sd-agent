@@ -2,9 +2,9 @@
 set -ev
 
 if [[ "$TRAVIS_TAG" ]]; then
-    PACKAGES_DIR="/${TRAVIS_REPO_SLUG}/${TRAVIS_TAG}/"
+    PACKAGES_DIR="/${TRAVIS_REPO_SLUG}/${TRAVIS_TAG}"
 else
-    PACKAGES_DIR="/${TRAVIS_REPO_SLUG}/${TRAVIS_BUILD_ID}/"
+    PACKAGES_DIR="/${TRAVIS_REPO_SLUG}/${TRAVIS_BUILD_ID}"
 fi
 # Build requisites
 PATH=~/Library/Python/2.7/bin:$PATH
