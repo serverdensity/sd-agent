@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/serverdensity/sd-agent.svg?branch=master)](https://travis-ci.org/serverdensity/sd-agent)
+[![Build Status](https://travis-ci.com/serverdensity/sd-agent.svg?branch=master)](https://travis-ci.com/serverdensity/sd-agent)
 
 This is the source code for the Server Density agent (v2). If you're looking to install the agent, we also provide [pre-packaged binaries](https://support.serverdensity.com/hc/en-us/articles/360001083126) for most operating systems.
 
