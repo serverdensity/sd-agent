@@ -2,9 +2,9 @@
 set -ev
 
 if [[ "$TRAVIS_TAG" ]]; then
-    PACKAGES_DIR="/${TRAVIS_REPO_SLUG}/${TRAVIS_TAG}/"
+    PACKAGES_DIR="/${TRAVIS_REPO_SLUG}/${TRAVIS_TAG}"
 else
-    PACKAGES_DIR="/${TRAVIS_REPO_SLUG}/${TRAVIS_BUILD_ID}/"
+    PACKAGES_DIR="/${TRAVIS_REPO_SLUG}/${TRAVIS_BUILD_ID}"
 fi
 # Build requisites
 PATH=~/Library/Python/2.7/bin:$PATH
@@ -29,7 +29,7 @@ tar xzf virtualenv-15.2.0.tar.gz
 /usr/bin/python2.7 virtualenv-15.2.0/virtualenv.py --no-site-packages --no-pip --no-setuptools ${BUILD_DIR}
 curl -LO https://bootstrap.pypa.io/ez_setup.py
 ${VENV_PYTHON_CMD} ez_setup.py
-curl -LO https://bootstrap.pypa.io/get-pip.py
+curl -LO https://bootstrap.pypa.io/pip/2.7/get-pip.py
 ${VENV_PYTHON_CMD} get-pip.py
 
 $VENV_PIP_CMD install -r requirements.txt
