@@ -31,7 +31,6 @@ env:
     - CACHE_FILE_focal=$CACHE_DIR/focal.tar.gz
     - CACHE_FILE_jessie=$CACHE_DIR/jessie.tar.gz
     - CACHE_FILE_stretch=$CACHE_DIR/stretch.tar.gz
-    - CACHE_FILE_trusty=$CACHE_DIR/trusty.tar.gz
     - CACHE_FILE_xenial=$CACHE_DIR/xenial.tar.gz
 
 # Override travis defaults with empty jobs
@@ -88,10 +87,6 @@ jobs:
       script: travis_retry ./.travis/build_containers.sh
       python: 2.7
       env: RELEASE=stretch
-    - stage: build containers
-      script: travis_retry ./.travis/build_containers.sh
-      python: 2.7
-      env: RELEASE=trusty
     - stage: build containers
       script: travis_retry ./.travis/build_containers.sh
       python: 2.7
@@ -173,20 +168,6 @@ jobs:
     - stage: build packages
       script: travis_retry ./.travis/build_packages.sh
       env: RELEASE=stretch
-      python: 2.7
-      deploy:
-      - provider: gcs
-        access_key_id: "GOOGQSTXHRV5ODGTXK2GT4U4"
-        secret_access_key:
-            secure: EyTxi3GZOlwGmYT0eld3copYEGLoymOo2ZO7jXkUa4bVmdbSpUHokYAVip6r+zf42tfKhzr1S2GWPDKhF/AozYX9ZOtvzojK92RGmwp6B1n1JIKWgqHE91LaIArp1i+sPk4ACe6dann1N7KKXcjyCNXXjjaw9RHogNHp2muc9vQ=
-        bucket: "sd-agent-packages"
-        acl: public-read
-        local_dir: /serverdensity
-        on:
-          all_branches: true
-    - stage: build packages
-      script: travis_retry ./.travis/build_packages.sh
-      env: RELEASE=trusty
       python: 2.7
       deploy:
       - provider: gcs
