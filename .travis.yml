@@ -75,6 +75,7 @@ jobs:
       script: travis_retry ./.travis/build_containers.sh
       python: 2.7
       env: RELEASE=focal
+      dist: focal
     - stage: build containers
       script: travis_retry ./.travis/build_containers.sh
       python: 2.7
@@ -126,6 +127,7 @@ jobs:
     - stage: build packages
       script: travis_retry ./.travis/build_packages.sh
       env: RELEASE=focal
+      dist: focal
       python: 2.7
       deploy:
       - provider: gcs
