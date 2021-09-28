@@ -1,0 +1,69 @@
+Source: sd-agent
+Section: python
+Priority: extra
+Maintainer: Server Density Developers <hello@serverdensity.com>
+Build-Depends: debhelper (>= 9), python (>= 2.7.0), python-setuptools,
+  python-dev, libyaml-dev, libcurl4-gnutls-dev,
+  symlinks, curl, ca-certificates,  libgnutls28-dev
+Standards-Version: 3.9.5
+Vcs-Browser: https://github.com/serverdensity/sd-agent
+Vcs-Git: git://github.com/serverdensity/sd-agent.git
+Homepage: https://www.serverdensity.com/
+
+Package: sd-agent
+Architecture: any
+Pre-Depends: dpkg (>= 1.15.12), python2.7, adduser, ${misc:Pre-Depends}
+Depends: ${python:Depends}, ${misc:Depends}, sysstat, libcurl3-gnutls, sd-agent-forwarder, sd-agent-sd-cpu-stats, sd-agent-network, sd-agent-disk
+Description: The Server Density monitoring agent
+ The Server Density monitoring agent is a lightweight process that monitors
+ system processes and services, and sends information back to your Server
+ Density account.
+ .
+ This package installs and runs the advanced agent daemon, which queues and
+ forwards metrics from your applications as well as system services.
+ .
+ See https://www.serverdensity.com/ for more information.
+
+Package: sd-agent-forwarder
+Architecture: all
+Breaks: sd-agent (<<2.2.0)
+Replaces: sd-agent (<<2.2.0)
+Pre-Depends: dpkg (>= 1.15.12), python2.7, ${misc:Pre-Depends}
+Depends: ${python:Depends}, ${misc:Depends}, libcurl3-gnutls, sd-agent (>=2.2.0)
+Description: The Server Density monitoring agent
+ The Server Density monitoring agent is a lightweight process that monitors
+ system processes and services, and sends information back to your Server
+ Density account.
+ .
+ This package installs and runs the advanced agent daemon, which queues and
+ forwards metrics from your applications as well as system services.
+ .
+ See https://www.serverdensity.com/ for more information.
+
+Package: sd-agent-jmx
+Architecture: all
+Pre-Depends: dpkg (>= 1.15.12), python2.7, ${misc:Pre-Depends}
+Depends: ${python:Depends}, ${misc:Depends}, default-jre-headless | java6-runtime-headless, sd-agent-sdstatsd (>= 2.2.0)
+Description: The Server Density monitoring agent
+ The Server Density monitoring agent is a lightweight process that monitors
+ system processes and services, and sends information back to your Server
+ Density account.
+ .
+ This package installs and runs the advanced agent daemon, which queues and
+ forwards metrics from your applications as well as system services.
+ .
+ See https://www.serverdensity.com/ for more information.
+
+Package: sd-agent-sdstatsd
+Architecture: all
+Pre-Depends: dpkg (>= 1.15.12), python2.7, ${misc:Pre-Depends}
+Depends: ${python:Depends}, ${misc:Depends}, libcurl3-gnutls, sd-agent (>= 2.2.0)
+Description: The Server Density monitoring agent
+ The Server Density monitoring agent is a lightweight process that monitors
+ system processes and services, and sends information back to your Server
+ Density account.
+ .
+ This package installs and runs the advanced agent daemon, which queues and
+ forwards metrics from your applications as well as system services.
+ .
+ See https://www.serverdensity.com/ for more information.
