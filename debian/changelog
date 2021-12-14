@@ -1,3 +1,9 @@
+sd-agent (2.2.9-1trusty0) trusty; urgency=medium
+
+  * Updates JMXFetch to 0.44.4
+
+ -- Server Density <hello@serverdensity.com>  Tue, 14 Dec 2021 10:30:00 +0100
+
 sd-agent (2.2.8-1trusty0) trusty; urgency=medium
 
   * Updates ntplib python dependency
