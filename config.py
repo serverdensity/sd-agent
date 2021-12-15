@@ -43,7 +43,7 @@ from utils.windows_configuration import get_registry_conf, get_windows_sdk_check
 
 # CONSTANTS
 AGENT_VERSION = "2.2.9"
-JMX_VERSION = "0.44.4"
+JMX_VERSION = "0.44.5"
 SD_CONF = "config.cfg"
 UNIX_CONFIG_PATH = '/etc/sd-agent'
 MAC_CONFIG_PATH = '/usr/local/etc/sd-agent/'
