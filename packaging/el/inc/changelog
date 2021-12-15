@@ -1,6 +1,6 @@
 %changelog
- * Tue Dec 14 2021 Server Density <hello@serverdensity.com> 2.2.9-1
-- Updates JMXFetch to 0.44.4
+ * Wed Dec 15 2021 Server Density <hello@serverdensity.com> 2.2.9-1
+- Updates JMXFetch to 0.44.5 to mitigate CVE-2021-45046 and CVE-2021-44228
 * Tue May 5 2020 Server Density <hello@serverdensity.com> 2.2.8-1
 - Updates ntplib python dependency
 * Tue Mar 17 2020 Server Density <hello@serverdensity.com> 2.2.7-1
