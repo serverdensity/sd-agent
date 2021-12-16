@@ -12,8 +12,37 @@
 /usr/share/python/sd-agent/transaction.py
 /usr/share/python/sd-agent/util.py
 
-/usr/share/python/sd-agent/checks
 /usr/share/python/sd-agent/utils
+
+/usr/share/python/sd-agent/checks/check_status.py
+/usr/share/python/sd-agent/checks/prometheus_check.py
+/usr/share/python/sd-agent/checks/collector.py
+/usr/share/python/sd-agent/checks/prometheus_mixins.py
+/usr/share/python/sd-agent/checks/ganglia.py
+/usr/share/python/sd-agent/checks/__init__.py
+/usr/share/python/sd-agent/checks/winwmi_check.py
+/usr/share/python/sd-agent/checks/metric_types.py
+/usr/share/python/sd-agent/checks/wmi_check.py
+/usr/share/python/sd-agent/checks/network_checks.py
+
+/usr/share/python/sd-agent/checks/system/__init__.py
+/usr/share/python/sd-agent/checks/system/unix.py
+/usr/share/python/sd-agent/checks/system/win32.py
+
+/usr/share/python/sd-agent/checks/server_density/__init__.py
+/usr/share/python/sd-agent/checks/server_density/yoshi.py
+/usr/share/python/sd-agent/checks/server_density/plugins.py
+
+/usr/share/python/sd-agent/checks/libs/__init__.py
+/usr/share/python/sd-agent/checks/libs/thread_pool.py
+
+/usr/share/python/sd-agent/checks/libs/vmware/all_metrics.py
+/usr/share/python/sd-agent/checks/libs/vmware/__init__.py
+/usr/share/python/sd-agent/checks/libs/vmware/basic_metrics.py
+
+/usr/share/python/sd-agent/checks/libs/wmi/counter_type.py
+/usr/share/python/sd-agent/checks/libs/wmi/__init__.py
+/usr/share/python/sd-agent/checks/libs/wmi/sampler.py
 
 %config(noreplace) /etc/sd-agent/supervisor.conf
 %config(noreplace) /etc/sd-agent/config.cfg
