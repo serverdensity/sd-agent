@@ -1,5 +1,8 @@
 FROM centos:8
 
+RUN sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-Linux-* &&\
+    sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-Linux-*
+
 RUN yum -y install yum-utils
 RUN yum-config-manager --enable powertools
 RUN yum -y install yum-utils rpm-build redhat-rpm-config make gcc python2-devel wget curl curl-devel postgresql-devel tar python2
