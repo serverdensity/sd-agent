@@ -22,6 +22,7 @@ env:
     - AGENT_VERSION=2.2.9
     - CACHE_DIR=$HOME/.cache
     - CACHE_FILE_el7=$CACHE_DIR/el7.tar.gz
+    - CACHE_FILE_el7_arm=$CACHE_DIR/el7_arm.tar.gz
     - CACHE_FILE_el8=$CACHE_DIR/el8.tar.gz
     - CACHE_FILE_bionic=$CACHE_DIR/bionic.tar.gz
     - CACHE_FILE_buster=$CACHE_DIR/buster.tar.gz
@@ -94,6 +95,11 @@ jobs:
       script: travis_retry ./.travis/build_containers.sh
       rvm: 2.5
       env: RELEASE=el7
+    - stage: build containers
+      script: travis_retry ./.travis/build_containers.sh
+      rvm: 2.5
+      env: RELEASE=el7_arm
+      dist: focal
     - stage: build containers
       script: travis_retry ./.travis/build_containers.sh
       rvm: 2.5
@@ -200,6 +206,21 @@ jobs:
     - stage: build packages
       script: travis_retry ./.travis/build_packages.sh
       env: RELEASE=el7
+      rvm: 2.5
+      deploy:
+      - provider: gcs
+        access_key_id: "GOOGQSTXHRV5ODGTXK2GT4U4"
+        secret_access_key:
+            secure: EyTxi3GZOlwGmYT0eld3copYEGLoymOo2ZO7jXkUa4bVmdbSpUHokYAVip6r+zf42tfKhzr1S2GWPDKhF/AozYX9ZOtvzojK92RGmwp6B1n1JIKWgqHE91LaIArp1i+sPk4ACe6dann1N7KKXcjyCNXXjjaw9RHogNHp2muc9vQ=
+        bucket: "sd-agent-packages"
+        acl: public-read
+        local_dir: /serverdensity
+        on:
+          all_branches: true
+    - stage: build packages
+      script: travis_retry ./.travis/build_packages.sh
+      env: RELEASE=el7_arm
+      dist: focal
       rvm: 2.5
       deploy:
       - provider: gcs
