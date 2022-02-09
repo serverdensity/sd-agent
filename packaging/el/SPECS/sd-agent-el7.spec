@@ -13,7 +13,6 @@
 
 Summary: Server Density Monitoring Agent
 Name: sd-agent
-BuildArch: x86_64 i386
 %include %{_topdir}/inc/version
 %include %{_topdir}/inc/release
 Requires: python >= 2.7, sysstat, libyaml, %{name}-forwarder, %{name}-sd-cpu-stats, %{name}-network, %{name}-disk
