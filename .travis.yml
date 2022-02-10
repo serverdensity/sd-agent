@@ -37,7 +37,7 @@ before_script:
   - if [ "${TRAVIS_DIST}" == "focal" ]; then sudo add-apt-repository ppa:canonical-server/server-backports -y; fi
   - if [ "${TRAVIS_OS_NAME}" != "osx" ]; then sudo apt-get --yes --no-install-recommends install binfmt-support qemu-user-static; fi
   - if [ "${TRAVIS_OS_NAME}" != "osx" ]; then echo ':arm:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x28\x00:\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff\xff:/usr/bin/qemu-arm-static:' | sudo tee -a /proc/sys/fs/binfmt_misc/register; fi
-script: travis_retry ./.travis/build_installer.sh
+script: travis_retry travis_wait 50 ./.travis/build_installer.sh
 after_failure:
   - echo "Logs from installation process come here / DEBUG LOGS"
   - cat /tmp/ci.log
@@ -64,54 +64,54 @@ jobs:
       services: docker
       env: TRAVIS_FLAVOR=core_integration
     - stage: build containers
-      script: travis_retry ./.travis/build_containers.sh
+      script: travis_retry travis_wait 50 ./.travis/build_containers.sh
       rvm: 2.5
       env: RELEASE=buster
     - stage: build containers
-      script: travis_retry ./.travis/build_containers.sh
+      script: travis_retry travis_wait 50 ./.travis/build_containers.sh
       rvm: 2.5
       env: RELEASE=bullseye
     - stage: build containers
-      script: travis_retry ./.travis/build_containers.sh
+      script: travis_retry travis_wait 50 ./.travis/build_containers.sh
       rvm: 2.5
       env: RELEASE=bionic
     - stage: build containers
-      script: travis_retry ./.travis/build_containers.sh
+      script: travis_retry travis_wait 50 ./.travis/build_containers.sh
       rvm: 2.5
       env: RELEASE=focal
       dist: focal
     - stage: build containers
-      script: travis_retry ./.travis/build_containers.sh
+      script: travis_retry travis_wait 50 ./.travis/build_containers.sh
       rvm: 2.5
       env: RELEASE=jessie
     - stage: build containers
-      script: travis_retry ./.travis/build_containers.sh
+      script: travis_retry travis_wait 50 ./.travis/build_containers.sh
       rvm: 2.5
       env: RELEASE=xenial
     - stage: build containers
-      script: travis_retry ./.travis/build_containers.sh
+      script: travis_retry travis_wait 50 ./.travis/build_containers.sh
       rvm: 2.5
       env: RELEASE=stretch
     - stage: build containers
-      script: travis_retry ./.travis/build_containers.sh
+      script: travis_retry travis_wait 50 ./.travis/build_containers.sh
       rvm: 2.5
       env: RELEASE=el7
     - stage: build containers
-      script: travis_retry ./.travis/build_containers.sh
+      script: travis_retry travis_wait 50 ./.travis/build_containers.sh
       rvm: 2.5
       env: RELEASE=el7_arm
       dist: focal
     - stage: build containers
-      script: travis_retry ./.travis/build_containers.sh
+      script: travis_retry travis_wait 50 ./.travis/build_containers.sh
       rvm: 2.5
       env: RELEASE=el8
     - stage: build containers
-      script: travis_retry ./.travis/build_containers.sh
+      script: travis_retry travis_wait 50 ./.travis/build_containers.sh
       rvm: 2.5
       env: RELEASE=el8_arm
       dist: focal
     - stage: build packages
-      script: travis_retry ./.travis/build_packages.sh
+      script: travis_retry travis_wait 50 ./.travis/build_packages.sh
       env: RELEASE=bionic
       rvm: 2.5
       deploy:
@@ -125,7 +125,7 @@ jobs:
         on:
           all_branches: true
     - stage: build packages
-      script: travis_retry ./.travis/build_packages.sh
+      script: travis_retry travis_wait 50 ./.travis/build_packages.sh
       env: RELEASE=buster
       rvm: 2.5
       deploy:
@@ -139,7 +139,7 @@ jobs:
         on:
           all_branches: true
     - stage: build packages
-      script: travis_retry ./.travis/build_packages.sh
+      script: travis_retry travis_wait 50 ./.travis/build_packages.sh
       env: RELEASE=bullseye
       rvm: 2.5
       deploy:
@@ -153,7 +153,7 @@ jobs:
         on:
           all_branches: true
     - stage: build packages
-      script: travis_retry ./.travis/build_packages.sh
+      script: travis_retry travis_wait 50 ./.travis/build_packages.sh
       env: RELEASE=focal
       dist: focal
       rvm: 2.5
@@ -168,7 +168,7 @@ jobs:
         on:
           all_branches: true
     - stage: build packages
-      script: travis_retry ./.travis/build_packages.sh
+      script: travis_retry travis_wait 50 ./.travis/build_packages.sh
       env: RELEASE=jessie
       rvm: 2.5
       deploy:
@@ -182,7 +182,7 @@ jobs:
         on:
           all_branches: true
     - stage: build packages
-      script: travis_retry ./.travis/build_packages.sh
+      script: travis_retry travis_wait 50 ./.travis/build_packages.sh
       env: RELEASE=xenial
       rvm: 2.5
       deploy:
@@ -196,7 +196,7 @@ jobs:
         on:
           all_branches: true
     - stage: build packages
-      script: travis_retry ./.travis/build_packages.sh
+      script: travis_retry travis_wait 50 ./.travis/build_packages.sh
       env: RELEASE=stretch
       rvm: 2.5
       deploy:
@@ -210,7 +210,7 @@ jobs:
         on:
           all_branches: true
     - stage: build packages
-      script: travis_retry ./.travis/build_packages.sh
+      script: travis_retry travis_wait 50 ./.travis/build_packages.sh
       env: RELEASE=el7
       rvm: 2.5
       deploy:
@@ -224,7 +224,7 @@ jobs:
         on:
           all_branches: true
     - stage: build packages
-      script: travis_retry ./.travis/build_packages.sh
+      script: travis_retry travis_wait 50 ./.travis/build_packages.sh
       env: RELEASE=el7_arm
       dist: focal
       rvm: 2.5
@@ -239,7 +239,7 @@ jobs:
         on:
           all_branches: true
     - stage: build packages
-      script: travis_retry ./.travis/build_packages.sh
+      script: travis_retry travis_wait 50 ./.travis/build_packages.sh
       env: RELEASE=el8
       rvm: 2.5
       deploy:
@@ -253,7 +253,7 @@ jobs:
         on:
           all_branches: true
     - stage: build packages
-      script: travis_retry ./.travis/build_packages.sh
+      script: travis_retry travis_wait 50 ./.travis/build_packages.sh
       env: RELEASE=el8_arm
       dist: focal
       rvm: 2.5
