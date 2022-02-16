@@ -1,5 +1,5 @@
 %define         jmxfetch_url https://dd-jmxfetch.s3.amazonaws.com
-%define         jmx_version 0.44.5
+%define         jmx_version 0.44.6
 %define         jmx_artifact jmxfetch-%{jmx_version}-jar-with-dependencies.jar
 
 curl -LO %{jmxfetch_url}/%{jmx_artifact}
