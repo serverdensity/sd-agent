@@ -1,3 +1,9 @@
+sd-agent (2.2.10-1trusty0) trusty; urgency=medium
+
+  * Updates JMXFetch to 0.44.6, removing jog4j
+
+ -- Server Density <hello@serverdensity.com>  Tue, 22 Feb 2022 10:30:00 +0100
+
 sd-agent (2.2.9-1trusty0) trusty; urgency=medium
 
   * Updates JMXFetch to 0.44.5 to mitigate CVE-2021-45046 and CVE-2021-44228
