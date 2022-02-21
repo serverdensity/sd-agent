@@ -2,8 +2,8 @@
 
 BUILD_DIR=debian/build
 DEST_VENV=/usr/share/python/sd-agent
-JMXFETCH_URL=https://dd-jmxfetch.s3.amazonaws.com
 JMX_VERSION=0.44.6
+JMXFETCH_URL=https://oss.sonatype.org/service/local/repositories/releases/content/com/datadoghq/jmxfetch/${JMX_VERSION}
 JMX_ARTIFACT=jmxfetch-${JMX_VERSION}-jar-with-dependencies.jar
 
 %:
