@@ -288,17 +288,17 @@ jobs:
         local_dir: /serverdensity
         on:
           all_branches: true
-    - os: osx
-      language: generic
-      python:
-      env: TRAVIS_FLAVOR=default
-      deploy:
-      - provider: gcs
-        access_key_id: "GOOGQSTXHRV5ODGTXK2GT4U4"
-        secret_access_key:
-            secure: EyTxi3GZOlwGmYT0eld3copYEGLoymOo2ZO7jXkUa4bVmdbSpUHokYAVip6r+zf42tfKhzr1S2GWPDKhF/AozYX9ZOtvzojK92RGmwp6B1n1JIKWgqHE91LaIArp1i+sPk4ACe6dann1N7KKXcjyCNXXjjaw9RHogNHp2muc9vQ=
-        bucket: "sd-agent-packages"
-        acl: public-read
-        local_dir: /serverdensity
-        on:
-          all_branches: true
+#   - os: osx
+#     language: generic
+#     python:
+#     env: TRAVIS_FLAVOR=default
+#     deploy:
+#     - provider: gcs
+#       access_key_id: "GOOGQSTXHRV5ODGTXK2GT4U4"
+#       secret_access_key:
+#           secure: EyTxi3GZOlwGmYT0eld3copYEGLoymOo2ZO7jXkUa4bVmdbSpUHokYAVip6r+zf42tfKhzr1S2GWPDKhF/AozYX9ZOtvzojK92RGmwp6B1n1JIKWgqHE91LaIArp1i+sPk4ACe6dann1N7KKXcjyCNXXjjaw9RHogNHp2muc9vQ=
+#       bucket: "sd-agent-packages"
+#       acl: public-read
+#       local_dir: /serverdensity
+#       on:
+#         all_branches: true
