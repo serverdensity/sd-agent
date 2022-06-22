@@ -1,0 +1,17 @@
+[Unit]
+Description=ServerDensity SD StatsD
+Requires=sd-agent.service
+After=sd-agent.service
+
+[Service]
+Type=simple
+ExecStart=/usr/share/python/sd-agent/bin/python /usr/share/python/sd-agent/sdstatsd.py --use-local-forwarder
+User=sd-agent
+Restart=always
+RestartSec=3
+Environment="PYTHONPATH=/usr/share/python/sd-agent,LANG=POSIX"
+StandardOutput=null
+StandardError=null
+
+[Install]
+WantedBy=sd-agent.service
