@@ -11,6 +11,9 @@ JMX_ARTIFACT=jmxfetch-${JMX_VERSION}-jar-with-dependencies.jar
 
 #override_dh_auto_configure:
 
+override_dh_builddeb:
+	dh_builddeb -- -Zgzip
+
 override_dh_auto_build:
 	$(create_venv)
 	$(BUILD_DIR)/bin/python2.7 $(BUILD_DIR)/bin/pip install -r requirements.txt
