@@ -29,6 +29,7 @@ env:
     - CACHE_FILE_buster=$CACHE_DIR/buster.tar.gz
     - CACHE_FILE_bullseye=$CACHE_DIR/bullseye.tar.gz
     - CACHE_FILE_focal=$CACHE_DIR/focal.tar.gz
+    - CACHE_FILE_jammy=$CACHE_DIR/jammy.tar.gz
     - CACHE_FILE_jessie=$CACHE_DIR/jessie.tar.gz
     - CACHE_FILE_stretch=$CACHE_DIR/stretch.tar.gz
     - CACHE_FILE_xenial=$CACHE_DIR/xenial.tar.gz
@@ -83,6 +84,11 @@ jobs:
     - stage: build containers
       script: travis_retry travis_wait 50 ./.travis/build_containers.sh
       rvm: 2.5
+      env: RELEASE=jammy
+      dist: focal
+    - stage: build containers
+      script: travis_retry travis_wait 50 ./.travis/build_containers.sh
+      rvm: 2.5
       env: RELEASE=jessie
     - stage: build containers
       script: travis_retry travis_wait 50 ./.travis/build_containers.sh
@@ -169,6 +175,21 @@ jobs:
           all_branches: true
     - stage: build packages
       script: travis_retry travis_wait 50 ./.travis/build_packages.sh
+      env: RELEASE=jammy
+      dist: focal
+      rvm: 2.5
+      deploy:
+      - provider: gcs
+        access_key_id: "GOOGQSTXHRV5ODGTXK2GT4U4"
+        secret_access_key:
+            secure: EyTxi3GZOlwGmYT0eld3copYEGLoymOo2ZO7jXkUa4bVmdbSpUHokYAVip6r+zf42tfKhzr1S2GWPDKhF/AozYX9ZOtvzojK92RGmwp6B1n1JIKWgqHE91LaIArp1i+sPk4ACe6dann1N7KKXcjyCNXXjjaw9RHogNHp2muc9vQ=
+        bucket: "sd-agent-packages"
+        acl: public-read
+        local_dir: /serverdensity
+        on:
+          all_branches: true
+    - stage: build packages
+      script: travis_retry travis_wait 50 ./.travis/build_packages.sh
       env: RELEASE=jessie
       rvm: 2.5
       deploy:
@@ -267,17 +288,17 @@ jobs:
         local_dir: /serverdensity
         on:
           all_branches: true
-    - os: osx
-      language: generic
-      python:
-      env: TRAVIS_FLAVOR=default
-      deploy:
-      - provider: gcs
-        access_key_id: "GOOGQSTXHRV5ODGTXK2GT4U4"
-        secret_access_key:
-            secure: EyTxi3GZOlwGmYT0eld3copYEGLoymOo2ZO7jXkUa4bVmdbSpUHokYAVip6r+zf42tfKhzr1S2GWPDKhF/AozYX9ZOtvzojK92RGmwp6B1n1JIKWgqHE91LaIArp1i+sPk4ACe6dann1N7KKXcjyCNXXjjaw9RHogNHp2muc9vQ=
-        bucket: "sd-agent-packages"
-        acl: public-read
-        local_dir: /serverdensity
-        on:
-          all_branches: true
+#   - os: osx
+#     language: generic
+#     python:
+#     env: TRAVIS_FLAVOR=default
+#     deploy:
+#     - provider: gcs
+#       access_key_id: "GOOGQSTXHRV5ODGTXK2GT4U4"
+#       secret_access_key:
+#           secure: EyTxi3GZOlwGmYT0eld3copYEGLoymOo2ZO7jXkUa4bVmdbSpUHokYAVip6r+zf42tfKhzr1S2GWPDKhF/AozYX9ZOtvzojK92RGmwp6B1n1JIKWgqHE91LaIArp1i+sPk4ACe6dann1N7KKXcjyCNXXjjaw9RHogNHp2muc9vQ=
+#       bucket: "sd-agent-packages"
+#       acl: public-read
+#       local_dir: /serverdensity
+#       on:
+#         all_branches: true
