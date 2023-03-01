@@ -1,7 +1,9 @@
 %changelog
- * Tue Feb 22 2022 Server Density <hello@serverdensity.com> 2.2.10-1
+* Thu Mar 2 2023 Server Density <hello@serverdensity.com> 2.2.11-1
+- Fixes urllib3 dependency.
+* Tue Feb 22 2022 Server Density <hello@serverdensity.com> 2.2.10-1
 - Updates JMXFetch to 0.44.6, removing log4j
- * Wed Dec 15 2021 Server Density <hello@serverdensity.com> 2.2.9-1
+* Wed Dec 15 2021 Server Density <hello@serverdensity.com> 2.2.9-1
 - Updates JMXFetch to 0.44.5 to mitigate CVE-2021-45046 and CVE-2021-44228
 * Tue May 5 2020 Server Density <hello@serverdensity.com> 2.2.8-1
 - Updates ntplib python dependency
