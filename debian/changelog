@@ -1,3 +1,9 @@
+sd-agent (2.2.11-1trusty0) trusty; urgency=medium
+
+  * Fixes urllib3 dependency.
+
+ -- Server Density <hello@serverdensity.com>  Thu, 2 Mar 2023 10:30:00 +0100
+
 sd-agent (2.2.10-1trusty0) trusty; urgency=medium
 
   * Updates JMXFetch to 0.44.6, removing jog4j
