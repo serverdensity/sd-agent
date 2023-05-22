@@ -31,7 +31,7 @@ python-etcd==0.4.5
 pyyaml>=4.2b1
 # note: requests is also used in many checks
 # upgrade with caution
-requests==2.20.0
+requests==2.31.0
 # needed to ensure http-check works, python-etcd pulls in urllib3-1.26.8 which is incompatible with requests
 urllib3==1.24.3
 # note: simplejson is used in many checks to inteface APIs
